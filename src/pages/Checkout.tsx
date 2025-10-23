@@ -24,6 +24,11 @@ const Checkout = () => {
     seconds: 0
   });
 
+  // Forza scroll all'inizio della pagina su mobile
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date().getTime();
