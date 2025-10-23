@@ -59,7 +59,7 @@ const Hero = () => {
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <span className="text-sm line-through opacity-70">500€</span>
                 <span className="text-accent font-bold text-2xl">280€</span>
-                <span className="px-3 py-1 bg-accent/20 border border-accent/30 rounded-full text-accent text-xs font-medium">
+                <span className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full text-green-400 text-xs font-medium">
                   -56% • Risparmi 220€
                 </span>
               </div>

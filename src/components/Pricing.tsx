@@ -69,8 +69,8 @@ const Pricing = () => {
                     <span className="text-2xl line-through opacity-70">500€</span>
                     <span className="text-5xl font-bold">280€</span>
                   </div>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-                    <span className="text-sm font-medium">Sconto 56% • Risparmi 220€</span>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 backdrop-blur-sm rounded-full border border-green-500/30">
+                    <span className="text-sm font-medium text-green-400">Sconto 56% • Risparmi 220€</span>
                   </div>
                 </div>
                 <p className="text-white/90 text-lg">Offerta speciale riservata ai partecipanti del I Convegno di Biofeedback</p>
