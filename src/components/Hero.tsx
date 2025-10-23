@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import heroImage from "@/assets/biofeedback-hero.jpg";
+import bfeLogo from "@/assets/bfe-logo.png";
 
 const Hero = () => {
   return (
@@ -60,6 +61,14 @@ const Hero = () => {
                 <span className="text-accent font-bold text-2xl ml-3">280€</span>
                 <span className="ml-2 text-accent text-sm">fino al 16 novembre</span>
               </p>
+            </div>
+            
+            <div className="mt-8 flex justify-center">
+              <img 
+                src={bfeLogo} 
+                alt="BFE - Biofeedback Federation of Europe" 
+                className="h-16 md:h-20 w-auto opacity-90"
+              />
             </div>
           </div>
         </div>
