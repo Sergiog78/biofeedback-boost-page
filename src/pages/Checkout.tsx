@@ -64,10 +64,41 @@ const Checkout = () => {
 
     setIsProcessing(true);
     
-    // Qui andrà l'integrazione con Stripe
+    // Raccogli i dati dal form
+    const formData = new FormData(e.currentTarget);
+    const customerData = {
+      firstName: formData.get('firstName') as string,
+      lastName: formData.get('lastName') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      profession: formData.get('profession') as string,
+      acceptedNewsletter: formData.get('newsletter') === 'on',
+      timestamp: new Date().toISOString()
+    };
+    
+    // Salva i dati in localStorage
+    try {
+      const existingCustomers = JSON.parse(localStorage.getItem('checkout_customers') || '[]');
+      existingCustomers.push(customerData);
+      localStorage.setItem('checkout_customers', JSON.stringify(existingCustomers));
+      localStorage.setItem('current_customer', JSON.stringify(customerData));
+    } catch (error) {
+      console.error('Errore nel salvare i dati del cliente:', error);
+    }
+    
+    // Costruisci URL Stripe con email pre-compilata
+    const stripeUrl = new URL('https://buy.stripe.com/5kQ3cw05a22p7CK6b24sE0d');
+    stripeUrl.searchParams.append('prefilled_email', customerData.email);
+    stripeUrl.searchParams.append('client_reference_id', customerData.email);
+    
     setTimeout(() => {
-      window.open('https://buy.stripe.com/5kQ3cw05a22p7CK6b24sE0d', '_blank');
+      window.open(stripeUrl.toString(), '_blank');
       setIsProcessing(false);
+      
+      toast({
+        title: "Reindirizzamento a Stripe",
+        description: "I tuoi dati sono stati salvati. Completa il pagamento nella nuova finestra.",
+      });
     }, 1000);
   };
 
@@ -113,7 +144,8 @@ const Checkout = () => {
                     <div className="space-y-2">
                       <Label htmlFor="firstName">Nome *</Label>
                       <Input 
-                        id="firstName" 
+                        id="firstName"
+                        name="firstName"
                         placeholder="Mario" 
                         required 
                         className="bg-background"
@@ -122,7 +154,8 @@ const Checkout = () => {
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Cognome *</Label>
                       <Input 
-                        id="lastName" 
+                        id="lastName"
+                        name="lastName"
                         placeholder="Rossi" 
                         required 
                         className="bg-background"
@@ -133,7 +166,8 @@ const Checkout = () => {
                   <div className="space-y-2">
                     <Label htmlFor="email">Email *</Label>
                     <Input 
-                      id="email" 
+                      id="email"
+                      name="email"
                       type="email" 
                       placeholder="mario.rossi@email.com" 
                       required 
@@ -147,7 +181,8 @@ const Checkout = () => {
                   <div className="space-y-2">
                     <Label htmlFor="phone">Telefono *</Label>
                     <Input 
-                      id="phone" 
+                      id="phone"
+                      name="phone"
                       type="tel" 
                       placeholder="+39 123 456 7890" 
                       required 
@@ -158,7 +193,8 @@ const Checkout = () => {
                   <div className="space-y-2">
                     <Label htmlFor="profession">Professione *</Label>
                     <Input 
-                      id="profession" 
+                      id="profession"
+                      name="profession"
                       placeholder="Es. Psicologo, Psicoterapeuta" 
                       required 
                       className="bg-background"
@@ -181,7 +217,7 @@ const Checkout = () => {
                     </div>
 
                     <div className="flex items-start gap-2">
-                      <Checkbox id="newsletter" />
+                      <Checkbox id="newsletter" name="newsletter" />
                       <Label 
                         htmlFor="newsletter" 
                         className="text-sm font-normal cursor-pointer leading-tight"
