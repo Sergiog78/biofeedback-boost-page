@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Shield, Lock, Check, ArrowLeft } from "lucide-react";
+import { Shield, Lock, Check, ArrowLeft, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 
@@ -14,6 +14,36 @@ const Checkout = () => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  
+  // Countdown timer - scadenza 16 novembre 2024 alle 23:59
+  const targetDate = new Date('2024-11-16T23:59:59').getTime();
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        clearInterval(interval);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      } else {
+        setTimeLeft({
+          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((distance % (1000 * 60)) / 1000)
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [targetDate]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -265,11 +295,34 @@ const Checkout = () => {
                   </p>
                 </div>
 
-                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-                  <p className="text-sm font-medium text-green-400 text-center">
-                    🎉 Risparmi 220€ con questa offerta!
-                  </p>
-                  <p className="text-xs text-center text-muted-foreground mt-1">
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-center gap-2">
+                    <Clock className="h-4 w-4 text-green-400" />
+                    <p className="text-sm font-medium text-green-400">
+                      🎉 Risparmi 220€ con questa offerta!
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-4 gap-2">
+                    <div className="text-center bg-background/50 rounded-lg p-2">
+                      <div className="text-2xl font-bold text-green-400">{timeLeft.days}</div>
+                      <div className="text-xs text-muted-foreground">giorni</div>
+                    </div>
+                    <div className="text-center bg-background/50 rounded-lg p-2">
+                      <div className="text-2xl font-bold text-green-400">{timeLeft.hours}</div>
+                      <div className="text-xs text-muted-foreground">ore</div>
+                    </div>
+                    <div className="text-center bg-background/50 rounded-lg p-2">
+                      <div className="text-2xl font-bold text-green-400">{timeLeft.minutes}</div>
+                      <div className="text-xs text-muted-foreground">min</div>
+                    </div>
+                    <div className="text-center bg-background/50 rounded-lg p-2">
+                      <div className="text-2xl font-bold text-green-400">{timeLeft.seconds}</div>
+                      <div className="text-xs text-muted-foreground">sec</div>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-center text-muted-foreground">
                     Offerta valida fino al 16 novembre 2024
                   </p>
                 </div>
