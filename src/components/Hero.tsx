@@ -67,7 +67,7 @@ const Hero = () => {
                   -56% • Risparmi 220€
                 </span>
               </div>
-              <p className="text-sm mt-2 text-accent">Offerta valida solo 48 ore per gli Iscritti al 1° Convegno Nazionale sul Biofeedback in Psicoterapia</p>
+              <p className="text-sm mt-2 text-accent">Offerta valida fino al 10 novembre 2025</p>
             </div>
             
             <div className="mt-8 flex justify-center gap-4">
