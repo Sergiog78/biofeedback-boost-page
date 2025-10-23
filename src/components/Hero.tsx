@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import heroImage from "@/assets/biofeedback-hero.jpg";
-import bfeLogo from "@/assets/bfe-logo.png";
+import bfeLogo from "@/assets/bfe-logo-text.png";
 
 const Hero = () => {
   return (
@@ -64,11 +64,13 @@ const Hero = () => {
             </div>
             
             <div className="mt-8 flex justify-center">
-              <img 
-                src={bfeLogo} 
-                alt="BFE - Biofeedback Federation of Europe" 
-                className="h-16 md:h-20 w-auto opacity-90"
-              />
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/10">
+                <img 
+                  src={bfeLogo} 
+                  alt="BFE - Biofeedback Federation of Europe" 
+                  className="h-8 md:h-10 w-auto opacity-80 hover:opacity-100 transition-opacity"
+                />
+              </div>
             </div>
           </div>
         </div>
