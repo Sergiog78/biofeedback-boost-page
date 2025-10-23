@@ -18,7 +18,7 @@ const Pricing = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const targetDate = new Date('2024-11-16T23:59:59').getTime();
+    const targetDate = new Date('2025-11-10T23:59:59').getTime();
     
     const updateCountdown = () => {
       const now = new Date().getTime();
@@ -99,7 +99,7 @@ const Pricing = () => {
                       <div className="text-xs">Secondi</div>
                     </div>
                   </div>
-                  <p className="text-sm mt-2 text-white/80">Scadenza: 16 novembre 2024</p>
+                  <p className="text-sm mt-2 text-white/80">Scadenza: 10 novembre 2025</p>
                 </div>
               </div>
             </CardHeader>
@@ -131,7 +131,7 @@ const Pricing = () => {
                     <p>
                       <span className="font-semibold text-primary">380€</span> - 
                       <span className="text-muted-foreground ml-2">
-                        Prezzo standard (iscrizioni dopo il 16 novembre o dal 24 novembre)
+                        Prezzo standard (iscrizioni dopo il 10 novembre 2025)
                       </span>
                     </p>
                   </div>
