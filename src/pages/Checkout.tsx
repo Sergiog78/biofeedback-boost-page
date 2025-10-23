@@ -31,7 +31,7 @@ const Checkout = () => {
     
     // Qui andrà l'integrazione con Stripe
     setTimeout(() => {
-      window.open('https://buy.stripe.com/your-payment-link', '_blank');
+      window.open('https://buy.stripe.com/5kQ3cw05a22p7CK6b24sE0d', '_blank');
       setIsProcessing(false);
     }, 1000);
   };
