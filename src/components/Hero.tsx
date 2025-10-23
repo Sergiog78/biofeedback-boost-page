@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/biofeedback-hero.jpg";
 import bfeLogo from "@/assets/bfe-logo-text.png";
+import righettoLogo from "@/assets/righetto-logo.png";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -69,11 +70,18 @@ const Hero = () => {
               <p className="text-sm mt-2 text-accent">Offerta valida solo 48 ore per gli Iscritti al 1° Convegno Nazionale sul Biofeedback in Psicoterapia</p>
             </div>
             
-            <div className="mt-8 flex justify-center">
+            <div className="mt-8 flex justify-center gap-4">
               <div className="bg-white/5 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/10">
                 <img 
                   src={bfeLogo} 
                   alt="BFE - Biofeedback Federation of Europe" 
+                  className="h-8 md:h-10 w-auto opacity-80 hover:opacity-100 transition-opacity"
+                />
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/10">
+                <img 
+                  src={righettoLogo} 
+                  alt="Righetto - Partner dispositivi biofeedback" 
                   className="h-8 md:h-10 w-auto opacity-80 hover:opacity-100 transition-opacity"
                 />
               </div>
