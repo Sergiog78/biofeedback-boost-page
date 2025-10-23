@@ -16,8 +16,8 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   
-  // Countdown timer - scadenza 16 novembre 2025 alle 23:59
-  const targetDate = new Date('2025-11-16T23:59:59').getTime();
+  // Countdown timer - scadenza 10 novembre 2024 alle 23:59
+  const targetDate = new Date('2024-11-10T23:59:59').getTime();
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -381,7 +381,7 @@ const Checkout = () => {
                   </div>
 
                   <p className="text-xs text-center text-muted-foreground">
-                    Offerta valida fino al 16 novembre 2025
+                    Offerta valida fino al 10 novembre 2024
                   </p>
                 </div>
 
