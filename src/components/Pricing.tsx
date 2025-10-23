@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Star, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const benefits = [
   "10 incontri online live (20 ore totali)",
@@ -13,6 +14,7 @@ const benefits = [
 ];
 
 const Pricing = () => {
+  const navigate = useNavigate();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
@@ -39,8 +41,7 @@ const Pricing = () => {
   }, []);
 
   const handleCheckout = () => {
-    // Qui andrà il link a Stripe Checkout
-    window.open('https://buy.stripe.com/your-payment-link', '_blank');
+    navigate('/checkout');
   };
 
   return (

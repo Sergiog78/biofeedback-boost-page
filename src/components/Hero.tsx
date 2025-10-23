@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/biofeedback-hero.jpg";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 
 const Hero = () => {
+  const navigate = useNavigate();
+  
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20">
       <div
@@ -49,7 +52,7 @@ const Hero = () => {
               variant="hero" 
               size="xl"
               className="text-lg"
-              onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => navigate('/checkout')}
             >
               Iscriviti ora con lo sconto
               <ArrowRight className="ml-2 h-5 w-5" />

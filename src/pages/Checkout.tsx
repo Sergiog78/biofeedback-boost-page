@@ -1,0 +1,295 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Shield, Lock, Check, ArrowLeft } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import bfeLogo from "@/assets/bfe-logo-text.png";
+
+const Checkout = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (!acceptedTerms) {
+      toast({
+        title: "Accetta i termini",
+        description: "Devi accettare i termini e condizioni per procedere",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    
+    // Qui andrà l'integrazione con Stripe
+    setTimeout(() => {
+      window.open('https://buy.stripe.com/your-payment-link', '_blank');
+      setIsProcessing(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-secondary/20 to-background">
+      {/* Header */}
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+        <div className="container flex h-16 items-center justify-between px-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Torna indietro
+          </Button>
+          <img 
+            src={bfeLogo} 
+            alt="BFE Logo" 
+            className="h-8 opacity-80"
+          />
+        </div>
+      </header>
+
+      <div className="container max-w-6xl mx-auto px-4 py-12">
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left Column - Form */}
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Completa l'iscrizione</h1>
+              <p className="text-muted-foreground">
+                Sicuro, veloce e protetto. Iscriviti ora con lo sconto del 56%.
+              </p>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Informazioni personali</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">Nome *</Label>
+                      <Input 
+                        id="firstName" 
+                        placeholder="Mario" 
+                        required 
+                        className="bg-background"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Cognome *</Label>
+                      <Input 
+                        id="lastName" 
+                        placeholder="Rossi" 
+                        required 
+                        className="bg-background"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email *</Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="mario.rossi@email.com" 
+                      required 
+                      className="bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Riceverai la conferma e i dettagli di accesso a questo indirizzo
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Telefono *</Label>
+                    <Input 
+                      id="phone" 
+                      type="tel" 
+                      placeholder="+39 123 456 7890" 
+                      required 
+                      className="bg-background"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="profession">Professione *</Label>
+                    <Input 
+                      id="profession" 
+                      placeholder="Es. Psicologo, Psicoterapeuta" 
+                      required 
+                      className="bg-background"
+                    />
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t">
+                    <div className="flex items-start gap-2">
+                      <Checkbox 
+                        id="terms" 
+                        checked={acceptedTerms}
+                        onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+                      />
+                      <Label 
+                        htmlFor="terms" 
+                        className="text-sm font-normal cursor-pointer leading-tight"
+                      >
+                        Accetto i termini e condizioni e confermo di aver letto l'informativa sulla privacy *
+                      </Label>
+                    </div>
+
+                    <div className="flex items-start gap-2">
+                      <Checkbox id="newsletter" />
+                      <Label 
+                        htmlFor="newsletter" 
+                        className="text-sm font-normal cursor-pointer leading-tight"
+                      >
+                        Desidero ricevere aggiornamenti su futuri corsi e iniziative
+                      </Label>
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    className="w-full text-lg"
+                    disabled={isProcessing}
+                    variant="hero"
+                  >
+                    {isProcessing ? "Elaborazione..." : "Procedi al pagamento - 280€"}
+                  </Button>
+
+                  <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Lock className="h-4 w-4" />
+                      <span>Pagamento sicuro</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Shield className="h-4 w-4" />
+                      <span>Dati protetti</span>
+                    </div>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Trust Badges */}
+            <div className="grid grid-cols-3 gap-4 py-4">
+              <div className="text-center">
+                <div className="flex justify-center mb-2">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Pagamento sicuro SSL
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="flex justify-center mb-2">
+                  <Check className="h-6 w-6 text-primary" />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Soddisfatti o rimborsati
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="flex justify-center mb-2">
+                  <Lock className="h-6 w-6 text-primary" />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Privacy garantita
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Order Summary */}
+          <div className="lg:sticky lg:top-24 h-fit">
+            <Card className="border-2 border-primary/20">
+              <CardHeader className="bg-gradient-to-br from-primary/10 to-secondary/10">
+                <CardTitle>Riepilogo ordine</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6 pt-6">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">
+                    Corso Completo di Biofeedback
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Introduzione al Biofeedback in Psicoterapia - Certificazione BFE
+                  </p>
+                </div>
+
+                <div className="space-y-3 py-4 border-y">
+                  <div className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">10 incontri online live (20 ore totali)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Certificazione BFE di I livello</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Materiali digitali e casi clinici</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">Convenzioni per dispositivi professionali</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Prezzo di listino</span>
+                    <span className="line-through">500€</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-green-400 font-medium">Sconto early bird (56%)</span>
+                    <span className="text-green-400 font-medium">-220€</span>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-lg font-semibold">Totale</span>
+                    <span className="text-3xl font-bold text-primary">280€</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground text-right">
+                    IVA inclusa
+                  </p>
+                </div>
+
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                  <p className="text-sm font-medium text-green-400 text-center">
+                    🎉 Risparmi 220€ con questa offerta!
+                  </p>
+                  <p className="text-xs text-center text-muted-foreground mt-1">
+                    Offerta valida fino al 16 novembre 2024
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Shield className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">Garanzia soddisfatti o rimborsati</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Se non sei soddisfatto, ti rimborsiamo entro 14 giorni dall'acquisto.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Checkout;
