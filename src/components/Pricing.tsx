@@ -64,9 +64,14 @@ const Pricing = () => {
             <CardHeader className="text-center bg-gradient-to-br from-primary to-primary/90 text-white py-8">
               <CardTitle className="text-3xl mb-4">Corso Completo di Biofeedback</CardTitle>
               <div className="space-y-4">
-                <div className="flex items-center justify-center gap-4">
-                  <span className="text-2xl line-through opacity-70">500€</span>
-                  <span className="text-5xl font-bold">280€</span>
+                <div className="flex flex-col items-center gap-3">
+                  <div className="flex items-center justify-center gap-4">
+                    <span className="text-2xl line-through opacity-70">500€</span>
+                    <span className="text-5xl font-bold">280€</span>
+                  </div>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+                    <span className="text-sm font-medium">Sconto 56% • Risparmi 220€</span>
+                  </div>
                 </div>
                 <p className="text-white/90 text-lg">Offerta speciale riservata ai partecipanti del I Convegno di Biofeedback</p>
                 

@@ -56,11 +56,14 @@ const Hero = () => {
             </Button>
             
             <div className="text-white/80">
-              <p className="text-sm">
-                <span className="line-through opacity-70">500€</span>
-                <span className="text-accent font-bold text-2xl ml-3">280€</span>
-                <span className="ml-2 text-accent text-sm">fino al 16 novembre</span>
-              </p>
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <span className="text-sm line-through opacity-70">500€</span>
+                <span className="text-accent font-bold text-2xl">280€</span>
+                <span className="px-3 py-1 bg-accent/20 border border-accent/30 rounded-full text-accent text-xs font-medium">
+                  -56% • Risparmi 220€
+                </span>
+              </div>
+              <p className="text-sm mt-2 text-accent">Offerta valida fino al 16 novembre</p>
             </div>
             
             <div className="mt-8 flex justify-center">
