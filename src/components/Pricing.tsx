@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const benefits = [
   "10 incontri online live (20 ore totali)",
@@ -12,6 +13,31 @@ const benefits = [
 ];
 
 const Pricing = () => {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const targetDate = new Date('2024-11-16T23:59:59').getTime();
+    
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+      
+      if (distance > 0) {
+        setTimeLeft({
+          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((distance % (1000 * 60)) / 1000)
+        });
+      }
+    };
+    
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   const handleCheckout = () => {
     // Qui andrà il link a Stripe Checkout
     window.open('https://buy.stripe.com/your-payment-link', '_blank');
@@ -37,12 +63,38 @@ const Pricing = () => {
           <Card className="border-2 border-accent shadow-2xl">
             <CardHeader className="text-center bg-gradient-to-br from-primary to-primary/90 text-white py-8">
               <CardTitle className="text-3xl mb-4">Corso Completo di Biofeedback</CardTitle>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <div className="flex items-center justify-center gap-4">
                   <span className="text-2xl line-through opacity-70">500€</span>
-                  <span className="text-5xl font-bold">380€</span>
+                  <span className="text-5xl font-bold">280€</span>
                 </div>
-                <p className="text-white/90 text-lg">Risparmia 120€ - Sconto valido fino al 24 novembre</p>
+                <p className="text-white/90 text-lg">Offerta speciale riservata ai partecipanti del I Convegno di Biofeedback</p>
+                
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mt-4">
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <Clock className="h-5 w-5" />
+                    <span className="font-semibold">Offerta scade tra:</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2 max-w-md mx-auto">
+                    <div className="bg-white/20 rounded-lg p-2">
+                      <div className="text-2xl font-bold">{timeLeft.days}</div>
+                      <div className="text-xs">Giorni</div>
+                    </div>
+                    <div className="bg-white/20 rounded-lg p-2">
+                      <div className="text-2xl font-bold">{timeLeft.hours}</div>
+                      <div className="text-xs">Ore</div>
+                    </div>
+                    <div className="bg-white/20 rounded-lg p-2">
+                      <div className="text-2xl font-bold">{timeLeft.minutes}</div>
+                      <div className="text-xs">Minuti</div>
+                    </div>
+                    <div className="bg-white/20 rounded-lg p-2">
+                      <div className="text-2xl font-bold">{timeLeft.seconds}</div>
+                      <div className="text-xs">Secondi</div>
+                    </div>
+                  </div>
+                  <p className="text-sm mt-2 text-white/80">Scadenza: 16 novembre 2024</p>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-8">
@@ -64,16 +116,16 @@ const Pricing = () => {
                   className="w-full text-xl py-6"
                   onClick={handleCheckout}
                 >
-                  Iscriviti Ora - 380€
+                  Iscriviti Ora - 280€
                 </Button>
                 
                 <div className="bg-secondary/50 p-6 rounded-lg">
                   <p className="text-sm text-muted-foreground mb-3 font-semibold">Altre opzioni di prezzo:</p>
                   <div className="space-y-2 text-sm">
                     <p>
-                      <span className="font-semibold text-primary">280€</span> - 
+                      <span className="font-semibold text-primary">380€</span> - 
                       <span className="text-muted-foreground ml-2">
-                        Riservato ai partecipanti del I Convegno di Biofeedback (iscrizioni entro il 16 novembre)
+                        Prezzo standard (iscrizioni dopo il 16 novembre o dal 24 novembre)
                       </span>
                     </p>
                   </div>

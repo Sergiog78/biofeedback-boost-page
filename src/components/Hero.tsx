@@ -4,8 +4,8 @@ import heroImage from "@/assets/biofeedback-hero.jpg";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-      <div 
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20">
+      <div
         className="absolute inset-0 z-0"
         style={{
           backgroundImage: `linear-gradient(rgba(0, 8, 49, 0.85), rgba(0, 8, 49, 0.75)), url(${heroImage})`,
@@ -57,8 +57,8 @@ const Hero = () => {
             <div className="text-white/80">
               <p className="text-sm">
                 <span className="line-through opacity-70">500€</span>
-                <span className="text-accent font-bold text-2xl ml-3">380€</span>
-                <span className="ml-2 text-accent text-sm">fino al 24 novembre</span>
+                <span className="text-accent font-bold text-2xl ml-3">280€</span>
+                <span className="ml-2 text-accent text-sm">fino al 16 novembre</span>
               </p>
             </div>
           </div>
