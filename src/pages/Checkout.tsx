@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Shield, Lock, Check, ArrowLeft, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import bfeLogo from "@/assets/bfe-logo-text.png";
+import righettoLogo from "@/assets/righetto-logo.png";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -313,6 +314,22 @@ const Checkout = () => {
                     <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                     <span className="text-sm">Convenzioni per dispositivi professionali</span>
                   </div>
+                </div>
+
+                <div className="py-4 border-y">
+                  <p className="text-xs text-muted-foreground mb-3 text-center">
+                    Partner tecnico per dispositivi biofeedback
+                  </p>
+                  <div className="flex justify-center">
+                    <img 
+                      src={righettoLogo} 
+                      alt="Righetto - Partner dispositivi biofeedback" 
+                      className="h-12 opacity-80 hover:opacity-100 transition-opacity"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    Sconti riservati agli iscritti al corso
+                  </p>
                 </div>
 
                 <div className="space-y-3">
