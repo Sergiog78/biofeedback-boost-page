@@ -50,8 +50,8 @@ const StripePaymentForm = ({ onSuccess }: StripePaymentFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="min-h-[200px]">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="min-h-[240px]">
         <PaymentElement 
           options={{
             layout: 'accordion',
@@ -61,7 +61,7 @@ const StripePaymentForm = ({ onSuccess }: StripePaymentFormProps) => {
       <Button 
         type="submit" 
         size="lg" 
-        className="w-full text-lg h-14"
+        className="w-full h-12 sm:h-13 text-base font-semibold"
         disabled={!stripe || isProcessing}
         variant="hero"
       >
