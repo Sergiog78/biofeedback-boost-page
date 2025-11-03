@@ -110,11 +110,12 @@ const Checkout = () => {
 
   const isFormValid = form.formState.isValid;
 
-  // Create PaymentIntent when form is valid and card payment is selected
+  // Create PaymentIntent when card payment is selected
   useEffect(() => {
     const createPaymentIntent = async () => {
-      if (isFormValid && paymentMethod === 'card' && !clientSecret && !isProcessing) {
+      if (paymentMethod === 'card' && !clientSecret && !isProcessing) {
         const formValues = form.getValues();
+        const email = formValues.email || 'guest@checkout.com';
         
         setIsProcessing(true);
         try {
@@ -123,7 +124,7 @@ const Checkout = () => {
             {
               body: { 
                 amount: 28000,
-                customerEmail: formValues.email,
+                customerEmail: email,
               },
             }
           );
@@ -142,7 +143,7 @@ const Checkout = () => {
     };
 
     createPaymentIntent();
-  }, [isFormValid, paymentMethod, clientSecret, isProcessing]);
+  }, [paymentMethod, clientSecret, isProcessing]);
 
   const handleFormSubmit = async (values: z.infer<typeof checkoutSchema>) => {
     if (!acceptedTerms) {
