@@ -23,6 +23,15 @@ serve(async (req) => {
       });
     }
 
+    // Security guard: only allow keys starting with pk_
+    if (!key.startsWith("pk_")) {
+      console.error("Invalid key format detected - must start with pk_");
+      return new Response(JSON.stringify({ error: "Invalid publishable key format" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
     return new Response(JSON.stringify({ publishableKey: key }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
