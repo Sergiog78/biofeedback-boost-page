@@ -54,13 +54,11 @@ const StripePaymentForm = ({ onSuccess }: StripePaymentFormProps) => {
       <div className="min-h-[200px]">
         <PaymentElement 
           options={{
-            layout: {
-              type: 'accordion',
-              defaultCollapsed: false,
-              radios: true,
-              spacedAccordionItems: true
-            }
+            layout: "tabs",
+            paymentMethodOrder: ['card', 'google_pay', 'apple_pay', 'paypal'],
           }}
+          onReady={() => console.log("PaymentElement ready")}
+          onLoadError={(error) => console.error("PaymentElement load error:", error)}
         />
       </div>
       <Button 

@@ -36,18 +36,20 @@ serve(async (req) => {
       console.log("New customer created:", customerId);
     }
 
-    // Create payment intent
+    // Create payment intent (forza almeno carta)
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // Convert to cents
+      amount: amount * 100, // cents
       currency: "eur",
       customer: customerId,
+      payment_method_types: ["card"],
+      payment_method_options: {
+        card: { request_three_d_secure: "automatic" },
+      },
       metadata: {
         customerEmail: email,
         customerName: `${firstName} ${lastName}`,
       },
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      // automatic_payment_methods could be used in addition, but Stripe disallows combining with payment_method_types
     });
 
     console.log("Payment intent created:", paymentIntent.id);

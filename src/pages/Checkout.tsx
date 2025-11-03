@@ -89,12 +89,14 @@ const Checkout = () => {
         throw new Error('Errore nella creazione del pagamento');
       }
 
-      if (keyResponse.error || !keyResponse.data?.publishableKey) {
+      // Determina la publishable key (backend -> fallback frontend)
+      const publishableKey = keyResponse.data?.publishableKey || (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY;
+      if (keyResponse.error || !publishableKey) {
         throw new Error('Errore configurazione Stripe');
       }
 
       setClientSecret(paymentResponse.data.clientSecret);
-      setStripePromise(loadStripe(keyResponse.data.publishableKey));
+      setStripePromise(loadStripe(publishableKey));
       setStep('payment');
     } catch (error) {
       console.error('Errore:', error);
