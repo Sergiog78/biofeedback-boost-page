@@ -120,126 +120,125 @@ const Checkout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b bg-background sticky top-0 z-50">
-        <div className="container max-w-6xl mx-auto flex h-16 items-center justify-between px-4">
-          <Button
-            variant="ghost"
-            onClick={() => step === 'payment' ? setStep('info') : navigate('/')}
-            className="gap-2 hover:bg-transparent"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">{step === 'payment' ? 'Modifica dati' : 'Torna indietro'}</span>
-          </Button>
+      <header className="border-b bg-white sticky top-0 z-50">
+        <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
           <img src={bfeLogo} alt="BFE Logo" className="h-8" />
+          <div className="w-8" />
         </div>
       </header>
 
-      <div className="container max-w-6xl mx-auto px-4 py-6 lg:py-8">
-        <div className="grid lg:grid-cols-[1fr,420px] gap-6 lg:gap-8 items-start">
+      <div className="container max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-2 lg:min-h-[calc(100vh-4rem)]">
           {/* Left Column - Form */}
-          <div className="space-y-4 order-2 lg:order-1">
-            {/* Progress Indicator - Mobile */}
-            <div className="lg:hidden flex items-center justify-between mb-6 px-2">
-              <div className={`flex items-center gap-2 ${step === 'info' ? 'text-foreground' : 'text-muted-foreground'}`}>
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold ${step === 'info' ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
-                  {step === 'payment' ? <Check className="h-3.5 w-3.5" /> : '1'}
-                </div>
-                <span className="text-xs font-medium">Dati</span>
-              </div>
-              <div className={`flex-1 h-px mx-3 ${step === 'payment' ? 'bg-primary' : 'bg-border'}`} />
-              <div className={`flex items-center gap-2 ${step === 'payment' ? 'text-foreground' : 'text-muted-foreground'}`}>
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center ${step === 'payment' ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
-                  <CreditCard className="h-3.5 w-3.5" />
-                </div>
-                <span className="text-xs font-medium">Pagamento</span>
-              </div>
-            </div>
-
-            {step === 'info' ? (
-              <div className="bg-background rounded-lg p-5 sm:p-7 shadow-sm border">
-                <h1 className="text-xl sm:text-2xl font-semibold mb-6">Dati di contatto</h1>
-                <form onSubmit={handleInfoSubmit} className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="firstName" className="text-sm font-medium">
-                        Nome
-                      </Label>
-                      <Input 
-                        id="firstName"
-                        name="firstName"
-                        placeholder="Mario" 
-                        required 
-                        autoComplete="given-name"
-                        className="h-11"
-                      />
+          <div className="bg-white px-4 py-8 lg:px-12 lg:py-12 order-2 lg:order-1">
+            <div className="max-w-xl mx-auto space-y-8">
+              {step === 'info' ? (
+                <>
+                  {/* Express Checkout */}
+                  <div className="space-y-4">
+                    <h2 className="text-sm font-medium text-foreground">Check-out rapido</h2>
+                    <div className="grid grid-cols-3 gap-3">
+                      <Button 
+                        variant="outline" 
+                        className="h-14 bg-[#5A31F4] hover:bg-[#5A31F4]/90 text-white border-0 font-semibold"
+                      >
+                        shop
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="h-14 bg-[#FFC439] hover:bg-[#FFC439]/90 border-0"
+                      >
+                        <span className="font-bold text-[#003087]">Pay</span>
+                        <span className="font-bold text-[#009CDE]">Pal</span>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="h-14 bg-black hover:bg-black/90 text-white border-0"
+                      >
+                        <span className="font-semibold">G</span>
+                        <span className="ml-1">Pay</span>
+                      </Button>
                     </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="lastName" className="text-sm font-medium">
-                        Cognome
-                      </Label>
-                      <Input 
-                        id="lastName"
-                        name="lastName"
-                        placeholder="Rossi" 
-                        required 
-                        autoComplete="family-name"
-                        className="h-11"
-                      />
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-white px-2 text-muted-foreground">OPPURE</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-sm font-medium">
-                      Email
-                    </Label>
-                    <Input 
-                      id="email"
-                      name="email"
-                      type="email" 
-                      placeholder="mario.rossi@email.com" 
-                      required 
-                      autoComplete="email"
-                      className="h-11"
-                    />
-                  </div>
+                  {/* Contact Form */}
+                  <form onSubmit={handleInfoSubmit} className="space-y-8">
+                    <div className="space-y-4">
+                      <h2 className="text-sm font-medium text-foreground">Contatti</h2>
+                      <Input 
+                        id="email"
+                        name="email"
+                        type="email" 
+                        placeholder="Email" 
+                        required 
+                        autoComplete="email"
+                        className="h-14 text-base border-gray-300"
+                      />
+                      <div className="flex items-start gap-3">
+                        <Checkbox id="newsletter" name="newsletter" className="mt-1" />
+                        <Label 
+                          htmlFor="newsletter" 
+                          className="text-sm font-normal cursor-pointer leading-relaxed"
+                        >
+                          Desidero ricevere aggiornamenti su futuri corsi
+                        </Label>
+                      </div>
+                    </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="phone" className="text-sm font-medium">
-                      Telefono
-                    </Label>
-                    <Input 
-                      id="phone"
-                      name="phone"
-                      type="tel" 
-                      placeholder="+39 123 456 7890" 
-                      required 
-                      autoComplete="tel"
-                      className="h-11"
-                    />
-                  </div>
+                    <div className="space-y-4">
+                      <h2 className="text-sm font-medium text-foreground">Dati personali</h2>
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input 
+                          id="firstName"
+                          name="firstName"
+                          placeholder="Nome" 
+                          required 
+                          autoComplete="given-name"
+                          className="h-14 text-base border-gray-300"
+                        />
+                        <Input 
+                          id="lastName"
+                          name="lastName"
+                          placeholder="Cognome" 
+                          required 
+                          autoComplete="family-name"
+                          className="h-14 text-base border-gray-300"
+                        />
+                      </div>
+                      <Input 
+                        id="phone"
+                        name="phone"
+                        type="tel" 
+                        placeholder="Telefono" 
+                        required 
+                        autoComplete="tel"
+                        className="h-14 text-base border-gray-300"
+                      />
+                      <Input 
+                        id="profession"
+                        name="profession"
+                        placeholder="Professione (es. Psicologo, Psicoterapeuta)" 
+                        required
+                        className="h-14 text-base border-gray-300"
+                      />
+                    </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="profession" className="text-sm font-medium">
-                      Professione
-                    </Label>
-                    <Input 
-                      id="profession"
-                      name="profession"
-                      placeholder="Es. Psicologo, Psicoterapeuta" 
-                      required
-                      className="h-11"
-                    />
-                  </div>
-
-                  <div className="space-y-3 pt-4 border-t">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-3 pt-4">
                       <Checkbox 
                         id="terms" 
                         checked={acceptedTerms}
                         onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
-                        className="mt-0.5"
+                        className="mt-1"
                       />
                       <Label 
                         htmlFor="terms" 
@@ -256,143 +255,154 @@ const Checkout = () => {
                       </Label>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                      <Checkbox id="newsletter" name="newsletter" className="mt-0.5" />
-                      <Label 
-                        htmlFor="newsletter" 
-                        className="text-sm font-normal cursor-pointer leading-relaxed"
-                      >
-                        Desidero ricevere aggiornamenti su futuri corsi
-                      </Label>
+                    <Button 
+                      type="submit" 
+                      size="lg" 
+                      className="w-full h-14 text-base font-semibold"
+                      disabled={isProcessing}
+                      variant="hero"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Caricamento...
+                        </>
+                      ) : (
+                        'Continua al pagamento'
+                      )}
+                    </Button>
+                  </form>
+                </>
+              ) : (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-semibold">Pagamento</h2>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setStep('info')}
+                      className="gap-2 hover:bg-transparent text-sm"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Modifica dati
+                    </Button>
+                  </div>
+                  
+                  {clientSecret && stripePromise ? (
+                    <Elements 
+                      stripe={stripePromise} 
+                      options={{ 
+                        clientSecret,
+                        locale: 'it',
+                        appearance: {
+                          theme: 'stripe',
+                          variables: {
+                            colorPrimary: 'hsl(var(--primary))',
+                            borderRadius: '0.5rem',
+                            fontFamily: 'system-ui, sans-serif',
+                          },
+                        },
+                      }}
+                    >
+                      <StripePaymentForm onSuccess={handlePaymentSuccess} />
+                    </Elements>
+                  ) : (
+                    <div className="flex items-center justify-center py-16">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t">
+                    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                      <Shield className="h-4 w-4" />
+                      <span>Pagamento sicuro e criptato</span>
                     </div>
                   </div>
-
-                  <Button 
-                    type="submit" 
-                    size="lg" 
-                    className="w-full h-12 sm:h-13 text-base font-semibold mt-6"
-                    disabled={isProcessing}
-                    variant="hero"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Caricamento...
-                      </>
-                    ) : (
-                      'Continua al pagamento'
-                    )}
-                  </Button>
-                </form>
-              </div>
-            ) : (
-              <div className="bg-background rounded-lg p-5 sm:p-7 shadow-sm border">
-                <div className="flex items-center justify-between mb-6">
-                  <h1 className="text-xl sm:text-2xl font-semibold">Pagamento</h1>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Lock className="h-3.5 w-3.5" />
-                    <span>Sicuro</span>
-                  </div>
                 </div>
-                
-                {clientSecret && stripePromise ? (
-                  <Elements 
-                    stripe={stripePromise} 
-                    options={{ 
-                      clientSecret,
-                      locale: 'it',
-                      appearance: {
-                        theme: 'stripe',
-                        variables: {
-                          colorPrimary: 'hsl(var(--primary))',
-                          borderRadius: '0.5rem',
-                          fontFamily: 'system-ui, sans-serif',
-                        },
-                      },
-                    }}
-                  >
-                    <StripePaymentForm onSuccess={handlePaymentSuccess} />
-                  </Elements>
-                ) : (
-                  <div className="flex items-center justify-center py-16">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                )}
-
-                <div className="mt-6 pt-6 border-t">
-                  <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                    <Shield className="h-3.5 w-3.5" />
-                    <span>Pagamento sicuro e criptato</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Trust Badges - Desktop */}
-            <div className="hidden lg:grid grid-cols-3 gap-4 px-2">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 mb-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                </div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  Pagamento sicuro
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 mb-2">
-                  <Check className="h-5 w-5 text-primary" />
-                </div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  Rimborso garantito
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 mb-2">
-                  <Lock className="h-5 w-5 text-primary" />
-                </div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  Dati protetti
-                </p>
-              </div>
+              )}
             </div>
           </div>
 
           {/* Right Column - Order Summary */}
-          <div className="order-1 lg:order-2 lg:sticky lg:top-20">
-            <div className="bg-background rounded-lg p-5 sm:p-6 shadow-sm border">
-              <h2 className="text-lg font-semibold mb-4">Riepilogo ordine</h2>
-              
-              <div className="space-y-4 pb-4 mb-4 border-b">
-                <div>
-                  <h3 className="font-medium text-base mb-1">
-                    Corso Completo di Biofeedback
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Certificazione BFE - I livello
-                  </p>
+          <div className="bg-[#FAFAF8] border-l px-4 py-8 lg:px-12 lg:py-12 order-1 lg:order-2">
+            <div className="max-w-xl mx-auto space-y-6">
+              {/* Product */}
+              <div className="flex gap-4">
+                <div className="relative flex-shrink-0">
+                  <div className="w-16 h-16 bg-white border rounded-lg overflow-hidden">
+                    <img 
+                      src={bfeLogo} 
+                      alt="Corso Biofeedback" 
+                      className="w-full h-full object-contain p-2"
+                    />
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-gray-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                    1
+                  </div>
                 </div>
-
-                <div className="space-y-2">
-                  {[
-                    "10 incontri online live (20 ore)",
-                    "Certificazione BFE di I livello",
-                    "Materiali digitali e casi clinici",
-                    "Convenzioni per dispositivi"
-                  ].map((benefit, i) => (
-                    <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                      <span>{benefit}</span>
-                    </div>
-                  ))}
+                <div className="flex-1 flex justify-between">
+                  <div>
+                    <h3 className="font-medium text-sm">
+                      Corso Completo di Biofeedback
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Certificazione BFE - I livello
+                    </p>
+                  </div>
+                  <div className="text-sm font-medium">
+                    280€
+                  </div>
                 </div>
               </div>
 
-              <div className="py-4 mb-4 border-b">
+              {/* Discount Code */}
+              <div className="flex gap-2">
+                <Input 
+                  placeholder="Codice sconto o buono regalo"
+                  className="h-12 text-sm border-gray-300 bg-white"
+                />
+                <Button 
+                  variant="outline" 
+                  className="h-12 px-6 text-sm font-medium border-gray-300 bg-white hover:bg-gray-50"
+                >
+                  Applica
+                </Button>
+              </div>
+
+              {/* Pricing Details */}
+              <div className="space-y-3 pt-4 border-t border-gray-300">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotale</span>
+                  <span className="font-medium">280€</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Spedizione</span>
+                  <span className="text-muted-foreground">Calcolata al prossimo passaggio</span>
+                </div>
+              </div>
+
+              {/* Total */}
+              <div className="pt-4 border-t border-gray-300">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-sm font-medium">Totale</span>
+                  <div className="text-right">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xs text-muted-foreground">EUR</span>
+                      <span className="text-2xl font-bold">280€</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Incluse imposte per un ammontare di 45,90 €
+                </p>
+              </div>
+
+              {/* Partner Logo */}
+              <div className="pt-6 border-t border-gray-300">
                 <div className="flex justify-center mb-2">
                   <img 
                     src={righettoLogo} 
                     alt="Righetto" 
-                    className="h-9 opacity-70"
+                    className="h-8 opacity-60"
                   />
                 </div>
                 <p className="text-xs text-center text-muted-foreground">
@@ -400,58 +410,25 @@ const Checkout = () => {
                 </p>
               </div>
 
-              <div className="space-y-2 py-4 mb-4 border-b">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Prezzo di listino</span>
-                  <span className="line-through text-muted-foreground">500€</span>
-                </div>
-                <div className="flex justify-between text-sm font-medium text-green-600 dark:text-green-500">
-                  <span>Sconto early bird (56%)</span>
-                  <span>-220€</span>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-base font-medium">Totale</span>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold">280€</div>
-                    <div className="text-xs text-muted-foreground">IVA inclusa</div>
+              {/* Benefits */}
+              <div className="space-y-2 pt-4">
+                {[
+                  "10 incontri online live (20 ore)",
+                  "Certificazione BFE di I livello",
+                  "Materiali digitali e casi clinici",
+                  "Convenzioni per dispositivi"
+                ].map((benefit, i) => (
+                  <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span>{benefit}</span>
                   </div>
-                </div>
+                ))}
               </div>
 
-              <div className="mt-5 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800/30 rounded-lg p-3.5 text-center">
+              {/* Discount Badge */}
+              <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800/30 rounded-lg p-4 text-center">
                 <p className="text-sm font-medium text-green-700 dark:text-green-400">
                   🎉 Risparmi 220€ con l'offerta early bird
-                </p>
-              </div>
-            </div>
-
-            {/* Trust Badges - Mobile */}
-            <div className="lg:hidden grid grid-cols-3 gap-3 mt-4 px-2">
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary/10 mb-1.5">
-                  <Shield className="h-4 w-4 text-primary" />
-                </div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  Sicuro
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary/10 mb-1.5">
-                  <Check className="h-4 w-4 text-primary" />
-                </div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  Garantito
-                </p>
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-primary/10 mb-1.5">
-                  <Lock className="h-4 w-4 text-primary" />
-                </div>
-                <p className="text-xs font-medium text-muted-foreground">
-                  Protetto
                 </p>
               </div>
             </div>
