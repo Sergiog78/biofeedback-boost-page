@@ -228,9 +228,9 @@ const Checkout = () => {
                         <Loader2 className="h-5 w-5 animate-spin text-[#003087]" />
                       ) : (
                         <img 
-                          src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" 
+                          src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-200px.png" 
                           alt="PayPal" 
-                          className="h-6"
+                          className="h-5"
                         />
                       )}
                     </Button>
