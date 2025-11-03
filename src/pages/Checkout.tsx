@@ -128,12 +128,13 @@ const Checkout = () => {
       if (data?.clientSecret) {
         setClientSecret(data.clientSecret);
         // Fetch publishable key from backend, then show payment
-        const { data: keyData, error: keyError } = await supabase.functions.invoke('get-stripe-publishable-key');
+        const { data: keyData, error: keyError } = await supabase.functions.invoke('get-stripe-publishable-key', { body: {} });
         if (keyError || !keyData?.publishableKey) {
           toast({ title: "Errore chiave Stripe", description: "Impossibile inizializzare il pagamento.", variant: "destructive" });
           setIsProcessing(false);
           return;
         }
+        console.log('Stripe publishable key loaded, len:', keyData.publishableKey.length);
         setStripePromise(loadStripe(keyData.publishableKey));
         setShowPayment(true);
       }
