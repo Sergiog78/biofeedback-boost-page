@@ -104,6 +104,46 @@ const Checkout = () => {
     initStripe();
   }, []);
 
+  const handlePaymentSuccess = () => {
+    navigate('/payment-success');
+  };
+
+  const isFormValid = form.formState.isValid;
+
+  // Create PaymentIntent when form is valid and card payment is selected
+  useEffect(() => {
+    const createPaymentIntent = async () => {
+      if (isFormValid && paymentMethod === 'card' && !clientSecret && !isProcessing) {
+        const formValues = form.getValues();
+        
+        setIsProcessing(true);
+        try {
+          const { data: intentData, error: intentError } = await supabase.functions.invoke(
+            'create-payment-intent',
+            {
+              body: { 
+                amount: 28000,
+                customerEmail: formValues.email,
+              },
+            }
+          );
+
+          if (intentError) throw intentError;
+
+          if (intentData?.clientSecret) {
+            setClientSecret(intentData.clientSecret);
+          }
+        } catch (error: any) {
+          console.error('Error creating payment intent:', error);
+        } finally {
+          setIsProcessing(false);
+        }
+      }
+    };
+
+    createPaymentIntent();
+  }, [isFormValid, paymentMethod, clientSecret, isProcessing]);
+
   const handleFormSubmit = async (values: z.infer<typeof checkoutSchema>) => {
     if (!acceptedTerms) {
       toast({
@@ -125,47 +165,9 @@ const Checkout = () => {
     localStorage.setItem('checkoutFormData', JSON.stringify(values));
 
     if (paymentMethod === 'card') {
-      // Create PaymentIntent if not already created or submit payment
-      if (!clientSecret) {
-        setIsProcessing(true);
-        try {
-          const { data: intentData, error: intentError } = await supabase.functions.invoke(
-            'create-payment-intent',
-            {
-              body: { 
-                amount: 28000,
-                customerEmail: values.email,
-              },
-            }
-          );
-
-          if (intentError) throw intentError;
-
-          if (!intentData?.clientSecret) {
-            throw new Error('No client secret received');
-          }
-
-          setClientSecret(intentData.clientSecret);
-          
-          toast({
-            title: "Pronto per il pagamento",
-            description: "Compila i dati della carta per procedere",
-          });
-        } catch (error: any) {
-          console.error('Error creating payment intent:', error);
-          toast({
-            title: "Errore",
-            description: error.message || "Si è verificato un errore. Riprova.",
-            variant: "destructive",
-          });
-        } finally {
-          setIsProcessing(false);
-        }
-      } else {
-        // Submit Stripe payment
-        if (stripeFormRef.current) {
-          await stripeFormRef.current.submitPayment();
-        }
+      // Submit Stripe payment
+      if (stripeFormRef.current && clientSecret) {
+        await stripeFormRef.current.submitPayment();
       }
     } else {
       // Handle PayPal checkout
@@ -204,11 +206,6 @@ const Checkout = () => {
     }
   };
 
-  const handlePaymentSuccess = () => {
-    navigate('/payment-success');
-  };
-
-  const isFormValid = form.formState.isValid;
   const canSubmit = isFormValid && acceptedTerms && (paymentMethod === 'paypal' || (paymentMethod === 'card' && stripeReady && clientSecret));
 
   return (
@@ -373,10 +370,10 @@ const Checkout = () => {
                             <RadioGroupItem value="card" id="card" />
                             <Label htmlFor="card" className="cursor-pointer font-medium text-sm">Carta di credito</Label>
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5">
                             <img src="https://cdn.worldvectorlogo.com/logos/visa-2.svg" alt="Visa" className="h-5" />
                             <img src="https://cdn.worldvectorlogo.com/logos/maestro-2.svg" alt="Maestro" className="h-5" />
-                            <img src="https://cdn.worldvectorlogo.com/logos/mastercard-2.svg" alt="Mastercard" className="h-5" />
+                            <img src="https://cdn.worldvectorlogo.com/logos/mastercard-2.svg" alt="Mastercard" className="h-6" />
                             <span className="text-xs text-muted-foreground ml-1">+2</span>
                           </div>
                         </div>
@@ -517,11 +514,11 @@ const Checkout = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-sm mb-1">
-                      Biofeedback Professionale: Corso Completo con Certificazione
+                      Corso Professionale di Neurofeedback e Biofeedback
                     </h3>
                     <p className="text-sm text-muted-foreground">Edizione Standard</p>
                   </div>
-                  <p className="font-semibold text-sm">€380,00</p>
+                  <p className="font-semibold text-sm">€500,00</p>
                 </div>
               </div>
 
@@ -529,21 +526,21 @@ const Checkout = () => {
                 {/* Discount Badge */}
                 <div className="flex items-center gap-2 text-sm">
                   <div className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-                    SCONTO LANCIO
+                    SCONTO CONVEGNO
                   </div>
-                  <span className="text-muted-foreground">-€100 di risparmio</span>
+                  <span className="text-muted-foreground">-€220 di risparmio</span>
                 </div>
 
                 {/* Subtotal */}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotale</span>
-                  <span>€380,00</span>
+                  <span>€500,00</span>
                 </div>
 
                 {/* Discount */}
                 <div className="flex justify-between text-sm text-green-600">
-                  <span>Sconto lancio (-26%)</span>
-                  <span>-€100,00</span>
+                  <span>Sconto Convegno (-44%)</span>
+                  <span>-€220,00</span>
                 </div>
               </div>
 
