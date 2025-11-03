@@ -227,10 +227,11 @@ const Checkout = () => {
                       {isProcessing ? (
                         <Loader2 className="h-5 w-5 animate-spin text-[#003087]" />
                       ) : (
-                        <>
-                          <span className="font-bold text-[#003087]">Pay</span>
-                          <span className="font-bold text-[#009CDE]">Pal</span>
-                        </>
+                        <img 
+                          src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" 
+                          alt="PayPal" 
+                          className="h-6"
+                        />
                       )}
                     </Button>
                     <div className="relative">
@@ -443,12 +444,16 @@ const Checkout = () => {
               {/* Pricing Details */}
               <div className="space-y-3 pt-4 border-t border-gray-300">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotale</span>
-                  <span className="font-medium">280€</span>
+                  <span className="text-muted-foreground">Prezzo corso</span>
+                  <span className="font-medium">500€</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Spedizione</span>
-                  <span className="text-muted-foreground">Calcolata al prossimo passaggio</span>
+                  <span className="text-green-600 font-medium">Sconto Convegno</span>
+                  <span className="text-green-600 font-medium">-220€</span>
+                </div>
+                <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
+                  <span className="text-muted-foreground">Subtotale</span>
+                  <span className="font-medium">280€</span>
                 </div>
               </div>
 
@@ -463,9 +468,6 @@ const Checkout = () => {
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Incluse imposte per un ammontare di 45,90 €
-                </p>
               </div>
 
               {/* Partner Logo */}
