@@ -13,6 +13,35 @@ import { supabase } from "@/integrations/supabase/client";
 import StripePaymentForm from "@/components/StripePaymentForm";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
+import { z } from "zod";
+
+// Validation schema for checkout form
+const checkoutSchema = z.object({
+  firstName: z.string()
+    .trim()
+    .min(1, "Nome richiesto")
+    .max(100, "Nome troppo lungo")
+    .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "Nome contiene caratteri non validi"),
+  lastName: z.string()
+    .trim()
+    .min(1, "Cognome richiesto")
+    .max(100, "Cognome troppo lungo")
+    .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "Cognome contiene caratteri non validi"),
+  email: z.string()
+    .trim()
+    .email("Email non valida")
+    .max(255, "Email troppo lunga")
+    .toLowerCase(),
+  phone: z.string()
+    .trim()
+    .min(8, "Numero di telefono troppo corto")
+    .max(20, "Numero di telefono troppo lungo")
+    .regex(/^[0-9+\s()-]+$/, "Numero di telefono non valido"),
+  profession: z.string()
+    .trim()
+    .min(1, "Professione richiesta")
+    .max(200, "Professione troppo lunga"),
+});
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -49,36 +78,49 @@ const Checkout = () => {
     setIsProcessing(true);
     
     const formDataObj = new FormData(e.currentTarget);
-    const customerData = {
+    const rawData = {
       firstName: formDataObj.get('firstName') as string,
       lastName: formDataObj.get('lastName') as string,
       email: formDataObj.get('email') as string,
       phone: formDataObj.get('phone') as string,
       profession: formDataObj.get('profession') as string,
-      acceptedNewsletter: formDataObj.get('newsletter') === 'on',
-      timestamp: new Date().toISOString()
     };
 
-    setFormData(customerData);
-    
-    // Salva i dati
+    // Validate inputs with zod
     try {
-      const existingCustomers = JSON.parse(localStorage.getItem('checkout_customers') || '[]');
-      existingCustomers.push(customerData);
-      localStorage.setItem('checkout_customers', JSON.stringify(existingCustomers));
-      localStorage.setItem('current_customer', JSON.stringify(customerData));
-    } catch (error) {
-      console.error('Errore nel salvare i dati:', error);
-    }
-    
-    // Crea PaymentIntent e carica Stripe
-    try {
+      const validatedData = checkoutSchema.parse(rawData);
+      
+      const customerData = {
+        ...validatedData,
+        acceptedNewsletter: formDataObj.get('newsletter') === 'on',
+        timestamp: new Date().toISOString()
+      };
+
+      setFormData({
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email,
+        phone: validatedData.phone,
+        profession: validatedData.profession,
+      });
+      
+      // Salva i dati
+      try {
+        const existingCustomers = JSON.parse(localStorage.getItem('checkout_customers') || '[]');
+        existingCustomers.push(customerData);
+        localStorage.setItem('checkout_customers', JSON.stringify(existingCustomers));
+        localStorage.setItem('current_customer', JSON.stringify(customerData));
+      } catch (error) {
+        // Storage error - not critical, continue
+      }
+      
+      // Crea PaymentIntent e carica Stripe
       const [paymentResponse, keyResponse] = await Promise.all([
         supabase.functions.invoke('create-payment-intent', {
           body: {
-            email: customerData.email,
-            firstName: customerData.firstName,
-            lastName: customerData.lastName,
+            email: validatedData.email,
+            firstName: validatedData.firstName,
+            lastName: validatedData.lastName,
             amount: 280,
           }
         }),
@@ -104,12 +146,21 @@ const Checkout = () => {
       setStripePromise(loadStripe(publishableKey));
       setStep('payment');
     } catch (error) {
-      console.error('Errore:', error);
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore. Riprova tra poco.",
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        // Show validation error
+        const firstError = error.errors[0];
+        toast({
+          title: "Dati non validi",
+          description: firstError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore. Riprova tra poco.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -138,7 +189,6 @@ const Checkout = () => {
       // Redirect to Stripe Checkout with PayPal
       window.location.href = data.url;
     } catch (error) {
-      console.error('Error:', error);
       toast({
         title: "Errore",
         description: "Si è verificato un errore. Riprova tra poco.",

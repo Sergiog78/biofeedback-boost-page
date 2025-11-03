@@ -6,15 +6,56 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Input validation schema
+const validateInput = (data: any) => {
+  const errors: string[] = [];
+  
+  if (!data.email || typeof data.email !== 'string') {
+    errors.push('Email is required');
+  } else if (data.email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    errors.push('Invalid email format');
+  }
+  
+  if (!data.firstName || typeof data.firstName !== 'string') {
+    errors.push('First name is required');
+  } else if (data.firstName.length > 100 || !/^[a-zA-ZÀ-ÿ\s'-]+$/.test(data.firstName)) {
+    errors.push('Invalid first name');
+  }
+  
+  if (!data.lastName || typeof data.lastName !== 'string') {
+    errors.push('Last name is required');
+  } else if (data.lastName.length > 100 || !/^[a-zA-ZÀ-ÿ\s'-]+$/.test(data.lastName)) {
+    errors.push('Invalid last name');
+  }
+  
+  if (!data.amount || typeof data.amount !== 'number' || data.amount < 1 || data.amount > 100000) {
+    errors.push('Invalid amount');
+  }
+  
+  return errors;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { email, firstName, lastName, amount } = await req.json();
+    const body = await req.json();
     
-    console.log("Creating payment intent for:", email);
+    // Validate inputs
+    const validationErrors = validateInput(body);
+    if (validationErrors.length > 0) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validationErrors }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
+    }
+    
+    const { email, firstName, lastName, amount } = body;
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
@@ -26,14 +67,12 @@ serve(async (req) => {
     
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
-      console.log("Existing customer found:", customerId);
     } else {
       const customer = await stripe.customers.create({
         email,
         name: `${firstName} ${lastName}`,
       });
       customerId = customer.id;
-      console.log("New customer created:", customerId);
     }
 
     // Create payment intent with automatic payment methods (consigliato con Payment Element)
@@ -50,8 +89,6 @@ serve(async (req) => {
       },
     });
 
-    console.log("Payment intent created:", paymentIntent.id);
-
     return new Response(
       JSON.stringify({ clientSecret: paymentIntent.client_secret }),
       {
@@ -60,9 +97,9 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error creating payment intent:", error);
+    // Don't expose detailed error messages
     return new Response(
-      JSON.stringify({ error: (error as Error).message }),
+      JSON.stringify({ error: "Payment processing failed" }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,

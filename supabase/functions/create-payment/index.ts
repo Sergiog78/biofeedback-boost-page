@@ -6,6 +6,23 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Input validation
+const validateInput = (data: any) => {
+  const errors: string[] = [];
+  
+  if (!data.email || typeof data.email !== 'string' || data.email.length > 255) {
+    errors.push('Invalid email');
+  }
+  if (!data.firstName || typeof data.firstName !== 'string' || data.firstName.length > 100) {
+    errors.push('Invalid first name');
+  }
+  if (!data.lastName || typeof data.lastName !== 'string' || data.lastName.length > 100) {
+    errors.push('Invalid last name');
+  }
+  
+  return errors;
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -13,9 +30,21 @@ serve(async (req) => {
   }
 
   try {
-    const { email, firstName, lastName } = await req.json();
+    const body = await req.json();
     
-    console.log("Creating payment session for:", email);
+    // Validate inputs
+    const validationErrors = validateInput(body);
+    if (validationErrors.length > 0) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validationErrors }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
+    }
+    
+    const { email, firstName, lastName } = body;
 
     // Initialize Stripe with secret key
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -28,15 +57,12 @@ serve(async (req) => {
     
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
-      console.log("Existing customer found:", customerId);
     } else {
-      // Create new customer
       const customer = await stripe.customers.create({
         email,
         name: `${firstName} ${lastName}`,
       });
       customerId = customer.id;
-      console.log("New customer created:", customerId);
     }
 
     // Create checkout session with PayPal and card support
@@ -58,16 +84,14 @@ serve(async (req) => {
       },
     });
 
-    console.log("Checkout session created:", session.id);
-
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
-    console.error("Error in create-payment function:", error);
+    // Don't expose detailed error messages
     return new Response(
-      JSON.stringify({ error: (error as Error).message }),
+      JSON.stringify({ error: "Payment processing failed" }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
