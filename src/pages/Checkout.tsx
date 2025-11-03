@@ -285,7 +285,7 @@ const Checkout = () => {
                       locale: 'it',
                     }}
                   >
-                    <StripePaymentForm onSuccess={handlePaymentSuccess} clientSecret={clientSecret} />
+                    <StripePaymentForm onSuccess={handlePaymentSuccess} />
                   </Elements>
                 ) : (
                   <div className="flex items-center justify-center py-12">
