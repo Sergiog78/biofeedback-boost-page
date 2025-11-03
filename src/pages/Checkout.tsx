@@ -139,28 +139,13 @@ const Checkout = () => {
                   {/* Express Checkout */}
                   <div className="space-y-4">
                     <h2 className="text-sm font-medium text-foreground">Check-out rapido</h2>
-                    <div className="grid grid-cols-3 gap-3">
-                      <Button 
-                        variant="outline" 
-                        className="h-14 bg-[#5A31F4] hover:bg-[#5A31F4]/90 text-white border-0 font-semibold"
-                      >
-                        shop
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="h-14 bg-[#FFC439] hover:bg-[#FFC439]/90 border-0"
-                      >
-                        <span className="font-bold text-[#003087]">Pay</span>
-                        <span className="font-bold text-[#009CDE]">Pal</span>
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="h-14 bg-black hover:bg-black/90 text-white border-0"
-                      >
-                        <span className="font-semibold">G</span>
-                        <span className="ml-1">Pay</span>
-                      </Button>
-                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-14 bg-[#FFC439] hover:bg-[#FFC439]/90 border-0"
+                    >
+                      <span className="font-bold text-[#003087]">Pay</span>
+                      <span className="font-bold text-[#009CDE]">Pal</span>
+                    </Button>
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
                         <span className="w-full border-t" />
