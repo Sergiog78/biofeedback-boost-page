@@ -51,6 +51,7 @@ const Checkout = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -359,29 +360,115 @@ const Checkout = () => {
                       Modifica dati
                     </Button>
                   </div>
-                  
-                  {clientSecret && stripePromise ? (
-                    <Elements 
-                      stripe={stripePromise} 
-                      options={{ 
-                        clientSecret,
-                        locale: 'it',
-                        appearance: {
-                          theme: 'stripe',
-                          variables: {
-                            colorPrimary: 'hsl(var(--primary))',
-                            borderRadius: '0.5rem',
-                            fontFamily: 'system-ui, sans-serif',
-                          },
-                        },
-                      }}
+
+                  <p className="text-sm text-muted-foreground">
+                    Tutte le transazioni sono sicure e crittografate.
+                  </p>
+
+                  {/* Payment Method Selection */}
+                  <div className="space-y-3">
+                    {/* Card Payment Option */}
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('card')}
+                      className={`w-full border rounded-lg p-4 text-left transition-colors ${
+                        paymentMethod === 'card' 
+                          ? 'border-foreground bg-background' 
+                          : 'border-gray-300 bg-white hover:border-gray-400'
+                      }`}
                     >
-                      <StripePaymentForm onSuccess={handlePaymentSuccess} />
-                    </Elements>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            paymentMethod === 'card' ? 'border-foreground' : 'border-gray-300'
+                          }`}>
+                            {paymentMethod === 'card' && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-foreground" />
+                            )}
+                          </div>
+                          <span className="font-medium text-sm">Carta di credito</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <img src="https://cdn.worldvectorlogo.com/logos/visa-2.svg" alt="Visa" className="h-5" />
+                          <img src="https://cdn.worldvectorlogo.com/logos/maestro-2.svg" alt="Maestro" className="h-5" />
+                          <img src="https://cdn.worldvectorlogo.com/logos/mastercard-2.svg" alt="Mastercard" className="h-5" />
+                          <span className="text-xs text-muted-foreground ml-1">+2</span>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* PayPal Option */}
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('paypal')}
+                      className={`w-full border rounded-lg p-4 text-left transition-colors ${
+                        paymentMethod === 'paypal' 
+                          ? 'border-foreground bg-background' 
+                          : 'border-gray-300 bg-white hover:border-gray-400'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                            paymentMethod === 'paypal' ? 'border-foreground' : 'border-gray-300'
+                          }`}>
+                            {paymentMethod === 'paypal' && (
+                              <div className="w-2.5 h-2.5 rounded-full bg-foreground" />
+                            )}
+                          </div>
+                          <span className="font-medium text-sm">PayPal</span>
+                        </div>
+                        <img 
+                          src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-200px.png" 
+                          alt="PayPal" 
+                          className="h-4"
+                        />
+                      </div>
+                    </button>
+                  </div>
+                  
+                  {/* Payment Form based on selection */}
+                  {paymentMethod === 'card' ? (
+                    clientSecret && stripePromise ? (
+                      <Elements 
+                        stripe={stripePromise} 
+                        options={{ 
+                          clientSecret,
+                          locale: 'it',
+                          appearance: {
+                            theme: 'stripe',
+                            variables: {
+                              colorPrimary: 'hsl(var(--primary))',
+                              borderRadius: '0.5rem',
+                              fontFamily: 'system-ui, sans-serif',
+                            },
+                          },
+                        }}
+                      >
+                        <StripePaymentForm onSuccess={handlePaymentSuccess} />
+                      </Elements>
+                    ) : (
+                      <div className="flex items-center justify-center py-16">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                    )
                   ) : (
-                    <div className="flex items-center justify-center py-16">
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    </div>
+                    <Button 
+                      onClick={handlePayPalCheckout}
+                      disabled={isProcessing}
+                      size="lg" 
+                      className="w-full h-12 sm:h-13 text-base font-semibold"
+                      variant="hero"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Elaborazione...
+                        </>
+                      ) : (
+                        'Paga con PayPal'
+                      )}
+                    </Button>
                   )}
 
                   <div className="pt-4 border-t">
