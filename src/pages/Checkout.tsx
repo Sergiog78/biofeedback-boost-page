@@ -277,13 +277,7 @@ const Checkout = () => {
                     stripe={stripePromise} 
                     options={{ 
                       clientSecret,
-                      appearance: {
-                        theme: 'stripe',
-                        variables: {
-                          colorPrimary: 'hsl(var(--primary))',
-                          borderRadius: '8px',
-                        }
-                      }
+                      locale: 'it',
                     }}
                   >
                     <StripePaymentForm onSuccess={handlePaymentSuccess} />
