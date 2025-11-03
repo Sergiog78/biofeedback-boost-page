@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,14 +10,26 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Shield, Lock, Check, ArrowLeft, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import StripePaymentForm from "@/components/StripePaymentForm";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    profession: "",
+  });
   
   // Countdown timer - scadenza 10 novembre 2025 alle 23:59
   const targetDate = new Date('2025-11-10T23:59:59').getTime();
@@ -67,16 +81,18 @@ const Checkout = () => {
     setIsProcessing(true);
     
     // Raccogli i dati dal form
-    const formData = new FormData(e.currentTarget);
+    const formDataObj = new FormData(e.currentTarget);
     const customerData = {
-      firstName: formData.get('firstName') as string,
-      lastName: formData.get('lastName') as string,
-      email: formData.get('email') as string,
-      phone: formData.get('phone') as string,
-      profession: formData.get('profession') as string,
-      acceptedNewsletter: formData.get('newsletter') === 'on',
+      firstName: formDataObj.get('firstName') as string,
+      lastName: formDataObj.get('lastName') as string,
+      email: formDataObj.get('email') as string,
+      phone: formDataObj.get('phone') as string,
+      profession: formDataObj.get('profession') as string,
+      acceptedNewsletter: formDataObj.get('newsletter') === 'on',
       timestamp: new Date().toISOString()
     };
+
+    setFormData(customerData);
     
     // Salva i dati in localStorage
     try {
@@ -88,18 +104,19 @@ const Checkout = () => {
       console.error('Errore nel salvare i dati del cliente:', error);
     }
     
-    // Chiama edge function per creare sessione Stripe
+    // Crea PaymentIntent
     try {
-      const { data, error } = await supabase.functions.invoke('create-payment', {
+      const { data, error } = await supabase.functions.invoke('create-payment-intent', {
         body: {
           email: customerData.email,
           firstName: customerData.firstName,
           lastName: customerData.lastName,
+          amount: 280,
         }
       });
 
       if (error) {
-        console.error('Errore nella creazione della sessione:', error);
+        console.error('Errore nella creazione del payment intent:', error);
         toast({
           title: "Errore",
           description: "Si è verificato un errore. Riprova tra poco.",
@@ -109,9 +126,9 @@ const Checkout = () => {
         return;
       }
 
-      if (data?.url) {
-        // Redirect a Stripe Checkout
-        window.location.href = data.url;
+      if (data?.clientSecret) {
+        setClientSecret(data.clientSecret);
+        setShowPayment(true);
       }
     } catch (error) {
       console.error('Errore:', error);
@@ -120,8 +137,13 @@ const Checkout = () => {
         description: "Si è verificato un errore. Riprova tra poco.",
         variant: "destructive",
       });
+    } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handlePaymentSuccess = () => {
+    navigate('/payment-success');
   };
 
   return (
@@ -158,118 +180,129 @@ const Checkout = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Informazioni personali</CardTitle>
+                <CardTitle>
+                  {showPayment ? "Pagamento" : "Informazioni personali"}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid sm:grid-cols-2 gap-4">
+                {!showPayment ? (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* ... keep existing code (form fields) */}
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">Nome *</Label>
+                        <Input 
+                          id="firstName"
+                          name="firstName"
+                          placeholder="Mario" 
+                          required 
+                          className="bg-background"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Cognome *</Label>
+                        <Input 
+                          id="lastName"
+                          name="lastName"
+                          placeholder="Rossi" 
+                          required 
+                          className="bg-background"
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">Nome *</Label>
+                      <Label htmlFor="email">Email *</Label>
                       <Input 
-                        id="firstName"
-                        name="firstName"
-                        placeholder="Mario" 
+                        id="email"
+                        name="email"
+                        type="email" 
+                        placeholder="mario.rossi@email.com" 
+                        required 
+                        className="bg-background"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Riceverai la conferma e i dettagli di accesso a questo indirizzo
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Telefono *</Label>
+                      <Input 
+                        id="phone"
+                        name="phone"
+                        type="tel" 
+                        placeholder="+39 123 456 7890" 
                         required 
                         className="bg-background"
                       />
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Cognome *</Label>
+                      <Label htmlFor="profession">Professione *</Label>
                       <Input 
-                        id="lastName"
-                        name="lastName"
-                        placeholder="Rossi" 
+                        id="profession"
+                        name="profession"
+                        placeholder="Es. Psicologo, Psicoterapeuta" 
                         required 
                         className="bg-background"
                       />
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input 
-                      id="email"
-                      name="email"
-                      type="email" 
-                      placeholder="mario.rossi@email.com" 
-                      required 
-                      className="bg-background"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Riceverai la conferma e i dettagli di accesso a questo indirizzo
-                    </p>
-                  </div>
+                    <div className="space-y-4 pt-4 border-t">
+                      <div className="flex items-start gap-2">
+                        <Checkbox 
+                          id="terms" 
+                          checked={acceptedTerms}
+                          onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+                        />
+                        <Label 
+                          htmlFor="terms" 
+                          className="text-sm font-normal cursor-pointer leading-tight"
+                        >
+                          Accetto i termini e condizioni e confermo di aver letto l'informativa sulla privacy *
+                        </Label>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Telefono *</Label>
-                    <Input 
-                      id="phone"
-                      name="phone"
-                      type="tel" 
-                      placeholder="+39 123 456 7890" 
-                      required 
-                      className="bg-background"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="profession">Professione *</Label>
-                    <Input 
-                      id="profession"
-                      name="profession"
-                      placeholder="Es. Psicologo, Psicoterapeuta" 
-                      required 
-                      className="bg-background"
-                    />
-                  </div>
-
-                  <div className="space-y-4 pt-4 border-t">
-                    <div className="flex items-start gap-2">
-                      <Checkbox 
-                        id="terms" 
-                        checked={acceptedTerms}
-                        onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
-                      />
-                      <Label 
-                        htmlFor="terms" 
-                        className="text-sm font-normal cursor-pointer leading-tight"
-                      >
-                        Accetto i termini e condizioni e confermo di aver letto l'informativa sulla privacy *
-                      </Label>
+                      <div className="flex items-start gap-2">
+                        <Checkbox id="newsletter" name="newsletter" />
+                        <Label 
+                          htmlFor="newsletter" 
+                          className="text-sm font-normal cursor-pointer leading-tight"
+                        >
+                          Desidero ricevere aggiornamenti su futuri corsi e iniziative
+                        </Label>
+                      </div>
                     </div>
 
-                    <div className="flex items-start gap-2">
-                      <Checkbox id="newsletter" name="newsletter" />
-                      <Label 
-                        htmlFor="newsletter" 
-                        className="text-sm font-normal cursor-pointer leading-tight"
-                      >
-                        Desidero ricevere aggiornamenti su futuri corsi e iniziative
-                      </Label>
-                    </div>
-                  </div>
+                    <Button 
+                      type="submit" 
+                      size="lg" 
+                      className="w-full text-lg"
+                      disabled={isProcessing}
+                      variant="hero"
+                    >
+                      {isProcessing ? "Elaborazione..." : "Continua al pagamento"}
+                    </Button>
 
-                  <Button 
-                    type="submit" 
-                    size="lg" 
-                    className="w-full text-lg"
-                    disabled={isProcessing}
-                    variant="hero"
-                  >
-                    {isProcessing ? "Elaborazione..." : "Procedi al pagamento - 280€"}
-                  </Button>
-
-                  <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Lock className="h-4 w-4" />
-                      <span>Pagamento sicuro</span>
+                    <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Lock className="h-4 w-4" />
+                        <span>Pagamento sicuro</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Shield className="h-4 w-4" />
+                        <span>Dati protetti</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Shield className="h-4 w-4" />
-                      <span>Dati protetti</span>
-                    </div>
-                  </div>
-                </form>
+                  </form>
+                ) : (
+                  clientSecret && (
+                    <Elements stripe={stripePromise} options={{ clientSecret }}>
+                      <StripePaymentForm onSuccess={handlePaymentSuccess} />
+                    </Elements>
+                  )
+                )}
               </CardContent>
             </Card>
 

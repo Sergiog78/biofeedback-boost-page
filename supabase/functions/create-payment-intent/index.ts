@@ -7,17 +7,15 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { email, firstName, lastName } = await req.json();
+    const { email, firstName, lastName, amount } = await req.json();
     
-    console.log("Creating payment session for:", email);
+    console.log("Creating payment intent for:", email);
 
-    // Initialize Stripe with secret key
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
@@ -30,7 +28,6 @@ serve(async (req) => {
       customerId = customers.data[0].id;
       console.log("Existing customer found:", customerId);
     } else {
-      // Create new customer
       const customer = await stripe.customers.create({
         email,
         name: `${firstName} ${lastName}`,
@@ -39,32 +36,31 @@ serve(async (req) => {
       console.log("New customer created:", customerId);
     }
 
-    // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount * 100, // Convert to cents
+      currency: "eur",
       customer: customerId,
-      line_items: [
-        {
-          price: "price_1SPPGeGSUlmGTzYSahKSeVIJ",
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/payment-canceled`,
       metadata: {
         customerEmail: email,
         customerName: `${firstName} ${lastName}`,
       },
+      automatic_payment_methods: {
+        enabled: true,
+      },
     });
 
-    console.log("Checkout session created:", session.id);
+    console.log("Payment intent created:", paymentIntent.id);
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return new Response(
+      JSON.stringify({ clientSecret: paymentIntent.client_secret }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    );
   } catch (error) {
-    console.error("Error in create-payment function:", error);
+    console.error("Error creating payment intent:", error);
     return new Response(
       JSON.stringify({ error: (error as Error).message }),
       {
