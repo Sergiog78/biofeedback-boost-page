@@ -1,81 +1,97 @@
-import { useState } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
 
 interface StripePaymentFormProps {
   onSuccess: () => void;
+  onValidationChange: (isValid: boolean) => void;
 }
 
-const StripePaymentForm = ({ onSuccess }: StripePaymentFormProps) => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(false);
+export interface StripePaymentFormRef {
+  submitPayment: () => Promise<void>;
+  isProcessing: boolean;
+}
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProps>(
+  ({ onSuccess, onValidationChange }, ref) => {
+    const stripe = useStripe();
+    const elements = useElements();
+    const { toast } = useToast();
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isReady, setIsReady] = useState(false);
 
-    if (!stripe || !elements) {
-      return;
-    }
+    useEffect(() => {
+      if (!elements) return;
 
-    setIsProcessing(true);
+      const element = elements.getElement('payment');
+      if (!element) return;
 
-    try {
-      const { error } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/payment-success`,
-        },
+      element.on('ready', () => {
+        setIsReady(true);
+        onValidationChange(true);
       });
 
-      if (error) {
+      element.on('change', (event) => {
+        onValidationChange(event.complete);
+      });
+    }, [elements, onValidationChange]);
+
+    const submitPayment = async () => {
+      if (!stripe || !elements) {
+        return;
+      }
+
+      setIsProcessing(true);
+
+      try {
+        const { error } = await stripe.confirmPayment({
+          elements,
+          confirmParams: {
+            return_url: `${window.location.origin}/payment-success`,
+          },
+        });
+
+        if (error) {
+          toast({
+            title: "Errore pagamento",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
         toast({
-          title: "Errore pagamento",
-          description: error.message,
+          title: "Errore",
+          description: "Si è verificato un errore durante il pagamento",
           variant: "destructive",
         });
+      } finally {
+        setIsProcessing(false);
       }
-    } catch (error) {
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore durante il pagamento",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="min-h-[240px]">
+    useImperativeHandle(ref, () => ({
+      submitPayment,
+      isProcessing,
+    }));
+
+    return (
+      <div className="space-y-4">
         <PaymentElement 
           options={{
             layout: 'accordion',
           }}
         />
+        <p className="text-sm text-muted-foreground flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          Tutte le transazioni sono sicure e crittografate.
+        </p>
       </div>
-      <Button 
-        type="submit" 
-        size="lg" 
-        className="w-full h-12 sm:h-13 text-base font-semibold"
-        disabled={!stripe || isProcessing}
-        variant="hero"
-      >
-        {isProcessing ? (
-          <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Elaborazione...
-          </>
-        ) : (
-          'Paga 280€'
-        )}
-      </Button>
-    </form>
-  );
-};
+    );
+  }
+);
+
+StripePaymentForm.displayName = "StripePaymentForm";
 
 export default StripePaymentForm;

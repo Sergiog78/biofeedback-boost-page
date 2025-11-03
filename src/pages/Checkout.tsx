@@ -1,19 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe, type Stripe } from "@stripe/stripe-js";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Shield, Lock, Check, ArrowLeft, CreditCard, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import StripePaymentForm from "@/components/StripePaymentForm";
+import { Loader2 } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import StripePaymentForm, { StripePaymentFormRef } from "@/components/StripePaymentForm";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
-import { z } from "zod";
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
@@ -46,122 +49,156 @@ const checkoutSchema = z.object({
 const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [step, setStep] = useState<'info' | 'payment'>('info');
   const [isProcessing, setIsProcessing] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
+  const [rememberMe, setRememberMe] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    profession: "",
+  const [clientSecret, setClientSecret] = useState("");
+  const [stripePromise, setStripePromise] = useState<any>(null);
+  const [stripeReady, setStripeReady] = useState(false);
+  const stripeFormRef = useRef<StripePaymentFormRef>(null);
+
+  const form = useForm<z.infer<typeof checkoutSchema>>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      profession: "",
+    },
+    mode: "onChange",
   });
 
+  // Load saved data on mount
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [step]);
+    const savedData = localStorage.getItem('checkoutData');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        form.reset(parsed);
+        setRememberMe(true);
+      } catch (e) {
+        console.error('Error loading saved checkout data:', e);
+      }
+    }
+  }, []);
 
-  const handleInfoSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
+  // Initialize Stripe on mount
+  useEffect(() => {
+    const initStripe = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-stripe-publishable-key');
+        
+        if (error) throw error;
+        
+        if (data?.publishableKey) {
+          const stripe = await loadStripe(data.publishableKey);
+          setStripePromise(stripe);
+        }
+      } catch (error: any) {
+        console.error('Error initializing Stripe:', error);
+      }
+    };
+
+    initStripe();
+  }, []);
+
+  const handleFormSubmit = async (values: z.infer<typeof checkoutSchema>) => {
     if (!acceptedTerms) {
       toast({
         title: "Accetta i termini",
-        description: "Devi accettare i termini e condizioni per procedere",
+        description: "Devi accettare i termini e le condizioni per procedere",
         variant: "destructive",
       });
       return;
     }
 
-    setIsProcessing(true);
-    
-    const formDataObj = new FormData(e.currentTarget);
-    const rawData = {
-      firstName: formDataObj.get('firstName') as string,
-      lastName: formDataObj.get('lastName') as string,
-      email: formDataObj.get('email') as string,
-      phone: formDataObj.get('phone') as string,
-      profession: formDataObj.get('profession') as string,
-    };
+    // Save to localStorage if remember me is checked
+    if (rememberMe) {
+      localStorage.setItem('checkoutData', JSON.stringify(values));
+    } else {
+      localStorage.removeItem('checkoutData');
+    }
 
-    // Validate inputs with zod
-    try {
-      const validatedData = checkoutSchema.parse(rawData);
-      
-      const customerData = {
-        ...validatedData,
-        acceptedNewsletter: formDataObj.get('newsletter') === 'on',
-        timestamp: new Date().toISOString()
-      };
+    // Save form data temporarily
+    localStorage.setItem('checkoutFormData', JSON.stringify(values));
 
-      setFormData({
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        email: validatedData.email,
-        phone: validatedData.phone,
-        profession: validatedData.profession,
-      });
-      
-      // Salva i dati
-      try {
-        const existingCustomers = JSON.parse(localStorage.getItem('checkout_customers') || '[]');
-        existingCustomers.push(customerData);
-        localStorage.setItem('checkout_customers', JSON.stringify(existingCustomers));
-        localStorage.setItem('current_customer', JSON.stringify(customerData));
-      } catch (error) {
-        // Storage error - not critical, continue
-      }
-      
-      // Crea PaymentIntent e carica Stripe
-      const [paymentResponse, keyResponse] = await Promise.all([
-        supabase.functions.invoke('create-payment-intent', {
-          body: {
-            email: validatedData.email,
-            firstName: validatedData.firstName,
-            lastName: validatedData.lastName,
-            amount: 280,
+    if (paymentMethod === 'card') {
+      // Create PaymentIntent if not already created or submit payment
+      if (!clientSecret) {
+        setIsProcessing(true);
+        try {
+          const { data: intentData, error: intentError } = await supabase.functions.invoke(
+            'create-payment-intent',
+            {
+              body: { 
+                amount: 28000,
+                customerEmail: values.email,
+              },
+            }
+          );
+
+          if (intentError) throw intentError;
+
+          if (!intentData?.clientSecret) {
+            throw new Error('No client secret received');
           }
-        }),
-        supabase.functions.invoke('get-stripe-publishable-key', { body: {} })
-      ]);
 
-      if (paymentResponse.error || !paymentResponse.data?.clientSecret) {
-        throw new Error('Errore nella creazione del pagamento');
-      }
-
-      // Determina la publishable key (backend -> fallback frontend, solo pk_ valida)
-      let publishableKey = keyResponse.data?.publishableKey as string | undefined;
-      const envKey = (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
-      if (!publishableKey || !publishableKey.startsWith('pk_')) {
-        if (envKey && envKey.startsWith('pk_')) {
-          publishableKey = envKey;
-        } else {
-          throw new Error('Errore configurazione Stripe: publishable key non valida');
+          setClientSecret(intentData.clientSecret);
+          
+          toast({
+            title: "Pronto per il pagamento",
+            description: "Compila i dati della carta per procedere",
+          });
+        } catch (error: any) {
+          console.error('Error creating payment intent:', error);
+          toast({
+            title: "Errore",
+            description: error.message || "Si è verificato un errore. Riprova.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsProcessing(false);
+        }
+      } else {
+        // Submit Stripe payment
+        if (stripeFormRef.current) {
+          await stripeFormRef.current.submitPayment();
         }
       }
+    } else {
+      // Handle PayPal checkout
+      await handlePayPalCheckout();
+    }
+  };
 
-      setClientSecret(paymentResponse.data.clientSecret);
-      setStripePromise(loadStripe(publishableKey));
-      setStep('payment');
+  const handlePayPalCheckout = async () => {
+    const formValues = form.getValues();
+    
+    setIsProcessing(true);
+
+    try {
+      // Create checkout session with PayPal
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          email: formValues.email || 'guest@checkout.com',
+          firstName: formValues.firstName || 'Guest',
+          lastName: formValues.lastName || 'User',
+        }
+      });
+
+      if (error) throw error;
+      if (!data?.url) throw new Error('No checkout URL returned');
+
+      // Redirect to Stripe Checkout with PayPal
+      window.open(data.url, '_blank');
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        // Show validation error
-        const firstError = error.errors[0];
-        toast({
-          title: "Dati non validi",
-          description: firstError.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Errore",
-          description: "Si è verificato un errore. Riprova tra poco.",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore. Riprova tra poco.",
+        variant: "destructive",
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -171,33 +208,8 @@ const Checkout = () => {
     navigate('/payment-success');
   };
 
-  const handlePayPalCheckout = async () => {
-    setIsProcessing(true);
-
-    try {
-      // Create checkout session with PayPal - no customer data needed
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: {
-          email: 'guest@checkout.com', // Temporary email, PayPal will provide real one
-          firstName: 'Guest',
-          lastName: 'User',
-        }
-      });
-
-      if (error) throw error;
-      if (!data?.url) throw new Error('No checkout URL returned');
-
-      // Redirect to Stripe Checkout with PayPal
-      window.location.href = data.url;
-    } catch (error) {
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore. Riprova tra poco.",
-        variant: "destructive",
-      });
-      setIsProcessing(false);
-    }
-  };
+  const isFormValid = form.formState.isValid;
+  const canSubmit = isFormValid && acceptedTerms && (paymentMethod === 'paypal' || (paymentMethod === 'card' && stripeReady && clientSecret));
 
   return (
     <div className="min-h-screen bg-white">
@@ -210,382 +222,396 @@ const Checkout = () => {
       </header>
 
       <div className="container max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 lg:min-h-[calc(100vh-4rem)]">
-          {/* Left Column - Form */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left Column - Scrollable Form */}
           <div className="bg-white px-4 py-8 lg:px-12 lg:py-12 order-2 lg:order-1">
             <div className="max-w-xl mx-auto space-y-8">
-              {step === 'info' ? (
-                <>
-                  {/* Express Checkout */}
-                  <div className="space-y-4">
-                    <h2 className="text-sm font-medium text-foreground">Check-out rapido</h2>
-                    <Button 
-                      variant="outline" 
-                      className="w-full h-14 bg-[#FFC439] hover:bg-[#FFC439]/90 border-0"
-                      onClick={handlePayPalCheckout}
-                      disabled={isProcessing}
-                    >
-                      {isProcessing ? (
-                        <Loader2 className="h-5 w-5 animate-spin text-[#003087]" />
-                      ) : (
-                        <img 
-                          src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-200px.png" 
-                          alt="PayPal" 
-                          className="h-5"
-                        />
-                      )}
-                    </Button>
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-muted-foreground">OPPURE</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Contact Form */}
-                  <form onSubmit={handleInfoSubmit} className="space-y-8">
-                    <div className="space-y-4">
-                      <h2 className="text-sm font-medium text-foreground">Contatti</h2>
-                      <Input 
-                        id="email"
-                        name="email"
-                        type="email" 
-                        placeholder="Email" 
-                        required 
-                        autoComplete="email"
-                        className="h-14 text-base border-gray-300"
-                      />
-                      <div className="flex items-start gap-3">
-                        <Checkbox id="newsletter" name="newsletter" className="mt-1" />
-                        <Label 
-                          htmlFor="newsletter" 
-                          className="text-sm font-normal cursor-pointer leading-relaxed"
-                        >
-                          Desidero ricevere aggiornamenti su futuri corsi
-                        </Label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h2 className="text-sm font-medium text-foreground">Dati personali</h2>
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input 
-                          id="firstName"
-                          name="firstName"
-                          placeholder="Nome" 
-                          required 
-                          autoComplete="given-name"
-                          className="h-14 text-base border-gray-300"
-                        />
-                        <Input 
-                          id="lastName"
-                          name="lastName"
-                          placeholder="Cognome" 
-                          required 
-                          autoComplete="family-name"
-                          className="h-14 text-base border-gray-300"
-                        />
-                      </div>
-                      <Input 
-                        id="phone"
-                        name="phone"
-                        type="tel" 
-                        placeholder="Telefono" 
-                        required 
-                        autoComplete="tel"
-                        className="h-14 text-base border-gray-300"
-                      />
-                      <Input 
-                        id="profession"
-                        name="profession"
-                        placeholder="Professione (es. Psicologo, Psicoterapeuta)" 
-                        required
-                        className="h-14 text-base border-gray-300"
-                      />
-                    </div>
-
-                    <div className="flex items-start gap-3 pt-4">
-                      <Checkbox 
-                        id="terms" 
-                        checked={acceptedTerms}
-                        onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
-                        className="mt-1"
-                      />
-                      <Label 
-                        htmlFor="terms" 
-                        className="text-sm font-normal cursor-pointer leading-relaxed"
-                      >
-                        Accetto i{" "}
-                        <a href="#" className="underline hover:no-underline">
-                          termini e condizioni
-                        </a>{" "}
-                        e l'
-                        <a href="#" className="underline hover:no-underline">
-                          informativa sulla privacy
-                        </a>
-                      </Label>
-                    </div>
-
-                    <Button 
-                      type="submit" 
-                      size="lg" 
-                      className="w-full h-14 text-base font-semibold"
-                      disabled={isProcessing}
-                      variant="hero"
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Caricamento...
-                        </>
-                      ) : (
-                        'Continua al pagamento'
-                      )}
-                    </Button>
-                  </form>
-                </>
-              ) : (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">Pagamento</h2>
-                    <Button
-                      variant="ghost"
-                      onClick={() => setStep('info')}
-                      className="gap-2 hover:bg-transparent text-sm"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Modifica dati
-                    </Button>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground">
-                    Tutte le transazioni sono sicure e crittografate.
-                  </p>
-
-                  {/* Payment Method Selection */}
-                  <div className="space-y-3">
-                    {/* Card Payment Option */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('card')}
-                      className={`w-full border rounded-lg p-4 text-left transition-colors ${
-                        paymentMethod === 'card' 
-                          ? 'border-foreground bg-background' 
-                          : 'border-gray-300 bg-white hover:border-gray-400'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            paymentMethod === 'card' ? 'border-foreground' : 'border-gray-300'
-                          }`}>
-                            {paymentMethod === 'card' && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-foreground" />
-                            )}
-                          </div>
-                          <span className="font-medium text-sm">Carta di credito</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <img src="https://cdn.worldvectorlogo.com/logos/visa-2.svg" alt="Visa" className="h-5" />
-                          <img src="https://cdn.worldvectorlogo.com/logos/maestro-2.svg" alt="Maestro" className="h-5" />
-                          <img src="https://cdn.worldvectorlogo.com/logos/mastercard-2.svg" alt="Mastercard" className="h-5" />
-                          <span className="text-xs text-muted-foreground ml-1">+2</span>
-                        </div>
-                      </div>
-                    </button>
-
-                    {/* PayPal Option */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('paypal')}
-                      className={`w-full border rounded-lg p-4 text-left transition-colors ${
-                        paymentMethod === 'paypal' 
-                          ? 'border-foreground bg-background' 
-                          : 'border-gray-300 bg-white hover:border-gray-400'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            paymentMethod === 'paypal' ? 'border-foreground' : 'border-gray-300'
-                          }`}>
-                            {paymentMethod === 'paypal' && (
-                              <div className="w-2.5 h-2.5 rounded-full bg-foreground" />
-                            )}
-                          </div>
-                          <span className="font-medium text-sm">PayPal</span>
-                        </div>
-                        <img 
-                          src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-200px.png" 
-                          alt="PayPal" 
-                          className="h-4"
-                        />
-                      </div>
-                    </button>
-                  </div>
-                  
-                  {/* Payment Form based on selection */}
-                  {paymentMethod === 'card' ? (
-                    clientSecret && stripePromise ? (
-                      <Elements 
-                        stripe={stripePromise} 
-                        options={{ 
-                          clientSecret,
-                          locale: 'it',
-                          appearance: {
-                            theme: 'stripe',
-                            variables: {
-                              colorPrimary: 'hsl(var(--primary))',
-                              borderRadius: '0.5rem',
-                              fontFamily: 'system-ui, sans-serif',
-                            },
-                          },
-                        }}
-                      >
-                        <StripePaymentForm onSuccess={handlePaymentSuccess} />
-                      </Elements>
-                    ) : (
-                      <div className="flex items-center justify-center py-16">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    )
+              {/* PayPal Express Checkout */}
+              <div className="space-y-4">
+                <h2 className="text-sm font-medium text-foreground">Check-out rapido</h2>
+                <Button 
+                  variant="outline" 
+                  className="w-full h-14 bg-[#FFC439] hover:bg-[#FFC439]/90 border-0"
+                  onClick={handlePayPalCheckout}
+                  disabled={isProcessing}
+                  type="button"
+                >
+                  {isProcessing ? (
+                    <Loader2 className="h-5 w-5 animate-spin text-[#003087]" />
                   ) : (
-                    <Button 
-                      onClick={handlePayPalCheckout}
-                      disabled={isProcessing}
-                      size="lg" 
-                      className="w-full h-12 sm:h-13 text-base font-semibold"
-                      variant="hero"
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Elaborazione...
-                        </>
-                      ) : (
-                        'Paga con PayPal'
-                      )}
-                    </Button>
+                    <img 
+                      src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-200px.png" 
+                      alt="PayPal" 
+                      className="h-5"
+                    />
                   )}
-
-                  <div className="pt-4 border-t">
-                    <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                      <Shield className="h-4 w-4" />
-                      <span>Pagamento sicuro e criptato</span>
-                    </div>
+                </Button>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-muted-foreground">OPPURE</span>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Contact Information and Payment Form */}
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
+                  {/* Contatti Section */}
+                  <div className="space-y-4">
+                    <h2 className="text-sm font-medium text-foreground">Contatti</h2>
+                    
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input 
+                              placeholder="Email" 
+                              {...field} 
+                              className="h-14 text-base border-gray-300"
+                              autoComplete="email"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Dati personali Section */}
+                  <div className="space-y-4">
+                    <h2 className="text-sm font-medium text-foreground">Dati personali</h2>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input 
+                                placeholder="Nome" 
+                                {...field} 
+                                className="h-14 text-base border-gray-300"
+                                autoComplete="given-name"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input 
+                                placeholder="Cognome" 
+                                {...field} 
+                                className="h-14 text-base border-gray-300"
+                                autoComplete="family-name"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input 
+                              placeholder="Telefono" 
+                              {...field} 
+                              className="h-14 text-base border-gray-300"
+                              autoComplete="tel"
+                              type="tel"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="profession"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input 
+                              placeholder="Professione (es. Psicologo, Psicoterapeuta)" 
+                              {...field} 
+                              className="h-14 text-base border-gray-300"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Pagamento Section with Radio Buttons */}
+                  <div className="space-y-4">
+                    <h2 className="text-sm font-medium text-foreground">Pagamento</h2>
+                    
+                    <RadioGroup value={paymentMethod} onValueChange={(value: 'card' | 'paypal') => setPaymentMethod(value)}>
+                      {/* Card Payment Option */}
+                      <div className={`border rounded-lg transition-all ${paymentMethod === 'card' ? 'border-foreground border-2' : 'border-gray-300'}`}>
+                        <div className="p-4 flex items-center justify-between cursor-pointer" onClick={() => setPaymentMethod('card')}>
+                          <div className="flex items-center gap-3">
+                            <RadioGroupItem value="card" id="card" />
+                            <Label htmlFor="card" className="cursor-pointer font-medium text-sm">Carta di credito</Label>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <img src="https://cdn.worldvectorlogo.com/logos/visa-2.svg" alt="Visa" className="h-5" />
+                            <img src="https://cdn.worldvectorlogo.com/logos/maestro-2.svg" alt="Maestro" className="h-5" />
+                            <img src="https://cdn.worldvectorlogo.com/logos/mastercard-2.svg" alt="Mastercard" className="h-5" />
+                            <span className="text-xs text-muted-foreground ml-1">+2</span>
+                          </div>
+                        </div>
+                        
+                        {paymentMethod === 'card' && (
+                          <div className="px-4 pb-4 pt-2 border-t animate-in slide-in-from-top-2">
+                            {clientSecret && stripePromise ? (
+                              <Elements stripe={stripePromise} options={{ clientSecret }}>
+                                <StripePaymentForm 
+                                  ref={stripeFormRef}
+                                  onSuccess={handlePaymentSuccess}
+                                  onValidationChange={setStripeReady}
+                                />
+                              </Elements>
+                            ) : (
+                              <div className="text-sm text-muted-foreground py-4">
+                                Compila tutti i campi per procedere con il pagamento
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* PayPal Option */}
+                      <div className={`border rounded-lg transition-all ${paymentMethod === 'paypal' ? 'border-foreground border-2' : 'border-gray-300'}`}>
+                        <div className="p-4 flex items-center justify-between cursor-pointer" onClick={() => setPaymentMethod('paypal')}>
+                          <div className="flex items-center gap-3">
+                            <RadioGroupItem value="paypal" id="paypal" />
+                            <Label htmlFor="paypal" className="cursor-pointer font-medium text-sm">PayPal</Label>
+                          </div>
+                          <img 
+                            src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-200px.png" 
+                            alt="PayPal" 
+                            className="h-4"
+                          />
+                        </div>
+                        
+                        {paymentMethod === 'paypal' && (
+                          <div className="px-4 pb-4 pt-2 border-t animate-in slide-in-from-top-2">
+                            <p className="text-sm text-muted-foreground">
+                              Dopo aver cliccato su "Paga con PayPal", sarai reindirizzato a PayPal per completare il pagamento in modo sicuro.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Remember Me Section */}
+                  <div className="flex items-start space-x-3">
+                    <Checkbox
+                      id="remember"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                      className="mt-1"
+                    />
+                    <Label
+                      htmlFor="remember"
+                      className="text-sm font-normal cursor-pointer leading-relaxed"
+                    >
+                      Salva le mie informazioni per un checkout più veloce la prossima volta
+                    </Label>
+                  </div>
+
+                  {/* Terms and Conditions */}
+                  <div className="flex items-start space-x-3 pt-4">
+                    <Checkbox 
+                      id="terms" 
+                      checked={acceptedTerms}
+                      onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+                      className="mt-1"
+                    />
+                    <Label 
+                      htmlFor="terms" 
+                      className="text-sm font-normal cursor-pointer leading-relaxed"
+                    >
+                      Accetto i{" "}
+                      <a href="#" className="underline hover:no-underline">
+                        termini e condizioni
+                      </a>{" "}
+                      e l'
+                      <a href="#" className="underline hover:no-underline">
+                        informativa sulla privacy
+                      </a>
+                    </Label>
+                  </div>
+
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className={`w-full h-14 text-base font-semibold ${
+                      paymentMethod === 'paypal' && canSubmit
+                        ? 'bg-[#0070BA] hover:bg-[#003087] text-white' 
+                        : ''
+                    }`}
+                    disabled={!canSubmit || isProcessing || (stripeFormRef.current?.isProcessing ?? false)}
+                    variant={paymentMethod === 'card' ? 'hero' : 'default'}
+                  >
+                    {isProcessing || (stripeFormRef.current?.isProcessing ?? false) ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Elaborazione...
+                      </>
+                    ) : paymentMethod === 'paypal' ? (
+                      <>
+                        <img 
+                          src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-200px.png" 
+                          alt="PayPal" 
+                          className="h-4 mr-2"
+                        />
+                        Paga con PayPal
+                      </>
+                    ) : (
+                      'Paga ora'
+                    )}
+                  </Button>
+                </form>
+              </Form>
             </div>
           </div>
 
-          {/* Right Column - Order Summary */}
-          <div className="bg-[#FAFAF8] border-l px-4 py-8 lg:px-12 lg:py-12 order-1 lg:order-2">
+          {/* Right Column - Sticky Order Summary */}
+          <div className="bg-secondary/5 px-4 py-8 lg:px-12 lg:py-12 order-1 lg:order-2 lg:sticky lg:top-16 lg:self-start lg:max-h-[calc(100vh-4rem)] lg:overflow-y-auto">
             <div className="max-w-xl mx-auto space-y-6">
-              {/* Product */}
-              <div className="flex gap-4">
-                <div className="relative flex-shrink-0">
-                  <div className="w-16 h-16 bg-white border rounded-lg overflow-hidden">
+              {/* Product Info */}
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="relative w-20 h-20 rounded-lg border bg-white flex-shrink-0 overflow-hidden">
                     <img 
-                      src={bfeLogo} 
-                      alt="Corso Biofeedback" 
-                      className="w-full h-full object-contain p-2"
+                      src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d" 
+                      alt="Corso" 
+                      className="object-cover w-full h-full"
                     />
+                    <span className="absolute -top-2 -right-2 w-6 h-6 bg-foreground text-background rounded-full flex items-center justify-center text-xs font-semibold">
+                      1
+                    </span>
                   </div>
-                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-gray-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                    1
-                  </div>
-                </div>
-                <div className="flex-1 flex justify-between">
-                  <div>
-                    <h3 className="font-medium text-sm">
-                      Corso Completo di Biofeedback
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-sm mb-1">
+                      Biofeedback Professionale: Corso Completo con Certificazione
                     </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Certificazione BFE - I livello
-                    </p>
+                    <p className="text-sm text-muted-foreground">Edizione Standard</p>
                   </div>
-                  <div className="text-sm font-medium">
-                    280€
-                  </div>
+                  <p className="font-semibold text-sm">€380,00</p>
                 </div>
               </div>
 
-              {/* Discount Code */}
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="Codice sconto o buono regalo"
-                  className="h-12 text-sm border-gray-300 bg-white"
-                />
-                <Button 
-                  variant="outline" 
-                  className="h-12 px-6 text-sm font-medium border-gray-300 bg-white hover:bg-gray-50"
-                >
-                  Applica
-                </Button>
-              </div>
+              <div className="border-t pt-4 space-y-3">
+                {/* Discount Badge */}
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                    SCONTO LANCIO
+                  </div>
+                  <span className="text-muted-foreground">-€100 di risparmio</span>
+                </div>
 
-              {/* Pricing Details */}
-              <div className="space-y-3 pt-4 border-t border-gray-300">
+                {/* Subtotal */}
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Prezzo corso</span>
-                  <span className="font-medium">500€</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-green-600 font-medium">Sconto Convegno</span>
-                  <span className="text-green-600 font-medium">-220€</span>
-                </div>
-                <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
                   <span className="text-muted-foreground">Subtotale</span>
-                  <span className="font-medium">280€</span>
+                  <span>€380,00</span>
+                </div>
+
+                {/* Discount */}
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Sconto lancio (-26%)</span>
+                  <span>-€100,00</span>
                 </div>
               </div>
 
-              {/* Total */}
-              <div className="pt-4 border-t border-gray-300">
-                <div className="flex justify-between items-baseline">
-                  <span className="text-sm font-medium">Totale</span>
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-baseline mb-2">
+                  <span className="text-base font-semibold">Totale</span>
                   <div className="text-right">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xs text-muted-foreground">EUR</span>
-                      <span className="text-2xl font-bold">280€</span>
-                    </div>
+                    <div className="text-2xl font-bold">€280,00</div>
+                    <div className="text-sm text-muted-foreground">IVA inclusa</div>
                   </div>
                 </div>
               </div>
 
-              {/* Partner Logo */}
-              <div className="pt-6 border-t border-gray-300">
-                <div className="flex justify-center mb-2">
-                  <img 
-                    src={righettoLogo} 
-                    alt="Righetto" 
-                    className="h-8 opacity-60"
-                  />
+              {/* Partner Logos */}
+              <div className="border-t pt-6">
+                <p className="text-xs text-muted-foreground mb-3">In collaborazione con:</p>
+                <div className="flex items-center justify-start gap-6">
+                  <img src={righettoLogo} alt="Righetto" className="h-8 object-contain" />
+                  <img src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7" alt="Partner" className="h-8 object-contain grayscale opacity-60" />
                 </div>
-                <p className="text-xs text-center text-muted-foreground">
-                  Partner tecnico - Sconti riservati agli iscritti
-                </p>
               </div>
 
-              {/* Benefits */}
-              <div className="space-y-2 pt-4">
-                {[
-                  "10 incontri online live (20 ore)",
-                  "Certificazione BFE di I livello",
-                  "Materiali digitali e casi clinici",
-                  "Convenzioni per dispositivi"
-                ].map((benefit, i) => (
-                  <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                    <span>{benefit}</span>
-                  </div>
-                ))}
+              {/* Course Benefits */}
+              <div className="border-t pt-6 space-y-3">
+                <p className="text-sm font-semibold">Il corso include:</p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>20 ore di formazione online</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Certificazione professionale riconosciuta</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Materiale didattico scaricabile</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Accesso a vita alla piattaforma</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Supporto diretto con i docenti</span>
+                  </li>
+                </ul>
               </div>
 
+              {/* Security Badge */}
+              <div className="border-t pt-6">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span>Pagamento sicuro e protetto</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
