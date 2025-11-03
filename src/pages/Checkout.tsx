@@ -119,6 +119,77 @@ const Checkout = () => {
     navigate('/payment-success');
   };
 
+  const handlePayPalCheckout = async () => {
+    // Validate required fields first
+    const firstName = (document.getElementById('firstName') as HTMLInputElement)?.value;
+    const lastName = (document.getElementById('lastName') as HTMLInputElement)?.value;
+    const email = (document.getElementById('email') as HTMLInputElement)?.value;
+    const phone = (document.getElementById('phone') as HTMLInputElement)?.value;
+    const profession = (document.getElementById('profession') as HTMLInputElement)?.value;
+
+    if (!firstName || !lastName || !email || !phone || !profession) {
+      toast({
+        title: "Compila tutti i campi",
+        description: "Inserisci tutti i dati richiesti prima di procedere con PayPal",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!acceptedTerms) {
+      toast({
+        title: "Accetta i termini",
+        description: "Devi accettare i termini e condizioni per procedere",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Save customer data
+      const customerData = {
+        firstName,
+        lastName,
+        email,
+        phone,
+        profession,
+        acceptedNewsletter: (document.getElementById('newsletter') as HTMLInputElement)?.checked || false,
+        timestamp: new Date().toISOString()
+      };
+
+      const existingCustomers = JSON.parse(localStorage.getItem('checkout_customers') || '[]');
+      existingCustomers.push(customerData);
+      localStorage.setItem('checkout_customers', JSON.stringify(existingCustomers));
+      localStorage.setItem('current_customer', JSON.stringify(customerData));
+
+      // Create checkout session with PayPal
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          email,
+          firstName,
+          lastName,
+        }
+      });
+
+      if (error) throw error;
+      if (!data?.url) throw new Error('No checkout URL returned');
+
+      // Redirect to Stripe Checkout (which includes PayPal)
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore. Riprova tra poco.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -142,9 +213,17 @@ const Checkout = () => {
                     <Button 
                       variant="outline" 
                       className="w-full h-14 bg-[#FFC439] hover:bg-[#FFC439]/90 border-0"
+                      onClick={handlePayPalCheckout}
+                      disabled={isProcessing}
                     >
-                      <span className="font-bold text-[#003087]">Pay</span>
-                      <span className="font-bold text-[#009CDE]">Pal</span>
+                      {isProcessing ? (
+                        <Loader2 className="h-5 w-5 animate-spin text-[#003087]" />
+                      ) : (
+                        <>
+                          <span className="font-bold text-[#003087]">Pay</span>
+                          <span className="font-bold text-[#009CDE]">Pal</span>
+                        </>
+                      )}
                     </Button>
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">

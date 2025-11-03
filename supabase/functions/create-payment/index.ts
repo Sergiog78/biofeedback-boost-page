@@ -39,9 +39,10 @@ serve(async (req) => {
       console.log("New customer created:", customerId);
     }
 
-    // Create checkout session
+    // Create checkout session with PayPal and card support
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
+      payment_method_types: ['card', 'paypal'],
       line_items: [
         {
           price: "price_1SPPGeGSUlmGTzYSahKSeVIJ",
