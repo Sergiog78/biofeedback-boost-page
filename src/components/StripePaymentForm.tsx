@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface StripePaymentFormProps {
   onSuccess: () => void;
@@ -36,8 +37,6 @@ const StripePaymentForm = ({ onSuccess }: StripePaymentFormProps) => {
           description: error.message,
           variant: "destructive",
         });
-      } else {
-        onSuccess();
       }
     } catch (error) {
       toast({
@@ -52,15 +51,33 @@ const StripePaymentForm = ({ onSuccess }: StripePaymentFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement />
+      <div className="min-h-[200px]">
+        <PaymentElement 
+          options={{
+            layout: {
+              type: 'accordion',
+              defaultCollapsed: false,
+              radios: true,
+              spacedAccordionItems: true
+            }
+          }}
+        />
+      </div>
       <Button 
         type="submit" 
         size="lg" 
-        className="w-full text-lg"
+        className="w-full text-lg h-14"
         disabled={!stripe || isProcessing}
         variant="hero"
       >
-        {isProcessing ? "Elaborazione..." : "Paga 280€"}
+        {isProcessing ? (
+          <>
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            Elaborazione...
+          </>
+        ) : (
+          'Paga 280€'
+        )}
       </Button>
     </form>
   );
