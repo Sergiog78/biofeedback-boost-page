@@ -499,12 +499,6 @@ const Checkout = () => {
                 ))}
               </div>
 
-              {/* Discount Badge */}
-              <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800/30 rounded-lg p-4 text-center">
-                <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                  🎉 Risparmi 220€ con l'offerta early bird
-                </p>
-              </div>
             </div>
           </div>
         </div>
