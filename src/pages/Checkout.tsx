@@ -89,10 +89,15 @@ const Checkout = () => {
         throw new Error('Errore nella creazione del pagamento');
       }
 
-      // Determina la publishable key (backend -> fallback frontend)
-      const publishableKey = keyResponse.data?.publishableKey || (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY;
-      if (keyResponse.error || !publishableKey) {
-        throw new Error('Errore configurazione Stripe');
+      // Determina la publishable key (backend -> fallback frontend, solo pk_ valida)
+      let publishableKey = keyResponse.data?.publishableKey as string | undefined;
+      const envKey = (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
+      if (!publishableKey || !publishableKey.startsWith('pk_')) {
+        if (envKey && envKey.startsWith('pk_')) {
+          publishableKey = envKey;
+        } else {
+          throw new Error('Errore configurazione Stripe: publishable key non valida');
+        }
       }
 
       setClientSecret(paymentResponse.data.clientSecret);
@@ -280,7 +285,7 @@ const Checkout = () => {
                       locale: 'it',
                     }}
                   >
-                    <StripePaymentForm onSuccess={handlePaymentSuccess} />
+                    <StripePaymentForm onSuccess={handlePaymentSuccess} clientSecret={clientSecret} />
                   </Elements>
                 ) : (
                   <div className="flex items-center justify-center py-12">
