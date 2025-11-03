@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Shield, Lock, Check, ArrowLeft, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
 
@@ -87,20 +88,40 @@ const Checkout = () => {
       console.error('Errore nel salvare i dati del cliente:', error);
     }
     
-    // Costruisci URL Stripe con email pre-compilata
-    const stripeUrl = new URL('https://buy.stripe.com/5kQ3cw05a22p7CK6b24sE0d');
-    stripeUrl.searchParams.append('prefilled_email', customerData.email);
-    stripeUrl.searchParams.append('client_reference_id', customerData.email);
-    
-    setTimeout(() => {
-      window.open(stripeUrl.toString(), '_blank');
-      setIsProcessing(false);
-      
-      toast({
-        title: "Reindirizzamento a Stripe",
-        description: "I tuoi dati sono stati salvati. Completa il pagamento nella nuova finestra.",
+    // Chiama edge function per creare sessione Stripe
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          email: customerData.email,
+          firstName: customerData.firstName,
+          lastName: customerData.lastName,
+        }
       });
-    }, 1000);
+
+      if (error) {
+        console.error('Errore nella creazione della sessione:', error);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore. Riprova tra poco.",
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
+
+      if (data?.url) {
+        // Redirect a Stripe Checkout
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Errore:', error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore. Riprova tra poco.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
+    }
   };
 
   return (
