@@ -120,63 +120,22 @@ const Checkout = () => {
   };
 
   const handlePayPalCheckout = async () => {
-    // Validate required fields first
-    const firstName = (document.getElementById('firstName') as HTMLInputElement)?.value;
-    const lastName = (document.getElementById('lastName') as HTMLInputElement)?.value;
-    const email = (document.getElementById('email') as HTMLInputElement)?.value;
-    const phone = (document.getElementById('phone') as HTMLInputElement)?.value;
-    const profession = (document.getElementById('profession') as HTMLInputElement)?.value;
-
-    if (!firstName || !lastName || !email || !phone || !profession) {
-      toast({
-        title: "Compila tutti i campi",
-        description: "Inserisci tutti i dati richiesti prima di procedere con PayPal",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!acceptedTerms) {
-      toast({
-        title: "Accetta i termini",
-        description: "Devi accettare i termini e condizioni per procedere",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsProcessing(true);
 
     try {
-      // Save customer data
-      const customerData = {
-        firstName,
-        lastName,
-        email,
-        phone,
-        profession,
-        acceptedNewsletter: (document.getElementById('newsletter') as HTMLInputElement)?.checked || false,
-        timestamp: new Date().toISOString()
-      };
-
-      const existingCustomers = JSON.parse(localStorage.getItem('checkout_customers') || '[]');
-      existingCustomers.push(customerData);
-      localStorage.setItem('checkout_customers', JSON.stringify(existingCustomers));
-      localStorage.setItem('current_customer', JSON.stringify(customerData));
-
-      // Create checkout session with PayPal
+      // Create checkout session with PayPal - no customer data needed
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
-          email,
-          firstName,
-          lastName,
+          email: 'guest@checkout.com', // Temporary email, PayPal will provide real one
+          firstName: 'Guest',
+          lastName: 'User',
         }
       });
 
       if (error) throw error;
       if (!data?.url) throw new Error('No checkout URL returned');
 
-      // Redirect to Stripe Checkout (which includes PayPal)
+      // Redirect to Stripe Checkout with PayPal
       window.location.href = data.url;
     } catch (error) {
       console.error('Error:', error);
@@ -185,7 +144,6 @@ const Checkout = () => {
         description: "Si è verificato un errore. Riprova tra poco.",
         variant: "destructive",
       });
-    } finally {
       setIsProcessing(false);
     }
   };
