@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+import { loadStripe, type Stripe } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,6 @@ import StripePaymentForm from "@/components/StripePaymentForm";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
-
 const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -23,6 +21,7 @@ const Checkout = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [showPayment, setShowPayment] = useState(false);
+  const [stripePromise, setStripePromise] = useState<Promise<Stripe | null> | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -128,6 +127,14 @@ const Checkout = () => {
 
       if (data?.clientSecret) {
         setClientSecret(data.clientSecret);
+        // Fetch publishable key from backend, then show payment
+        const { data: keyData, error: keyError } = await supabase.functions.invoke('get-stripe-publishable-key');
+        if (keyError || !keyData?.publishableKey) {
+          toast({ title: "Errore chiave Stripe", description: "Impossibile inizializzare il pagamento.", variant: "destructive" });
+          setIsProcessing(false);
+          return;
+        }
+        setStripePromise(loadStripe(keyData.publishableKey));
         setShowPayment(true);
       }
     } catch (error) {
@@ -297,7 +304,7 @@ const Checkout = () => {
                     </div>
                   </form>
                 ) : (
-                  clientSecret && (
+                  clientSecret && stripePromise && (
                     <Elements stripe={stripePromise} options={{ clientSecret }}>
                       <StripePaymentForm onSuccess={handlePaymentSuccess} />
                     </Elements>
