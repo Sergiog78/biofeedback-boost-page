@@ -110,6 +110,14 @@ const Checkout = () => {
 
   const isFormValid = form.formState.isValid;
 
+  // Reset clientSecret when switching to PayPal
+  useEffect(() => {
+    if (paymentMethod === 'paypal') {
+      setClientSecret('');
+      setStripeReady(false);
+    }
+  }, [paymentMethod]);
+
   // Create PaymentIntent when card payment is selected
   useEffect(() => {
     const createPaymentIntent = async () => {
