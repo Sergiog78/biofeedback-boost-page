@@ -115,7 +115,9 @@ const Checkout = () => {
     const createPaymentIntent = async () => {
       if (paymentMethod === 'card' && !clientSecret && !isProcessing) {
         const formValues = form.getValues();
-        const email = formValues.email || 'guest@checkout.com';
+        const safeEmail = formValues.email || 'guest@checkout.com';
+        const safeFirstName = formValues.firstName || 'Guest';
+        const safeLastName = formValues.lastName || 'User';
         
         setIsProcessing(true);
         try {
@@ -123,8 +125,10 @@ const Checkout = () => {
             'create-payment-intent',
             {
               body: { 
-                amount: 28000,
-                customerEmail: email,
+                amount: 280,
+                email: safeEmail,
+                firstName: safeFirstName,
+                lastName: safeLastName,
               },
             }
           );
