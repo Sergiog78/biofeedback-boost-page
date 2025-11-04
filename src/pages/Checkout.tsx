@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
+import mastercardLogo from "@/assets/mastercard.svg";
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
@@ -457,7 +458,7 @@ const Checkout = () => {
                           	<div className="flex items-center gap-1.5">
                             	<img src="https://cdn.worldvectorlogo.com/logos/visa-2.svg" alt="Visa" className="h-5 w-8 object-contain" />
                             	<img src="https://cdn.worldvectorlogo.com/logos/maestro-2.svg" alt="Maestro" className="h-5 w-8 object-contain" />
-                            	<img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.svg" alt="Mastercard" className="h-5 w-8 object-contain" />
+                            	<img src={mastercardLogo} alt="Mastercard" className="h-5 w-8 object-contain" />
                             	<span className="text-xs text-muted-foreground ml-1">+2</span>
                           	</div>
                         </div>
