@@ -65,10 +65,10 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Create checkout session with PayPal and card support
+    // Create checkout session for express checkout (returns to /checkout to prefill form)
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      payment_method_types: ['card', 'paypal'],
+      payment_method_types: ['paypal'],
       line_items: [
         {
           price: "price_1SPPGeGSUlmGTzYSahKSeVIJ",
@@ -76,8 +76,12 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/payment-canceled`,
+      billing_address_collection: 'required',
+      phone_number_collection: {
+        enabled: true,
+      },
+      success_url: `${req.headers.get("origin")}/checkout?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get("origin")}/checkout`,
       metadata: {
         customerEmail: email,
         customerName: `${firstName} ${lastName}`,

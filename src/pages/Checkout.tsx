@@ -70,18 +70,68 @@ const Checkout = () => {
     mode: "onChange",
   });
 
-  // Load saved data on mount
+  // Load saved data or PayPal data on mount
   useEffect(() => {
-    const savedData = localStorage.getItem('checkoutData');
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        form.reset(parsed);
-        setRememberMe(true);
-      } catch (e) {
-        console.error('Error loading saved checkout data:', e);
+    const loadCheckoutData = async () => {
+      // Check if returning from PayPal with session_id
+      const urlParams = new URLSearchParams(window.location.search);
+      const sessionId = urlParams.get('session_id');
+      
+      if (sessionId) {
+        try {
+          // Retrieve customer data from Stripe session
+          const { data, error } = await supabase.functions.invoke('get-checkout-session', {
+            body: { sessionId }
+          });
+
+          if (error) throw error;
+
+          if (data?.customer) {
+            // Prefill form with PayPal data
+            form.reset({
+              firstName: data.customer.firstName || '',
+              lastName: data.customer.lastName || '',
+              email: data.customer.email || '',
+              phone: data.customer.phone || '',
+              profession: '',
+            });
+
+            toast({
+              title: "Dati importati da PayPal",
+              description: "I tuoi dati sono stati precompilati. Completa la professione per continuare.",
+            });
+
+            // Check if payment was already completed
+            if (data.customer.paymentStatus === 'paid') {
+              toast({
+                title: "Pagamento completato",
+                description: "Il tuo pagamento è stato elaborato con successo!",
+              });
+              setTimeout(() => navigate('/payment-success'), 2000);
+            }
+          }
+
+          // Clean up URL
+          window.history.replaceState({}, '', '/checkout');
+        } catch (e) {
+          console.error('Error loading PayPal data:', e);
+        }
+      } else {
+        // Load saved data from localStorage
+        const savedData = localStorage.getItem('checkoutData');
+        if (savedData) {
+          try {
+            const parsed = JSON.parse(savedData);
+            form.reset(parsed);
+            setRememberMe(true);
+          } catch (e) {
+            console.error('Error loading saved checkout data:', e);
+          }
+        }
       }
-    }
+    };
+
+    loadCheckoutData();
   }, []);
 
   // Initialize Stripe on mount
