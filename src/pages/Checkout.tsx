@@ -528,7 +528,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-sm mb-1">
-                      Corso Professionale di Neurofeedback e Biofeedback
+                      Corso Completo di Biofeedback
                     </h3>
                     <p className="text-sm text-muted-foreground">Certificazione BFE di I° livello</p>
                   </div>
