@@ -375,10 +375,10 @@ const Checkout = () => {
                   <div className="space-y-4">
                     <h2 className="text-sm font-medium text-foreground">Pagamento</h2>
                     
-                    <RadioGroup value={paymentMethod} onValueChange={(value: 'card' | 'paypal') => setPaymentMethod(value)}>
+                    <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'card' | 'paypal')}>
                       {/* Card Payment Option */}
                       <div className={`border rounded-lg transition-all ${paymentMethod === 'card' ? 'border-foreground border-2' : 'border-gray-300'}`}>
-                        <div className="p-4 flex items-center justify-between cursor-pointer" onClick={() => setPaymentMethod('card')}>
+                        <div className="p-4 flex items-center justify-between cursor-pointer">
                           <div className="flex items-center gap-3">
                             <RadioGroupItem value="card" id="card" />
                             <Label htmlFor="card" className="cursor-pointer font-medium text-sm">Carta di credito</Label>
