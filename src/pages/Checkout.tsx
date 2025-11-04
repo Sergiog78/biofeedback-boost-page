@@ -386,7 +386,7 @@ const Checkout = () => {
                         {paymentMethod === 'card' && (
                           <div className="px-4 pb-4 pt-2 border-t animate-in slide-in-from-top-2">
                             {clientSecret && stripePromise ? (
-                              <Elements stripe={stripePromise} options={{ clientSecret }}>
+                              <Elements key={clientSecret} stripe={stripePromise} options={{ clientSecret }}>
                                 <StripePaymentForm 
                                   ref={stripeFormRef}
                                   onSuccess={handlePaymentSuccess}
@@ -395,7 +395,7 @@ const Checkout = () => {
                               </Elements>
                             ) : (
                               <div className="text-sm text-muted-foreground py-4">
-                                Compila tutti i campi per procedere con il pagamento
+                                Caricamento dei metodi di pagamento...
                               </div>
                             )}
                           </div>
