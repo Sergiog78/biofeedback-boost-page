@@ -65,7 +65,8 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
       <div className="space-y-4">
         <PaymentElement 
           options={{
-            layout: 'accordion',
+            layout: 'tabs',
+            paymentMethodOrder: ['card'],
           }}
           onReady={() => onValidationChange(true)}
           onChange={(event) => onValidationChange((event as any).complete)}
