@@ -75,17 +75,15 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Create payment intent with automatic payment methods (consigliato con Payment Element)
+    // Create payment intent restricted to card only
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount * 100, // cents
       currency: "eur",
       customer: customerId,
+      payment_method_types: ["card"],
       metadata: {
         customerEmail: email,
         customerName: `${firstName} ${lastName}`,
-      },
-      automatic_payment_methods: {
-        enabled: true,
       },
     });
 
