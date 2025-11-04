@@ -530,7 +530,7 @@ const Checkout = () => {
                     <h3 className="font-semibold text-sm mb-1">
                       Corso Professionale di Neurofeedback e Biofeedback
                     </h3>
-                    <p className="text-sm text-muted-foreground">Edizione Standard</p>
+                    <p className="text-sm text-muted-foreground">Certificazione BFE di I° livello</p>
                   </div>
                   <p className="font-semibold text-sm">€500,00</p>
                 </div>
