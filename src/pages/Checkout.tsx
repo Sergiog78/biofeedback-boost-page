@@ -399,6 +399,7 @@ const Checkout = () => {
                                   ref={stripeFormRef}
                                   onSuccess={handlePaymentSuccess}
                                   onValidationChange={setStripeReady}
+                                  clientSecret={clientSecret}
                                 />
                               </Elements>
                             ) : (

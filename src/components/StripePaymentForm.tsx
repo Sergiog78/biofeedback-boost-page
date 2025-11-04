@@ -1,10 +1,11 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
-import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useToast } from "@/hooks/use-toast";
 
 interface StripePaymentFormProps {
   onSuccess: () => void;
   onValidationChange: (isValid: boolean) => void;
+  clientSecret: string;
 }
 
 export interface StripePaymentFormRef {
@@ -13,7 +14,7 @@ export interface StripePaymentFormRef {
 }
 
 const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProps>(
-  ({ onSuccess, onValidationChange }, ref) => {
+  ({ onSuccess, onValidationChange, clientSecret }, ref) => {
     const stripe = useStripe();
     const elements = useElements();
     const { toast } = useToast();
@@ -31,11 +32,19 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
       setIsProcessing(true);
 
       try {
-        const { error } = await stripe.confirmPayment({
-          elements,
-          confirmParams: {
-            return_url: `${window.location.origin}/payment-success`,
-          },
+        const cardElement = elements.getElement(CardElement);
+        if (!cardElement) {
+          toast({
+            title: "Errore",
+            description: "Modulo carta non pronto",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: { card: cardElement },
+          return_url: `${window.location.origin}/payment-success`,
         });
 
         if (error) {
@@ -44,6 +53,8 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
             description: error.message,
             variant: "destructive",
           });
+        } else if (paymentIntent && paymentIntent.status === "succeeded") {
+          onSuccess();
         }
       } catch (error) {
         toast({
@@ -63,16 +74,8 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
 
     return (
       <div className="space-y-4">
-        <PaymentElement 
-          options={{
-            fields: {
-              billingDetails: {
-                address: {
-                  country: 'auto',
-                }
-              }
-            }
-          }}
+        <CardElement 
+          options={{ hidePostalCode: true }}
           onReady={() => onValidationChange(true)}
           onChange={(event) => onValidationChange((event as any).complete)}
         />
