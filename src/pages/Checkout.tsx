@@ -412,7 +412,7 @@ const Checkout = () => {
 
                       {/* PayPal Option */}
                       <div className={`border rounded-lg transition-all ${paymentMethod === 'paypal' ? 'border-foreground border-2' : 'border-gray-300'}`}>
-                        <div className="p-4 flex items-center justify-between cursor-pointer" onClick={() => setPaymentMethod('paypal')}>
+                        <div className="p-4 flex items-center justify-between cursor-pointer">
                           <div className="flex items-center gap-3">
                             <RadioGroupItem value="paypal" id="paypal" />
                             <Label htmlFor="paypal" className="cursor-pointer font-medium text-sm">PayPal</Label>
