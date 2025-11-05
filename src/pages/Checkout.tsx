@@ -18,6 +18,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
 import mastercardLogo from "@/assets/mastercard.svg";
+import bfePartnerLogo from "@/assets/bfe-partner-logo.png";
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
@@ -645,7 +646,7 @@ const Checkout = () => {
                 <p className="text-xs text-muted-foreground mb-3">In collaborazione con:</p>
                 <div className="flex items-center justify-start gap-6">
                   <img src={righettoLogo} alt="Righetto" className="h-8 object-contain" />
-                  <img src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7" alt="Partner" className="h-8 object-contain grayscale opacity-60" />
+                  <img src={bfePartnerLogo} alt="BFE" className="h-8 object-contain" />
                 </div>
               </div>
 
