@@ -1,25 +1,48 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Home, Mail } from "lucide-react";
 import bfeLogo from "@/assets/bfe-logo-text.png";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const { toast } = useToast();
+  const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
     // Scroll to top on mount
     window.scrollTo(0, 0);
 
-    // Get customer data from localStorage
-    const customerData = localStorage.getItem("current_customer");
-    if (customerData) {
-      console.log("Payment successful for:", JSON.parse(customerData));
-    }
-  }, []);
+    // Send confirmation email
+    const sendConfirmationEmail = async () => {
+      if (!sessionId || emailSent) return;
+
+      try {
+        console.log("Sending confirmation email for session:", sessionId);
+        
+        const { data, error } = await supabase.functions.invoke("send-confirmation-email", {
+          body: { sessionId },
+        });
+
+        if (error) {
+          console.error("Error sending confirmation email:", error);
+          return;
+        }
+
+        console.log("Confirmation email sent successfully:", data);
+        setEmailSent(true);
+      } catch (error) {
+        console.error("Error invoking send-confirmation-email function:", error);
+      }
+    };
+
+    sendConfirmationEmail();
+  }, [sessionId, emailSent]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-500/10 to-background">
