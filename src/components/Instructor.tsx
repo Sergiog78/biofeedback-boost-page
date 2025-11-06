@@ -61,11 +61,11 @@ const Instructor = () => {
                 </div>
               </div>
             </div>
-            <div className="relative rounded-md aspect-square overflow-hidden">
+            <div className="relative rounded-md aspect-square overflow-hidden bg-muted">
               <img
                 src={gabrieleCiccarese}
                 alt="Dott. Gabriele Ciccarese"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
           </div>
