@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -66,9 +67,55 @@ serve(async (req) => {
     // Get customer details
     const customerEmail = session.customer_details?.email;
     const customerName = session.customer_details?.name || "Cliente";
+    const customerPhone = session.customer_details?.phone || null;
     
     if (!customerEmail) {
       throw new Error("Customer email not found");
+    }
+
+    // Split customer name into first and last name
+    const nameParts = customerName.split(' ');
+    const firstName = nameParts[0] || customerName;
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    console.log("Customer details:", { email: customerEmail, name: customerName, phone: customerPhone });
+
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    // Save enrollment data to database
+    try {
+      console.log("Saving enrollment data to database...");
+      
+      const { data: enrollmentData, error: enrollmentError } = await supabaseClient
+        .from('course_enrollments')
+        .insert({
+          email: customerEmail,
+          first_name: firstName,
+          last_name: lastName,
+          phone: customerPhone,
+          stripe_session_id: sessionId,
+          stripe_customer_id: typeof session.customer === 'string' ? session.customer : null,
+          payment_status: 'paid',
+          amount_paid: session.amount_total || 28000, // 280 EUR in cents
+        })
+        .select()
+        .single();
+
+      if (enrollmentError) {
+        // Log error but don't fail the entire function
+        console.error("Error saving enrollment to database:", enrollmentError);
+        // Continue with sending email even if database save fails
+      } else {
+        console.log("Enrollment saved successfully:", enrollmentData?.id);
+      }
+    } catch (dbError) {
+      console.error("Database operation failed:", dbError);
+      // Continue with sending email even if database save fails
     }
 
     console.log("Sending confirmation email to:", customerEmail);
