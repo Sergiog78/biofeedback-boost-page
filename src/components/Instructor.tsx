@@ -1,4 +1,5 @@
 import { GraduationCap, Award, BookOpen, Users } from "lucide-react";
+import gabrieleCiccarese from "@/assets/gabriele-ciccarese.jpg";
 
 const Instructor = () => {
   return (
@@ -19,7 +20,7 @@ const Instructor = () => {
             <div className="relative">
               <div className="aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl">
                 <img
-                  src="https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=800"
+                  src={gabrieleCiccarese}
                   alt="Dott. Gabriele Ciccarese"
                   className="w-full h-full object-cover"
                 />
