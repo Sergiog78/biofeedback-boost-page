@@ -1,5 +1,5 @@
 import { GraduationCap, Award, BookOpen, Users } from "lucide-react";
-import gabrieleCiccarese from "@/assets/gabriele-ciccarese.jpg";
+import gabrieleCiccarese from "@/assets/gabriele-ciccarese.png";
 
 const Instructor = () => {
   return (
