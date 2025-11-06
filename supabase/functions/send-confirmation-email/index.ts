@@ -27,8 +27,10 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Retrieve the checkout session to get customer details
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    // Retrieve the checkout session with line items to verify the product
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['line_items'],
+    });
     
     console.log("Retrieved session:", session.id, "Payment status:", session.payment_status);
 
@@ -36,6 +38,30 @@ serve(async (req) => {
     if (session.payment_status !== "paid") {
       throw new Error("Payment not completed");
     }
+
+    // CRITICAL: Verify this is specifically for the Biofeedback course
+    const BIOFEEDBACK_COURSE_PRICE_ID = "price_1SPPGeGSUlmGTzYSahKSeVIJ";
+    const lineItems = session.line_items?.data || [];
+    
+    const isBiofeedbackCourse = lineItems.some((item: any) => 
+      item.price?.id === BIOFEEDBACK_COURSE_PRICE_ID
+    );
+
+    if (!isBiofeedbackCourse) {
+      console.log("Skipping email - not a Biofeedback course purchase");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: "Not a Biofeedback course purchase" 
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
+
+    console.log("Confirmed: This is a Biofeedback course purchase");
 
     // Get customer details
     const customerEmail = session.customer_details?.email;
