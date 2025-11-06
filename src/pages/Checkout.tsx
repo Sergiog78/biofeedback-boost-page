@@ -644,32 +644,32 @@ const Checkout = () => {
                 </div>
 
                 {/* Countdown Timer */}
-                <div className="bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-primary/20 rounded-xl p-5 shadow-sm">
+                <div className="rounded-xl p-5 shadow-sm border-2 border-[#003383]/30" style={{ backgroundColor: '#003383' }}>
                   <div className="flex items-center justify-center gap-2 mb-4">
-                    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span className="text-sm font-semibold text-primary">Offerta scade tra:</span>
+                    <span className="text-sm font-semibold text-white">Offerta scade tra:</span>
                   </div>
                   <div className="grid grid-cols-4 gap-3">
-                    <div className="bg-background rounded-lg p-3 text-center border border-border shadow-sm">
-                      <div className="text-2xl font-bold text-primary tabular-nums">{timeLeft.days}</div>
-                      <div className="text-xs text-muted-foreground font-medium mt-1">Giorni</div>
+                    <div className="bg-white/95 rounded-lg p-3 text-center border border-white/20 shadow-sm">
+                      <div className="text-2xl font-bold text-[#003383] tabular-nums">{timeLeft.days}</div>
+                      <div className="text-xs text-gray-600 font-medium mt-1">Giorni</div>
                     </div>
-                    <div className="bg-background rounded-lg p-3 text-center border border-border shadow-sm">
-                      <div className="text-2xl font-bold text-primary tabular-nums">{timeLeft.hours}</div>
-                      <div className="text-xs text-muted-foreground font-medium mt-1">Ore</div>
+                    <div className="bg-white/95 rounded-lg p-3 text-center border border-white/20 shadow-sm">
+                      <div className="text-2xl font-bold text-[#003383] tabular-nums">{timeLeft.hours}</div>
+                      <div className="text-xs text-gray-600 font-medium mt-1">Ore</div>
                     </div>
-                    <div className="bg-background rounded-lg p-3 text-center border border-border shadow-sm">
-                      <div className="text-2xl font-bold text-primary tabular-nums">{timeLeft.minutes}</div>
-                      <div className="text-xs text-muted-foreground font-medium mt-1">Min</div>
+                    <div className="bg-white/95 rounded-lg p-3 text-center border border-white/20 shadow-sm">
+                      <div className="text-2xl font-bold text-[#003383] tabular-nums">{timeLeft.minutes}</div>
+                      <div className="text-xs text-gray-600 font-medium mt-1">Min</div>
                     </div>
-                    <div className="bg-background rounded-lg p-3 text-center border border-border shadow-sm">
-                      <div className="text-2xl font-bold text-primary tabular-nums">{timeLeft.seconds}</div>
-                      <div className="text-xs text-muted-foreground font-medium mt-1">Sec</div>
+                    <div className="bg-white/95 rounded-lg p-3 text-center border border-white/20 shadow-sm">
+                      <div className="text-2xl font-bold text-[#003383] tabular-nums">{timeLeft.seconds}</div>
+                      <div className="text-xs text-gray-600 font-medium mt-1">Sec</div>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-4 text-center font-medium">Scadenza: 10 novembre 2025</p>
+                  <p className="text-xs text-white/80 mt-4 text-center font-medium">Scadenza: 10 novembre 2025</p>
                 </div>
 
                 {/* Subtotal */}
