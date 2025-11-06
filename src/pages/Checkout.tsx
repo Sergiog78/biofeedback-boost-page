@@ -644,32 +644,32 @@ const Checkout = () => {
                 </div>
 
                 {/* Countdown Timer */}
-                <div className="bg-accent/10 border border-accent/20 rounded-lg p-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-primary/20 rounded-xl p-5 shadow-sm">
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span className="text-xs font-semibold text-accent">Offerta scade tra:</span>
+                    <span className="text-sm font-semibold text-primary">Offerta scade tra:</span>
                   </div>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    <div className="bg-background/50 rounded p-1.5 text-center">
-                      <div className="text-lg font-bold text-foreground">{timeLeft.days}</div>
-                      <div className="text-[10px] text-muted-foreground">Giorni</div>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="bg-background rounded-lg p-3 text-center border border-border shadow-sm">
+                      <div className="text-2xl font-bold text-primary tabular-nums">{timeLeft.days}</div>
+                      <div className="text-xs text-muted-foreground font-medium mt-1">Giorni</div>
                     </div>
-                    <div className="bg-background/50 rounded p-1.5 text-center">
-                      <div className="text-lg font-bold text-foreground">{timeLeft.hours}</div>
-                      <div className="text-[10px] text-muted-foreground">Ore</div>
+                    <div className="bg-background rounded-lg p-3 text-center border border-border shadow-sm">
+                      <div className="text-2xl font-bold text-primary tabular-nums">{timeLeft.hours}</div>
+                      <div className="text-xs text-muted-foreground font-medium mt-1">Ore</div>
                     </div>
-                    <div className="bg-background/50 rounded p-1.5 text-center">
-                      <div className="text-lg font-bold text-foreground">{timeLeft.minutes}</div>
-                      <div className="text-[10px] text-muted-foreground">Min</div>
+                    <div className="bg-background rounded-lg p-3 text-center border border-border shadow-sm">
+                      <div className="text-2xl font-bold text-primary tabular-nums">{timeLeft.minutes}</div>
+                      <div className="text-xs text-muted-foreground font-medium mt-1">Min</div>
                     </div>
-                    <div className="bg-background/50 rounded p-1.5 text-center">
-                      <div className="text-lg font-bold text-foreground">{timeLeft.seconds}</div>
-                      <div className="text-[10px] text-muted-foreground">Sec</div>
+                    <div className="bg-background rounded-lg p-3 text-center border border-border shadow-sm">
+                      <div className="text-2xl font-bold text-primary tabular-nums">{timeLeft.seconds}</div>
+                      <div className="text-xs text-muted-foreground font-medium mt-1">Sec</div>
                     </div>
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-2 text-center">Scadenza: 10 novembre 2025</p>
+                  <p className="text-xs text-muted-foreground mt-4 text-center font-medium">Scadenza: 10 novembre 2025</p>
                 </div>
 
                 {/* Subtotal */}
