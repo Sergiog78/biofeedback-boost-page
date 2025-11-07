@@ -65,7 +65,7 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Create checkout session for express checkout (returns to /checkout to prefill form)
+    // Create checkout session for PayPal payment
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['paypal'],
@@ -80,7 +80,7 @@ serve(async (req) => {
       phone_number_collection: {
         enabled: true,
       },
-      success_url: `${req.headers.get("origin")}/checkout?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/checkout`,
       metadata: {
         customerEmail: email,
