@@ -3,49 +3,37 @@ import { Button } from "@/components/ui/button";
 import { Check, Star, Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const benefits = [
-  "10 incontri online live (20 ore totali)",
-  "Certificazione BFE di I livello",
-  "Materiali digitali e casi clinici guidati",
-  "Dimostrazioni pratiche in tempo reale",
-  "Accesso a convenzioni per dispositivi professionali",
-  "Supporto e discussioni interattive",
-];
-
+const benefits = ["10 incontri online live (20 ore totali)", "Certificazione BFE di I livello", "Materiali digitali e casi clinici guidati", "Dimostrazioni pratiche in tempo reale", "Accesso a convenzioni per dispositivi professionali", "Supporto e discussioni interattive"];
 const Pricing = () => {
   const navigate = useNavigate();
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
   useEffect(() => {
     const targetDate = new Date('2025-11-10T23:59:59').getTime();
-    
     const updateCountdown = () => {
       const now = new Date().getTime();
       const distance = targetDate - now;
-      
       if (distance > 0) {
         setTimeLeft({
           days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((distance % (1000 * 60)) / 1000)
+          hours: Math.floor(distance % (1000 * 60 * 60 * 24) / (1000 * 60 * 60)),
+          minutes: Math.floor(distance % (1000 * 60 * 60) / (1000 * 60)),
+          seconds: Math.floor(distance % (1000 * 60) / 1000)
         });
       }
     };
-    
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
-    
     return () => clearInterval(interval);
   }, []);
-
   const handleCheckout = () => {
     navigate('/checkout');
   };
-
-  return (
-    <section id="pricing" className="py-20 bg-gradient-to-b from-secondary/30 to-background">
+  return <section id="pricing" className="py-20 bg-gradient-to-b from-secondary/30 to-background">
       <div className="container px-4">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-accent/10 rounded-full">
@@ -105,37 +93,20 @@ const Pricing = () => {
             </CardHeader>
             <CardContent className="p-8">
               <div className="space-y-4 mb-8">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-3">
+                {benefits.map((benefit, index) => <div key={index} className="flex items-start gap-3">
                     <div className="mt-1">
                       <Check className="h-5 w-5 text-accent" />
                     </div>
                     <span className="text-lg">{benefit}</span>
-                  </div>
-                ))}
+                  </div>)}
               </div>
               
               <div className="space-y-4">
-                <Button 
-                  variant="hero" 
-                  size="xl" 
-                  className="w-full text-xl py-6"
-                  onClick={handleCheckout}
-                >
+                <Button variant="hero" size="xl" className="w-full text-xl py-6" onClick={handleCheckout}>
                   Iscriviti Ora - 280€
                 </Button>
                 
-                <div className="bg-secondary/50 p-6 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-3 font-semibold">Altre opzioni di prezzo:</p>
-                  <div className="space-y-2 text-sm">
-                    <p>
-                      <span className="font-semibold text-primary">380€</span> - 
-                      <span className="text-muted-foreground ml-2">
-                        Prezzo standard (iscrizioni dopo il 10 novembre 2025)
-                      </span>
-                    </p>
-                  </div>
-                </div>
+                
                 
                 <p className="text-center text-sm text-muted-foreground">
                   Pagamento sicuro tramite Stripe • Riceverai conferma immediata via email
@@ -151,8 +122,6 @@ const Pricing = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Pricing;
