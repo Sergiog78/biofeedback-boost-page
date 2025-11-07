@@ -27,7 +27,7 @@ const Instructor = () => {
                     Dott. Gabriele Ciccarese
                   </h2>
                   <p className="text-lg leading-relaxed tracking-tight text-muted-foreground max-w-xl text-left">
-                    Psicologo e psicoterapeuta specializzato nell'integrazione del biofeedback nella pratica clinica.
+                    Fondatore del Centro Nova Mentis, specializzato nel trattamento dei disturbi d'ansia e trauma con tecniche avanzate di biofeedback.
                   </p>
                 </div>
               </div>
@@ -35,27 +35,45 @@ const Instructor = () => {
                 <div className="flex flex-row gap-6 items-start">
                   <Check className="w-4 h-4 mt-2 text-primary" />
                   <div className="flex flex-col gap-1">
-                    <p className="font-semibold">Certificazione BFE</p>
+                    <p className="font-semibold">Fondatore Centro Nova Mentis</p>
                     <p className="text-muted-foreground text-sm">
-                      Formazione avanzata in psicofisiologia e biofeedback
+                      Centro di Psicologia e Neuroscienze Cliniche dal 2014
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-row gap-6 items-start">
                   <Check className="w-4 h-4 mt-2 text-primary" />
                   <div className="flex flex-col gap-1">
-                    <p className="font-semibold">Oltre 10 anni di esperienza</p>
+                    <p className="font-semibold">Esperto Certificato Livello III BFE</p>
                     <p className="text-muted-foreground text-sm">
-                      Pratica clinica specializzata con biofeedback
+                      Certificazione avanzata in biofeedback e psicofisiologia
                     </p>
                   </div>
                 </div>
                 <div className="flex flex-row gap-6 items-start">
                   <Check className="w-4 h-4 mt-2 text-primary" />
                   <div className="flex flex-col gap-1">
-                    <p className="font-semibold">Docente senior</p>
+                    <p className="font-semibold">Disturbi d'ansia e trauma</p>
                     <p className="text-muted-foreground text-sm">
-                      Formatore presso il Centro Nova Mentis
+                      Specializzato in attacchi di panico, ansia e traumi psicologici
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-row gap-6 items-start">
+                  <Check className="w-4 h-4 mt-2 text-primary" />
+                  <div className="flex flex-col gap-1">
+                    <p className="font-semibold">Consulente atleti professionisti</p>
+                    <p className="text-muted-foreground text-sm">
+                      Giro d'Italia e Nest Football per calciatori di massima serie
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-row gap-6 items-start">
+                  <Check className="w-4 h-4 mt-2 text-primary" />
+                  <div className="flex flex-col gap-1">
+                    <p className="font-semibold">Disturbi stress-correlati</p>
+                    <p className="text-muted-foreground text-sm">
+                      Cefalea, colon irritabile, disturbi psicosomatici
                     </p>
                   </div>
                 </div>
