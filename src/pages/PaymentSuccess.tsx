@@ -6,13 +6,14 @@ import { Check, Home, Mail } from "lucide-react";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const paymentIntentId = searchParams.get("payment_intent_id");
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [emailSent, setEmailSent] = useState(false);
 
   // DEBUG: Log URL parameters on mount
@@ -22,84 +23,77 @@ const PaymentSuccess = () => {
     console.log("Session ID from URL:", sessionId);
     console.log("Payment Intent ID from URL:", paymentIntentId);
     console.log("Search params:", searchParams.toString());
-    
+
     // Scroll to top on mount
     window.scrollTo(0, 0);
   }, []);
-
   useEffect(() => {
     console.log("=== Email Send Effect Triggered ===");
     console.log("sessionId:", sessionId);
     console.log("paymentIntentId:", paymentIntentId);
     console.log("emailSent:", emailSent);
-    console.log("Will send email?", (!sessionId && !paymentIntentId) ? "NO - Missing IDs" : emailSent ? "NO - Already sent" : "YES");
+    console.log("Will send email?", !sessionId && !paymentIntentId ? "NO - Missing IDs" : emailSent ? "NO - Already sent" : "YES");
 
     // Send confirmation email
     const sendConfirmationEmail = async () => {
-      if ((!sessionId && !paymentIntentId)) {
+      if (!sessionId && !paymentIntentId) {
         console.warn("⚠️ Cannot send email: Missing session_id and payment_intent_id");
         toast({
           title: "Attenzione",
           description: "Impossibile inviare email di conferma. Contatta l'assistenza.",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
-
       if (emailSent) {
         console.log("✅ Email already sent, skipping");
         return;
       }
-
       try {
-        console.log("📧 Invoking send-confirmation-email...", { sessionId, paymentIntentId });
-        
-        const { data, error } = await supabase.functions.invoke("send-confirmation-email", {
-          body: { 
+        console.log("📧 Invoking send-confirmation-email...", {
+          sessionId,
+          paymentIntentId
+        });
+        const {
+          data,
+          error
+        } = await supabase.functions.invoke("send-confirmation-email", {
+          body: {
             sessionId: sessionId || undefined,
             paymentIntentId: paymentIntentId || undefined
-          },
+          }
         });
-
         if (error) {
           console.error("❌ Error sending confirmation email:", error);
           toast({
             title: "Errore invio email",
             description: "Non è stato possibile inviare l'email di conferma. Contatta l'assistenza.",
-            variant: "destructive",
+            variant: "destructive"
           });
           return;
         }
-
         console.log("✅ Confirmation email sent successfully:", data);
         setEmailSent(true);
         toast({
           title: "Email inviata",
-          description: "Controlla la tua casella di posta per la conferma.",
+          description: "Controlla la tua casella di posta per la conferma."
         });
       } catch (error) {
         console.error("❌ Error invoking send-confirmation-email function:", error);
         toast({
           title: "Errore",
           description: "Si è verificato un errore. Contatta l'assistenza.",
-          variant: "destructive",
+          variant: "destructive"
         });
       }
     };
-
     sendConfirmationEmail();
   }, [sessionId, paymentIntentId, emailSent]);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-green-500/10 to-background">
+  return <div className="min-h-screen bg-gradient-to-b from-green-500/10 to-background">
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-center px-4">
-          <img 
-            src={bfeLogo} 
-            alt="BFE Logo" 
-            className="h-8 opacity-80"
-          />
+          <img src={bfeLogo} alt="BFE Logo" className="h-8 opacity-80" />
         </div>
       </header>
 
@@ -148,18 +142,12 @@ const PaymentSuccess = () => {
               </ul>
             </div>
 
-            {(sessionId || paymentIntentId) && (
-              <div className="text-xs text-muted-foreground text-center py-2">
+            {(sessionId || paymentIntentId) && <div className="text-xs text-muted-foreground text-center py-2">
                 Riferimento transazione: {(sessionId || paymentIntentId || '').slice(0, 20)}...
-              </div>
-            )}
+              </div>}
 
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button 
-                onClick={() => navigate("/")} 
-                className="flex-1"
-                variant="hero"
-              >
+              <Button onClick={() => navigate("/")} className="flex-1" variant="hero">
                 <Home className="h-4 w-4 mr-2" />
                 Torna alla home
               </Button>
@@ -167,13 +155,11 @@ const PaymentSuccess = () => {
 
             <div className="text-center text-sm text-muted-foreground pt-4 border-t">
               <p>Hai domande? Contattaci a:</p>
-              <p className="font-medium text-foreground mt-1">info@biofeedback-corso.it</p>
+              <p className="font-medium text-foreground mt-1">formazione@centronovamentis.it</p>
             </div>
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default PaymentSuccess;
