@@ -48,6 +48,23 @@ serve(async (req) => {
         throw new Error("Payment not completed");
       }
 
+      // CRITICAL: Verify this is for the Biofeedback course (280 EUR = 28000 cents)
+      if (paymentIntent.amount !== 28000) {
+        console.log("Skipping email - not a Biofeedback course purchase (wrong amount)");
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: "Not a Biofeedback course purchase - wrong amount" 
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          }
+        );
+      }
+
+      console.log("Confirmed: This is a Biofeedback course purchase (card payment)");
+
       // Get customer details from metadata or customer object
       if (paymentIntent.customer) {
         const customerId = typeof paymentIntent.customer === 'string' 
