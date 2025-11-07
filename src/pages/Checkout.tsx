@@ -134,7 +134,7 @@ const Checkout = () => {
                 title: "Pagamento completato",
                 description: "Il tuo pagamento è stato elaborato con successo!",
               });
-              setTimeout(() => navigate('/payment-success'), 2000);
+              setTimeout(() => navigate(`/payment-success?session_id=${sessionId}`), 2000);
             }
           }
 
@@ -181,8 +181,8 @@ const Checkout = () => {
     initStripe();
   }, []);
 
-  const handlePaymentSuccess = () => {
-    navigate('/payment-success');
+  const handlePaymentSuccess = (paymentIntentId: string) => {
+    navigate(`/payment-success?payment_intent_id=${paymentIntentId}`);
   };
 
   const isFormValid = form.formState.isValid;

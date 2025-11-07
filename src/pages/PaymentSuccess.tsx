@@ -11,22 +11,28 @@ const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const paymentIntentId = searchParams.get("payment_intent_id");
   const { toast } = useToast();
   const [emailSent, setEmailSent] = useState(false);
 
   useEffect(() => {
     // Scroll to top on mount
     window.scrollTo(0, 0);
+  }, []);
 
+  useEffect(() => {
     // Send confirmation email
     const sendConfirmationEmail = async () => {
-      if (!sessionId || emailSent) return;
+      if ((!sessionId && !paymentIntentId) || emailSent) return;
 
       try {
-        console.log("Sending confirmation email for session:", sessionId);
+        console.log("Sending confirmation email", { sessionId, paymentIntentId });
         
         const { data, error } = await supabase.functions.invoke("send-confirmation-email", {
-          body: { sessionId },
+          body: { 
+            sessionId: sessionId || undefined,
+            paymentIntentId: paymentIntentId || undefined
+          },
         });
 
         if (error) {
@@ -42,7 +48,7 @@ const PaymentSuccess = () => {
     };
 
     sendConfirmationEmail();
-  }, [sessionId, emailSent]);
+  }, [sessionId, paymentIntentId, emailSent]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-500/10 to-background">
@@ -102,9 +108,9 @@ const PaymentSuccess = () => {
               </ul>
             </div>
 
-            {sessionId && (
+            {(sessionId || paymentIntentId) && (
               <div className="text-xs text-muted-foreground text-center py-2">
-                Riferimento transazione: {sessionId.slice(0, 20)}...
+                Riferimento transazione: {(sessionId || paymentIntentId || '').slice(0, 20)}...
               </div>
             )}
 

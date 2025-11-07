@@ -3,7 +3,7 @@ import { CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useEle
 import { useToast } from "@/hooks/use-toast";
 
 interface StripePaymentFormProps {
-  onSuccess: () => void;
+  onSuccess: (paymentIntentId: string) => void;
   onValidationChange: (isValid: boolean) => void;
   clientSecret: string;
 }
@@ -60,7 +60,11 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
             variant: "destructive",
           });
         } else if (paymentIntent && paymentIntent.status === "succeeded") {
-          onSuccess();
+          toast({
+            title: "Pagamento completato!",
+            description: "Il tuo pagamento è stato elaborato con successo.",
+          });
+          onSuccess(paymentIntent.id);
         }
       } catch (error) {
         toast({

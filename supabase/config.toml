@@ -1,6 +1,12 @@
 project_id = "unawxvbbievblwkdttzi"
 
+[functions.create-payment]
+verify_jwt = false
+
 [functions.create-payment-intent]
+verify_jwt = false
+
+[functions.get-checkout-session]
 verify_jwt = false
 
 [functions.get-stripe-publishable-key]

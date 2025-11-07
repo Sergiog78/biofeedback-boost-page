@@ -15,59 +15,109 @@ serve(async (req) => {
   }
 
   try {
-    const { sessionId } = await req.json();
+    const { sessionId, paymentIntentId } = await req.json();
     
-    if (!sessionId) {
-      throw new Error("Session ID is required");
+    if (!sessionId && !paymentIntentId) {
+      throw new Error("Either sessionId or paymentIntentId is required");
     }
 
-    console.log("Processing confirmation email for session:", sessionId);
+    console.log("Processing confirmation email", { sessionId, paymentIntentId });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Retrieve the checkout session with line items to verify the product
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['line_items'],
-    });
-    
-    console.log("Retrieved session:", session.id, "Payment status:", session.payment_status);
-
-    // Verify payment was successful
-    if (session.payment_status !== "paid") {
-      throw new Error("Payment not completed");
-    }
-
-    // CRITICAL: Verify this is specifically for the Biofeedback course
     const BIOFEEDBACK_COURSE_PRICE_ID = "price_1SPPGeGSUlmGTzYSahKSeVIJ";
-    const lineItems = session.line_items?.data || [];
-    
-    const isBiofeedbackCourse = lineItems.some((item: any) => 
-      item.price?.id === BIOFEEDBACK_COURSE_PRICE_ID
-    );
+    let customerEmail: string | null = null;
+    let customerName = "Cliente";
+    let customerPhone: string | null = null;
+    let stripeCustomerId: string | null = null;
+    let amountPaid = 28000; // Default 280 EUR
 
-    if (!isBiofeedbackCourse) {
-      console.log("Skipping email - not a Biofeedback course purchase");
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: "Not a Biofeedback course purchase" 
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
+    // Handle PaymentIntent (card payments)
+    if (paymentIntentId) {
+      console.log("Processing PaymentIntent:", paymentIntentId);
+      
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      console.log("Retrieved PaymentIntent:", paymentIntent.id, "Status:", paymentIntent.status);
+
+      // Verify payment was successful
+      if (paymentIntent.status !== "succeeded") {
+        throw new Error("Payment not completed");
+      }
+
+      // Get customer details from metadata or customer object
+      if (paymentIntent.customer) {
+        const customerId = typeof paymentIntent.customer === 'string' 
+          ? paymentIntent.customer 
+          : paymentIntent.customer.id;
+        stripeCustomerId = customerId;
+        
+        const customer = await stripe.customers.retrieve(customerId);
+        if ('email' in customer) {
+          customerEmail = customer.email;
+          customerName = customer.name || "Cliente";
         }
-      );
+      }
+
+      // Fallback to metadata if customer not found
+      if (!customerEmail && paymentIntent.metadata) {
+        customerEmail = paymentIntent.metadata.customerEmail || null;
+        customerName = paymentIntent.metadata.customerName || "Cliente";
+      }
+
+      amountPaid = paymentIntent.amount;
+      console.log("PaymentIntent customer details:", { email: customerEmail, name: customerName });
     }
+    
+    // Handle Checkout Session (PayPal payments)
+    if (sessionId) {
+      console.log("Processing Checkout Session:", sessionId);
+      
+      const session = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ['line_items'],
+      });
+      
+      console.log("Retrieved session:", session.id, "Payment status:", session.payment_status);
 
-    console.log("Confirmed: This is a Biofeedback course purchase");
+      // Verify payment was successful
+      if (session.payment_status !== "paid") {
+        throw new Error("Payment not completed");
+      }
 
-    // Get customer details
-    const customerEmail = session.customer_details?.email;
-    const customerName = session.customer_details?.name || "Cliente";
-    const customerPhone = session.customer_details?.phone || null;
+      // Verify this is specifically for the Biofeedback course
+      const lineItems = session.line_items?.data || [];
+      const isBiofeedbackCourse = lineItems.some((item: any) => 
+        item.price?.id === BIOFEEDBACK_COURSE_PRICE_ID
+      );
+
+      if (!isBiofeedbackCourse) {
+        console.log("Skipping email - not a Biofeedback course purchase");
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: "Not a Biofeedback course purchase" 
+          }),
+          {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          }
+        );
+      }
+
+      console.log("Confirmed: This is a Biofeedback course purchase");
+
+      // Get customer details from session
+      customerEmail = session.customer_details?.email || null;
+      customerName = session.customer_details?.name || "Cliente";
+      customerPhone = session.customer_details?.phone || null;
+      stripeCustomerId = typeof session.customer === 'string' ? session.customer : null;
+      amountPaid = session.amount_total || 28000;
+      
+      console.log("Session customer details:", { email: customerEmail, name: customerName, phone: customerPhone });
+    }
     
     if (!customerEmail) {
       throw new Error("Customer email not found");
@@ -98,10 +148,11 @@ serve(async (req) => {
           first_name: firstName,
           last_name: lastName,
           phone: customerPhone,
-          stripe_session_id: sessionId,
-          stripe_customer_id: typeof session.customer === 'string' ? session.customer : null,
+          stripe_session_id: sessionId || null,
+          stripe_payment_intent_id: paymentIntentId || null,
+          stripe_customer_id: stripeCustomerId,
           payment_status: 'paid',
-          amount_paid: session.amount_total || 28000, // 280 EUR in cents
+          amount_paid: amountPaid,
         })
         .select()
         .single();
