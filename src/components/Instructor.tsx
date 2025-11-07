@@ -67,9 +67,9 @@ const Instructor = () => {
                 <div className="flex flex-row gap-6 items-start">
                   <Check className="w-4 h-4 mt-2 text-primary" />
                   <div className="flex flex-col gap-1">
-                    <p className="font-semibold">Disturbi stress-correlati</p>
+                    <p className="font-semibold">Docente scuola di specializzazione</p>
                     <p className="text-muted-foreground text-sm">
-                      Cefalea, colon irritabile, disturbi psicosomatici
+                      Docente presso scuola di specializzazione in Psicoterapia
                     </p>
                   </div>
                 </div>
