@@ -27,6 +27,7 @@ export type Database = {
           phone: string | null
           profession: string | null
           stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
           stripe_session_id: string | null
         }
         Insert: {
@@ -41,6 +42,7 @@ export type Database = {
           phone?: string | null
           profession?: string | null
           stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
         }
         Update: {
@@ -55,6 +57,7 @@ export type Database = {
           phone?: string | null
           profession?: string | null
           stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
         }
         Relationships: []
