@@ -4,25 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X, ArrowLeft, RefreshCw } from "lucide-react";
 import bfeLogo from "@/assets/bfe-logo-text.png";
-
 const PaymentCanceled = () => {
   const navigate = useNavigate();
-
   useEffect(() => {
     // Scroll to top on mount
     window.scrollTo(0, 0);
   }, []);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-secondary/20 to-background">
+  return <div className="min-h-screen bg-gradient-to-b from-secondary/20 to-background">
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-center px-4">
-          <img 
-            src={bfeLogo} 
-            alt="BFE Logo" 
-            className="h-8 opacity-80"
-          />
+          <img src={bfeLogo} alt="BFE Logo" className="h-8 opacity-80" />
         </div>
       </header>
 
@@ -57,19 +49,11 @@ const PaymentCanceled = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Button 
-                onClick={() => navigate("/checkout")} 
-                className="flex-1"
-                variant="hero"
-              >
+              <Button onClick={() => navigate("/checkout")} className="flex-1" variant="hero">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Riprova il pagamento
               </Button>
-              <Button 
-                onClick={() => navigate("/")} 
-                variant="outline"
-                className="flex-1"
-              >
+              <Button onClick={() => navigate("/")} variant="outline" className="flex-1">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Torna alla home
               </Button>
@@ -77,13 +61,11 @@ const PaymentCanceled = () => {
 
             <div className="text-center text-sm text-muted-foreground pt-4 border-t">
               <p>Hai domande? Contattaci a:</p>
-              <p className="font-medium text-foreground mt-1">info@biofeedback-corso.it</p>
+              <p className="font-medium text-foreground mt-1">formazione@centronovamentis.it</p>
             </div>
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default PaymentCanceled;
