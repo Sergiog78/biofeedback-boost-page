@@ -1,10 +1,8 @@
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import gabrieleCiccarese from "@/assets/gabriele-ciccarese.png";
-
 const Instructor = () => {
-  return (
-    <section className="py-20 bg-secondary/5">
+  return <section className="py-20 bg-secondary/5">
       <div className="container px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
@@ -62,10 +60,8 @@ const Instructor = () => {
                 <div className="flex flex-row gap-6 items-start">
                   <Check className="w-4 h-4 mt-2 text-primary" />
                   <div className="flex flex-col gap-1">
-                    <p className="font-semibold">Consulente atleti professionisti</p>
-                    <p className="text-muted-foreground text-sm">
-                      Giro d'Italia e Nest Football per calciatori di massima serie
-                    </p>
+                    <p className="font-semibold">Consulente atleti d'élite</p>
+                    <p className="text-muted-foreground text-sm">Consulente per atleti d'élite tra cui calciatori di serie A e ciclisti del Giro d'Italia </p>
                   </div>
                 </div>
                 <div className="flex flex-row gap-6 items-start">
@@ -80,17 +76,11 @@ const Instructor = () => {
               </div>
             </div>
             <div className="relative rounded-md overflow-hidden bg-muted">
-              <img
-                src={gabrieleCiccarese}
-                alt="Dott. Gabriele Ciccarese"
-                className="w-full h-auto"
-              />
+              <img src={gabrieleCiccarese} alt="Dott. Gabriele Ciccarese" className="w-full h-auto" />
             </div>
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Instructor;
