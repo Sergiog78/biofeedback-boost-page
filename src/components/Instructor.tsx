@@ -61,7 +61,7 @@ const Instructor = () => {
                   <Check className="w-4 h-4 mt-2 text-primary" />
                   <div className="flex flex-col gap-1">
                     <p className="font-semibold">Consulente atleti d'élite</p>
-                    <p className="text-muted-foreground text-sm">Consulente per atleti d'élite tra cui calciatori di serie A e ciclisti del Giro d'Italia </p>
+                    <p className="text-muted-foreground text-sm">Consulente per atleti d'élite tra cui calciatori di serie A e ciclisti del Giro d'Italia. Consulente NEST Football.</p>
                   </div>
                 </div>
                 <div className="flex flex-row gap-6 items-start">
