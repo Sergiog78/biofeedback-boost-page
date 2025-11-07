@@ -15,18 +15,44 @@ const PaymentSuccess = () => {
   const { toast } = useToast();
   const [emailSent, setEmailSent] = useState(false);
 
+  // DEBUG: Log URL parameters on mount
   useEffect(() => {
+    console.log("=== PaymentSuccess Page Loaded ===");
+    console.log("Current URL:", window.location.href);
+    console.log("Session ID from URL:", sessionId);
+    console.log("Payment Intent ID from URL:", paymentIntentId);
+    console.log("Search params:", searchParams.toString());
+    
     // Scroll to top on mount
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
+    console.log("=== Email Send Effect Triggered ===");
+    console.log("sessionId:", sessionId);
+    console.log("paymentIntentId:", paymentIntentId);
+    console.log("emailSent:", emailSent);
+    console.log("Will send email?", (!sessionId && !paymentIntentId) ? "NO - Missing IDs" : emailSent ? "NO - Already sent" : "YES");
+
     // Send confirmation email
     const sendConfirmationEmail = async () => {
-      if ((!sessionId && !paymentIntentId) || emailSent) return;
+      if ((!sessionId && !paymentIntentId)) {
+        console.warn("⚠️ Cannot send email: Missing session_id and payment_intent_id");
+        toast({
+          title: "Attenzione",
+          description: "Impossibile inviare email di conferma. Contatta l'assistenza.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (emailSent) {
+        console.log("✅ Email already sent, skipping");
+        return;
+      }
 
       try {
-        console.log("Sending confirmation email", { sessionId, paymentIntentId });
+        console.log("📧 Invoking send-confirmation-email...", { sessionId, paymentIntentId });
         
         const { data, error } = await supabase.functions.invoke("send-confirmation-email", {
           body: { 
@@ -36,14 +62,28 @@ const PaymentSuccess = () => {
         });
 
         if (error) {
-          console.error("Error sending confirmation email:", error);
+          console.error("❌ Error sending confirmation email:", error);
+          toast({
+            title: "Errore invio email",
+            description: "Non è stato possibile inviare l'email di conferma. Contatta l'assistenza.",
+            variant: "destructive",
+          });
           return;
         }
 
-        console.log("Confirmation email sent successfully:", data);
+        console.log("✅ Confirmation email sent successfully:", data);
         setEmailSent(true);
+        toast({
+          title: "Email inviata",
+          description: "Controlla la tua casella di posta per la conferma.",
+        });
       } catch (error) {
-        console.error("Error invoking send-confirmation-email function:", error);
+        console.error("❌ Error invoking send-confirmation-email function:", error);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore. Contatta l'assistenza.",
+          variant: "destructive",
+        });
       }
     };
 

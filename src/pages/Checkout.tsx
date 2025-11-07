@@ -130,11 +130,15 @@ const Checkout = () => {
 
             // Check if payment was already completed
             if (data.customer.paymentStatus === 'paid') {
+              console.log("✅ PayPal payment confirmed, redirecting to success page with session_id:", sessionId);
               toast({
                 title: "Pagamento completato",
                 description: "Il tuo pagamento è stato elaborato con successo!",
               });
-              setTimeout(() => navigate(`/payment-success?session_id=${sessionId}`), 2000);
+              setTimeout(() => {
+                console.log("🔀 Navigating to:", `/payment-success?session_id=${sessionId}`);
+                navigate(`/payment-success?session_id=${sessionId}`);
+              }, 2000);
             }
           }
 
