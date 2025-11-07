@@ -104,16 +104,28 @@ const Checkout = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const sessionId = urlParams.get('session_id');
       
+      console.log("=== Checkout Page Load ===");
+      console.log("Current URL:", window.location.href);
+      console.log("Session ID from URL:", sessionId);
+      
       if (sessionId) {
+        console.log("🎯 Returning from PayPal with session_id:", sessionId);
         try {
+          console.log("📞 Calling get-checkout-session...");
           // Retrieve customer data from Stripe session
           const { data, error } = await supabase.functions.invoke('get-checkout-session', {
             body: { sessionId }
           });
 
-          if (error) throw error;
+          console.log("Response from get-checkout-session:", { data, error });
+
+          if (error) {
+            console.error("❌ Error from get-checkout-session:", error);
+            throw error;
+          }
 
           if (data?.customer) {
+            console.log("✅ Customer data received:", data.customer);
             // Prefill form with PayPal data
             form.reset({
               firstName: data.customer.firstName || '',
@@ -139,25 +151,34 @@ const Checkout = () => {
                 console.log("🔀 Navigating to:", `/payment-success?session_id=${sessionId}`);
                 navigate(`/payment-success?session_id=${sessionId}`);
               }, 2000);
+            } else {
+              console.log("⚠️ Payment not completed yet. Status:", data.customer.paymentStatus);
             }
+          } else {
+            console.warn("⚠️ No customer data in response");
           }
 
           // Clean up URL
+          console.log("🧹 Cleaning up URL");
           window.history.replaceState({}, '', '/checkout');
         } catch (e) {
-          console.error('Error loading PayPal data:', e);
+          console.error('❌ Error loading PayPal data:', e);
         }
       } else {
+        console.log("No session_id in URL, checking localStorage...");
         // Load saved data from localStorage
         const savedData = localStorage.getItem('checkoutData');
         if (savedData) {
           try {
             const parsed = JSON.parse(savedData);
+            console.log("✅ Loaded data from localStorage");
             form.reset(parsed);
             setRememberMe(true);
           } catch (e) {
             console.error('Error loading saved checkout data:', e);
           }
+        } else {
+          console.log("No saved data in localStorage");
         }
       }
     };
@@ -272,9 +293,13 @@ const Checkout = () => {
   const handlePayPalCheckout = async () => {
     const formValues = form.getValues();
     
+    console.log("=== PayPal Checkout Started ===");
+    console.log("Form values:", formValues);
+    
     setIsProcessing(true);
 
     try {
+      console.log("📞 Calling create-payment edge function...");
       // Create checkout session with PayPal
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
@@ -284,12 +309,26 @@ const Checkout = () => {
         }
       });
 
-      if (error) throw error;
-      if (!data?.url) throw new Error('No checkout URL returned');
+      console.log("Response from create-payment:", { data, error });
 
+      if (error) {
+        console.error("❌ Error from create-payment:", error);
+        throw error;
+      }
+      if (!data?.url) {
+        console.error("❌ No checkout URL returned");
+        throw new Error('No checkout URL returned');
+      }
+
+      console.log("✅ Checkout URL received:", data.url);
+      console.log("🌐 Opening Stripe Checkout in new tab...");
+      
       // Redirect to Stripe Checkout with PayPal
       window.open(data.url, '_blank');
+      
+      console.log("✅ PayPal checkout window opened");
     } catch (error) {
+      console.error("❌ PayPal checkout error:", error);
       toast({
         title: "Errore",
         description: "Si è verificato un errore. Riprova tra poco.",
