@@ -99,18 +99,18 @@ serve(async (req) => {
       
       console.log("Retrieved session:", session.id, "Payment status:", session.payment_status);
 
-      // Verify payment was successful
-      if (session.payment_status !== "paid") {
+      // Verify payment was completed
+      if (session.payment_status !== 'paid') {
         throw new Error("Payment not completed");
       }
 
-      // Verify this is specifically for the Biofeedback course
+      // CRITICAL: Verify this is for the Biofeedback course
       const lineItems = session.line_items?.data || [];
-      const isBiofeedbackCourse = lineItems.some((item: any) => 
+      const hasBiofeedbackCourse = lineItems.some((item: any) => 
         item.price?.id === BIOFEEDBACK_COURSE_PRICE_ID
       );
 
-      if (!isBiofeedbackCourse) {
+      if (!hasBiofeedbackCourse) {
         console.log("Skipping email - not a Biofeedback course purchase");
         return new Response(
           JSON.stringify({ 
@@ -124,15 +124,20 @@ serve(async (req) => {
         );
       }
 
-      console.log("Confirmed: This is a Biofeedback course purchase");
+      console.log("Confirmed: This is a Biofeedback course purchase (PayPal payment)");
 
       // Get customer details from session
-      customerEmail = session.customer_details?.email || null;
+      customerEmail = session.customer_details?.email || session.customer_email;
       customerName = session.customer_details?.name || "Cliente";
       customerPhone = session.customer_details?.phone || null;
-      stripeCustomerId = typeof session.customer === 'string' ? session.customer : null;
-      amountPaid = session.amount_total || 28000;
       
+      if (session.customer) {
+        stripeCustomerId = typeof session.customer === 'string' 
+          ? session.customer 
+          : session.customer.id;
+      }
+
+      amountPaid = session.amount_total || 28000;
       console.log("Session customer details:", { email: customerEmail, name: customerName, phone: customerPhone });
     }
     
@@ -250,25 +255,29 @@ serve(async (req) => {
               <p>Abbiamo ricevuto correttamente il pagamento della quota di <strong>280€</strong>: la sua iscrizione è ora confermata ✅</p>
               
               <div class="highlight">
-                <p><span class="emoji">🧠</span> Il corso inizierà <strong>mercoledì 4 dicembre</strong> e si svolgerà in diretta online, offrendo un percorso pratico e approfondito per integrare le tecniche di biofeedback nella pratica clinica.</p>
+                <p><span class="emoji">🧠</span> Il corso inizierà <strong>mercoledì 4 dicembre 2025</strong> e si svolgerà in diretta online, offrendo un percorso pratico e approfondito per integrare le tecniche di biofeedback nella pratica clinica.</p>
               </div>
               
               <p><strong>Nelle prossime settimane riceverà via email:</strong></p>
               <ul>
                 <li>📩 le istruzioni dettagliate per accedere alla piattaforma online,</li>
-                <li>📅 il calendario delle lezioni in diretta,</li>
-                <li>e tutte le informazioni utili per prepararsi al meglio all'avvio del corso.</li>
+                <li>📖 i materiali didattici preparatori,</li>
+                <li>👥 informazioni per interagire con il docente e gli altri partecipanti.</li>
               </ul>
               
-              <p>Nel frattempo, le consigliamo di salvare questo indirizzo email tra i contatti per assicurarsi di ricevere senza problemi tutti gli aggiornamenti.</p>
+              <p><strong>Dettagli del corso:</strong></p>
+              <ul>
+                <li>📅 Inizio: mercoledì 4 dicembre 2025</li>
+                <li>⏰ 10 lezioni da 2 ore (20 ore totali)</li>
+                <li>💻 Modalità: online in diretta</li>
+                <li>🎓 Certificazione BFE Italia</li>
+              </ul>
               
-              <p>Per qualsiasi necessità, può contattare la nostra segreteria didattica all'indirizzo:<br>
-              📧 <a href="mailto:formazione@centronovamentis.it">formazione@centronovamentis.it</a></p>
-            </div>
-            
-            <div class="footer">
-              <p><strong>A presto,<br>
-              Segreteria Didattica – Centro Nova Mentis</strong></p>
+              <div class="footer">
+                <p>Per qualsiasi domanda o necessità, non esiti a contattarci:</p>
+                <p><strong>Email:</strong> formazione@centronovamentis.it</p>
+                <p style="margin-top: 20px;">Cordiali saluti,<br><strong>Il Team del Centro Nova Mentis</strong></p>
+              </div>
             </div>
           </body>
         </html>

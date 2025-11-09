@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.send-confirmation-email]
 verify_jwt = false
+
+[functions.resend-missing-emails]
+verify_jwt = false
