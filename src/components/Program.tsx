@@ -8,7 +8,7 @@ import {
 
 const sessions = [
   {
-    date: "4 dicembre",
+    date: "4 dicembre 2025",
     number: "1ª Lezione",
     title: "Mente, corpo e relazione",
     subtitle: "Le basi del dialogo psicofisiologico",
@@ -22,7 +22,7 @@ const sessions = [
     ]
   },
   {
-    date: "11 dicembre",
+    date: "11 dicembre 2025",
     number: "2ª Lezione",
     title: "Conduttanza cutanea (SC)",
     subtitle: "Indicatore di attivazione emotiva",
@@ -37,7 +37,7 @@ const sessions = [
     ]
   },
   {
-    date: "18 dicembre",
+    date: "18 dicembre 2025",
     number: "3ª Lezione",
     title: "Elettromiografia (sEMG)",
     subtitle: "La tensione muscolare come finestra sull'attivazione corporea",
@@ -52,7 +52,7 @@ const sessions = [
     ]
   },
   {
-    date: "8 gennaio",
+    date: "8 gennaio 2026",
     number: "4ª Lezione",
     title: "Temperatura cutanea (TEMP)",
     subtitle: "Il termometro della regolazione corporea",
@@ -67,7 +67,7 @@ const sessions = [
     ]
   },
   {
-    date: "15 gennaio",
+    date: "15 gennaio 2026",
     number: "5ª Lezione",
     title: "Respirazione (RESP)",
     subtitle: "Il respiro come ponte tra fisiologia e consapevolezza",
@@ -82,7 +82,7 @@ const sessions = [
     ]
   },
   {
-    date: "22 gennaio",
+    date: "22 gennaio 2026",
     number: "6ª Lezione",
     title: "Variabilità cardiaca (HRV)",
     subtitle: "Il cuore come specchio della flessibilità fisiologica",
@@ -96,7 +96,7 @@ const sessions = [
     ]
   },
   {
-    date: "29 gennaio",
+    date: "29 gennaio 2026",
     number: "7ª Lezione",
     title: "Assessment psicofisiologico",
     subtitle: "Valutare lo stress per comprendere la regolazione",
@@ -110,7 +110,7 @@ const sessions = [
     ]
   },
   {
-    date: "5 febbraio",
+    date: "5 febbraio 2026",
     number: "8ª Lezione",
     title: "Training biofeedback",
     subtitle: "Dal dato fisiologico al cambiamento terapeutico",
@@ -124,7 +124,7 @@ const sessions = [
     ]
   },
   {
-    date: "17 febbraio",
+    date: "17 febbraio 2026",
     number: "9ª Lezione",
     title: "Casi clinici complessi",
     subtitle: "Il corpo racconta la mente",
@@ -138,7 +138,7 @@ const sessions = [
     ]
   },
   {
-    date: "19 febbraio",
+    date: "19 febbraio 2026",
     number: "10ª Lezione",
     title: "Strumentazione e pratica",
     subtitle: "Dalla teoria alla valigetta",
@@ -169,7 +169,7 @@ const Program = () => {
           <div className="flex flex-wrap justify-center gap-6 text-sm">
             <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
               <Calendar className="h-5 w-5 text-accent" />
-              <span className="font-medium">Inizio: 4 dicembre 2024</span>
+              <span className="font-medium">Inizio: 4 dicembre 2025</span>
             </div>
             <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full">
               <Clock className="h-5 w-5 text-accent" />

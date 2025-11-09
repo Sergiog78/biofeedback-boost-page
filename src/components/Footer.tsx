@@ -16,7 +16,7 @@ const Footer = () => {
               <li>10 incontri online</li>
               <li>20 ore totali</li>
               <li>Certificazione BFE</li>
-              <li>Inizio: 4 dicembre 2024</li>
+              <li>Inizio: 4 dicembre 2025</li>
             </ul>
           </div>
           
