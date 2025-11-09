@@ -10,10 +10,13 @@ const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  const paymentIntentId = searchParams.get("payment_intent_id");
-  const {
-    toast
-  } = useToast();
+  // Support both our param (payment_intent_id) and Stripe's redirect param (payment_intent),
+  // and extract ID from payment_intent_client_secret if needed
+  const paymentIntentId =
+    searchParams.get("payment_intent_id") ||
+    searchParams.get("payment_intent") ||
+    (searchParams.get("payment_intent_client_secret")?.split("_secret")[0] ?? null);
+  const { toast } = useToast();
   const [emailSent, setEmailSent] = useState(false);
 
   // DEBUG: Log URL parameters on mount
