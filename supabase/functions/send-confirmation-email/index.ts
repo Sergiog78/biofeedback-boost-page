@@ -34,6 +34,7 @@ serve(async (req) => {
     let customerPhone: string | null = null;
     let stripeCustomerId: string | null = null;
     let amountPaid = 28000; // Default 280 EUR
+    let profession: string | null = null;
 
     // Handle PaymentIntent (card payments)
     let paymentIntent: any = null;
@@ -71,7 +72,8 @@ serve(async (req) => {
         customerEmail = paymentIntent.metadata.customerEmail || null;
         customerName = paymentIntent.metadata.customerName || "Cliente";
         customerPhone = paymentIntent.metadata.customerPhone || null;
-        console.log("Metadata found:", { email: customerEmail, name: customerName, phone: customerPhone });
+        profession = paymentIntent.metadata.customerProfession || null;
+        console.log("Metadata found:", { email: customerEmail, name: customerName, phone: customerPhone, profession });
       }
 
       // Get Stripe customer ID for reference
@@ -143,6 +145,11 @@ serve(async (req) => {
       customerName = session.customer_details?.name || "Cliente";
       customerPhone = session.customer_details?.phone || null;
       
+      // Get profession from session metadata
+      if (session.metadata) {
+        profession = session.metadata.customerProfession || null;
+      }
+      
       if (session.customer) {
         stripeCustomerId = typeof session.customer === 'string' 
           ? session.customer 
@@ -150,7 +157,7 @@ serve(async (req) => {
       }
 
       amountPaid = session.amount_total || 28000;
-      console.log("Session customer details:", { email: customerEmail, name: customerName, phone: customerPhone });
+      console.log("Session customer details:", { email: customerEmail, name: customerName, phone: customerPhone, profession });
     }
     
     if (!customerEmail) {
@@ -162,13 +169,7 @@ serve(async (req) => {
     const firstName = nameParts[0] || customerName;
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    // Get profession from PaymentIntent metadata
-    let profession: string | null = null;
-    if (paymentIntent && paymentIntent.metadata) {
-      profession = paymentIntent.metadata.customerProfession || null;
-    }
-
-    console.log("Customer details:", { email: customerEmail, name: customerName, phone: customerPhone, profession });
+    console.log("Final customer details:", { email: customerEmail, name: customerName, phone: customerPhone, profession });
 
     // Initialize Supabase client
     const supabaseClient = createClient(

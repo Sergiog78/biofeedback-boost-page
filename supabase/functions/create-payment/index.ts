@@ -28,6 +28,10 @@ const validateInput = (data: any) => {
     errors.push('Invalid last name');
   }
   
+  if (data.profession && typeof data.profession === 'string' && data.profession.length > 100) {
+    errors.push('Profession too long');
+  }
+  
   return errors;
 };
 
@@ -52,7 +56,7 @@ serve(async (req) => {
       );
     }
     
-    const { email, firstName, lastName } = body;
+    const { email, firstName, lastName, profession } = body;
 
     // Initialize Stripe with secret key
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -93,6 +97,7 @@ serve(async (req) => {
       metadata: {
         customerEmail: email,
         customerName: `${firstName} ${lastName}`,
+        customerProfession: profession || '',
       },
     });
 

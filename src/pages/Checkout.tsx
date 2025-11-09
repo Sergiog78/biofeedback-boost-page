@@ -318,6 +318,7 @@ const Checkout = () => {
           email: formValues.email,
           firstName: formValues.firstName,
           lastName: formValues.lastName,
+          profession: formValues.profession,
         }
       });
 
