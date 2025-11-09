@@ -31,6 +31,16 @@ const validateInput = (data: any) => {
   if (!data.amount || typeof data.amount !== 'number' || data.amount < 1 || data.amount > 100000) {
     errors.push('Invalid amount');
   }
+
+  // Phone is optional but if provided must be valid
+  if (data.phone && (typeof data.phone !== 'string' || data.phone.length < 8 || data.phone.length > 20)) {
+    errors.push('Invalid phone number');
+  }
+
+  // Profession is optional but if provided must be valid
+  if (data.profession && (typeof data.profession !== 'string' || data.profession.length > 200)) {
+    errors.push('Invalid profession');
+  }
   
   return errors;
 };
@@ -55,7 +65,9 @@ serve(async (req) => {
       );
     }
     
-    const { email, firstName, lastName, amount } = body;
+    const { email, firstName, lastName, amount, phone, profession } = body;
+
+    console.log("Creating PaymentIntent with data:", { email, firstName, lastName, phone, profession });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
@@ -67,12 +79,15 @@ serve(async (req) => {
     
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
+      console.log("Found existing customer:", customerId);
     } else {
       const customer = await stripe.customers.create({
         email,
         name: `${firstName} ${lastName}`,
+        phone: phone || undefined,
       });
       customerId = customer.id;
+      console.log("Created new customer:", customerId);
     }
 
     // Create payment intent restricted to card only
@@ -84,8 +99,12 @@ serve(async (req) => {
       metadata: {
         customerEmail: email,
         customerName: `${firstName} ${lastName}`,
+        customerPhone: phone || '',
+        customerProfession: profession || '',
       },
     });
+
+    console.log("PaymentIntent created:", paymentIntent.id);
 
     return new Response(
       JSON.stringify({ clientSecret: paymentIntent.client_secret }),

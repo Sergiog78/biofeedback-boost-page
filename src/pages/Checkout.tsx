@@ -220,45 +220,6 @@ const Checkout = () => {
     }
   }, [paymentMethod]);
 
-  // Create PaymentIntent when card payment is selected
-  useEffect(() => {
-    const createPaymentIntent = async () => {
-      if (paymentMethod === 'card' && !clientSecret && !isProcessing) {
-        const formValues = form.getValues();
-        const safeEmail = formValues.email || 'guest@checkout.com';
-        const safeFirstName = formValues.firstName || 'Guest';
-        const safeLastName = formValues.lastName || 'User';
-        
-        setIsProcessing(true);
-        try {
-          const { data: intentData, error: intentError } = await supabase.functions.invoke(
-            'create-payment-intent',
-            {
-              body: { 
-                amount: 280,
-                email: safeEmail,
-                firstName: safeFirstName,
-                lastName: safeLastName,
-              },
-            }
-          );
-
-          if (intentError) throw intentError;
-
-          if (intentData?.clientSecret) {
-            setClientSecret(intentData.clientSecret);
-          }
-        } catch (error: any) {
-          console.error('Error creating payment intent:', error);
-        } finally {
-          setIsProcessing(false);
-        }
-      }
-    };
-
-    createPaymentIntent();
-  }, [paymentMethod, clientSecret, isProcessing]);
-
   const handleFormSubmit = async (values: z.infer<typeof checkoutSchema>) => {
     if (!acceptedTerms) {
       toast({
@@ -280,9 +241,50 @@ const Checkout = () => {
     localStorage.setItem('checkoutFormData', JSON.stringify(values));
 
     if (paymentMethod === 'card') {
-      // Submit Stripe payment
-      if (stripeFormRef.current && clientSecret) {
-        await stripeFormRef.current.submitPayment();
+      // Create PaymentIntent with complete form data
+      setIsProcessing(true);
+      try {
+        console.log("Creating PaymentIntent with complete data:", values);
+        
+        const { data: intentData, error: intentError } = await supabase.functions.invoke(
+          'create-payment-intent',
+          {
+            body: { 
+              amount: 280,
+              email: values.email,
+              firstName: values.firstName,
+              lastName: values.lastName,
+              phone: values.phone,
+              profession: values.profession,
+            },
+          }
+        );
+
+        if (intentError) {
+          console.error("Error creating payment intent:", intentError);
+          throw intentError;
+        }
+
+        if (intentData?.clientSecret) {
+          console.log("PaymentIntent created successfully");
+          setClientSecret(intentData.clientSecret);
+          
+          // Wait a bit for clientSecret to be set, then submit payment
+          setTimeout(async () => {
+            if (stripeFormRef.current) {
+              await stripeFormRef.current.submitPayment();
+            }
+          }, 100);
+        }
+      } catch (error: any) {
+        console.error('Error in card payment flow:', error);
+        toast({
+          title: "Errore",
+          description: "Si è verificato un errore. Riprova tra poco.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsProcessing(false);
       }
     } else {
       // Handle PayPal checkout
@@ -339,7 +341,7 @@ const Checkout = () => {
     }
   };
 
-  const canSubmit = isFormValid && acceptedTerms && (paymentMethod === 'paypal' || (paymentMethod === 'card' && stripeReady && clientSecret));
+  const canSubmit = isFormValid && acceptedTerms && (paymentMethod === 'paypal' || paymentMethod === 'card');
 
   return (
     <div className="min-h-screen bg-white">

@@ -36,10 +36,11 @@ serve(async (req) => {
     let amountPaid = 28000; // Default 280 EUR
 
     // Handle PaymentIntent (card payments)
+    let paymentIntent: any = null;
     if (paymentIntentId) {
       console.log("Processing PaymentIntent:", paymentIntentId);
       
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       
       console.log("Retrieved PaymentIntent:", paymentIntent.id, "Status:", paymentIntent.status);
 
@@ -83,10 +84,16 @@ serve(async (req) => {
       if (!customerEmail && paymentIntent.metadata) {
         customerEmail = paymentIntent.metadata.customerEmail || null;
         customerName = paymentIntent.metadata.customerName || "Cliente";
+        customerPhone = paymentIntent.metadata.customerPhone || null;
+      }
+
+      // Always get phone from metadata (more reliable)
+      if (paymentIntent.metadata) {
+        customerPhone = paymentIntent.metadata.customerPhone || null;
       }
 
       amountPaid = paymentIntent.amount;
-      console.log("PaymentIntent customer details:", { email: customerEmail, name: customerName });
+      console.log("PaymentIntent customer details:", { email: customerEmail, name: customerName, phone: customerPhone });
     }
     
     // Handle Checkout Session (PayPal payments)
@@ -150,7 +157,13 @@ serve(async (req) => {
     const firstName = nameParts[0] || customerName;
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    console.log("Customer details:", { email: customerEmail, name: customerName, phone: customerPhone });
+    // Get profession from PaymentIntent metadata if available
+    let profession: string | null = null;
+    if (paymentIntent && paymentIntent.metadata) {
+      profession = paymentIntent.metadata.customerProfession || null;
+    }
+
+    console.log("Customer details:", { email: customerEmail, name: customerName, phone: customerPhone, profession });
 
     // Initialize Supabase client
     const supabaseClient = createClient(
@@ -170,6 +183,7 @@ serve(async (req) => {
           first_name: firstName,
           last_name: lastName,
           phone: customerPhone,
+          profession: profession,
           stripe_session_id: sessionId || null,
           stripe_payment_intent_id: paymentIntentId || null,
           stripe_customer_id: stripeCustomerId,
