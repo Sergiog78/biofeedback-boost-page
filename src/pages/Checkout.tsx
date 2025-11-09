@@ -298,6 +298,16 @@ const Checkout = () => {
     console.log("=== PayPal Checkout Started ===");
     console.log("Form values:", formValues);
     
+    // Validate form before proceeding
+    if (!formValues.email || !formValues.firstName || !formValues.lastName) {
+      toast({
+        title: "Dati mancanti",
+        description: "Compila tutti i campi richiesti prima di procedere",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsProcessing(true);
 
     try {
@@ -305,9 +315,9 @@ const Checkout = () => {
       // Create checkout session with PayPal
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
-          email: formValues.email || 'guest@checkout.com',
-          firstName: formValues.firstName || 'Guest',
-          lastName: formValues.lastName || 'User',
+          email: formValues.email,
+          firstName: formValues.firstName,
+          lastName: formValues.lastName,
         }
       });
 
@@ -384,9 +394,9 @@ const Checkout = () => {
                 <h2 className="text-sm font-medium text-foreground">Check-out rapido</h2>
                 <Button 
                   variant="outline" 
-                  className="w-full h-14 bg-[#FFC439] hover:bg-[#FFC439]/90 border-0"
+                  className="w-full h-14 bg-[#FFC439] hover:bg-[#FFC439]/90 border-0 disabled:opacity-50"
                   onClick={handlePayPalCheckout}
-                  disabled={isProcessing}
+                  disabled={isProcessing || !isFormValid}
                   type="button"
                 >
                   {isProcessing ? (

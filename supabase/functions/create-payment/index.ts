@@ -10,13 +10,21 @@ const corsHeaders = {
 const validateInput = (data: any) => {
   const errors: string[] = [];
   
-  if (!data.email || typeof data.email !== 'string' || data.email.length > 255) {
-    errors.push('Invalid email');
+  if (!data.email || typeof data.email !== 'string') {
+    errors.push('Email is required');
+  } else if (data.email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+    errors.push('Invalid email format');
   }
-  if (!data.firstName || typeof data.firstName !== 'string' || data.firstName.length > 100) {
+  
+  if (!data.firstName || typeof data.firstName !== 'string') {
+    errors.push('First name is required');
+  } else if (data.firstName.length > 100 || !/^[a-zA-ZÀ-ÿ\s'-]+$/.test(data.firstName)) {
     errors.push('Invalid first name');
   }
-  if (!data.lastName || typeof data.lastName !== 'string' || data.lastName.length > 100) {
+  
+  if (!data.lastName || typeof data.lastName !== 'string') {
+    errors.push('Last name is required');
+  } else if (data.lastName.length > 100 || !/^[a-zA-ZÀ-ÿ\s'-]+$/.test(data.lastName)) {
     errors.push('Invalid last name');
   }
   

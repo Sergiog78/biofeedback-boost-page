@@ -96,6 +96,7 @@ serve(async (req) => {
       currency: "eur",
       customer: customerId,
       payment_method_types: ["card"],
+      receipt_email: email, // Ensure correct email appears in Stripe dashboard
       metadata: {
         customerEmail: email,
         customerName: `${firstName} ${lastName}`,
