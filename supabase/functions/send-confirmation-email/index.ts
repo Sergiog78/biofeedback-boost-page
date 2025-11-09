@@ -66,30 +66,35 @@ serve(async (req) => {
 
       console.log("Confirmed: This is a Biofeedback course purchase (card payment)");
 
-      // Get customer details from metadata or customer object
+      // PRIORITY: Get customer details from metadata FIRST (most recent and complete data from form)
+      if (paymentIntent.metadata) {
+        customerEmail = paymentIntent.metadata.customerEmail || null;
+        customerName = paymentIntent.metadata.customerName || "Cliente";
+        customerPhone = paymentIntent.metadata.customerPhone || null;
+        console.log("Metadata found:", { email: customerEmail, name: customerName, phone: customerPhone });
+      }
+
+      // Get Stripe customer ID for reference
       if (paymentIntent.customer) {
         const customerId = typeof paymentIntent.customer === 'string' 
           ? paymentIntent.customer 
           : paymentIntent.customer.id;
         stripeCustomerId = customerId;
+        console.log("Stripe customer ID:", stripeCustomerId);
+      }
+
+      // Fallback to Stripe customer object ONLY if metadata is empty
+      if (!customerEmail && paymentIntent.customer) {
+        const customerId = typeof paymentIntent.customer === 'string' 
+          ? paymentIntent.customer 
+          : paymentIntent.customer.id;
         
         const customer = await stripe.customers.retrieve(customerId);
         if ('email' in customer) {
           customerEmail = customer.email;
           customerName = customer.name || "Cliente";
         }
-      }
-
-      // Fallback to metadata if customer not found
-      if (!customerEmail && paymentIntent.metadata) {
-        customerEmail = paymentIntent.metadata.customerEmail || null;
-        customerName = paymentIntent.metadata.customerName || "Cliente";
-        customerPhone = paymentIntent.metadata.customerPhone || null;
-      }
-
-      // Always get phone from metadata (more reliable)
-      if (paymentIntent.metadata) {
-        customerPhone = paymentIntent.metadata.customerPhone || null;
+        console.log("Fallback to customer object:", { email: customerEmail, name: customerName });
       }
 
       amountPaid = paymentIntent.amount;
@@ -157,7 +162,7 @@ serve(async (req) => {
     const firstName = nameParts[0] || customerName;
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    // Get profession from PaymentIntent metadata if available
+    // Get profession from PaymentIntent metadata
     let profession: string | null = null;
     if (paymentIntent && paymentIntent.metadata) {
       profession = paymentIntent.metadata.customerProfession || null;
