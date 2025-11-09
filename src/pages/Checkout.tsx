@@ -45,7 +45,7 @@ const checkoutSchema = z.object({
   profession: z.string()
     .trim()
     .min(1, "Professione richiesta")
-    .max(200, "Professione troppo lunga"),
+    .max(100, "Professione troppo lunga"),
 });
 
 const Checkout = () => {

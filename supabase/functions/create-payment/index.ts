@@ -28,7 +28,9 @@ const validateInput = (data: any) => {
     errors.push('Invalid last name');
   }
   
-  if (data.profession && typeof data.profession === 'string' && data.profession.length > 100) {
+  if (!data.profession || typeof data.profession !== 'string') {
+    errors.push('Profession is required');
+  } else if (data.profession.length > 100) {
     errors.push('Profession too long');
   }
   
@@ -97,7 +99,7 @@ serve(async (req) => {
       metadata: {
         customerEmail: email,
         customerName: `${firstName} ${lastName}`,
-        customerProfession: profession || '',
+        customerProfession: profession,
       },
     });
 

@@ -37,9 +37,11 @@ const validateInput = (data: any) => {
     errors.push('Invalid phone number');
   }
 
-  // Profession is optional but if provided must be valid
-  if (data.profession && (typeof data.profession !== 'string' || data.profession.length > 200)) {
-    errors.push('Invalid profession');
+  // Profession is required
+  if (!data.profession || typeof data.profession !== 'string') {
+    errors.push('Profession is required');
+  } else if (data.profession.length > 100) {
+    errors.push('Profession too long');
   }
   
   return errors;
@@ -101,7 +103,7 @@ serve(async (req) => {
         customerEmail: email,
         customerName: `${firstName} ${lastName}`,
         customerPhone: phone || '',
-        customerProfession: profession || '',
+        customerProfession: profession,
       },
     });
 
