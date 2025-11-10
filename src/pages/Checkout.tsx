@@ -190,16 +190,22 @@ const Checkout = () => {
   useEffect(() => {
     const initStripe = async () => {
       try {
+        console.log("🔵 Initializing Stripe...");
         const { data, error } = await supabase.functions.invoke('get-stripe-publishable-key');
         
-        if (error) throw error;
+        if (error) {
+          console.error("❌ Error getting Stripe key:", error);
+          throw error;
+        }
         
         if (data?.publishableKey) {
+          console.log("✅ Stripe key received, loading Stripe.js...");
           const stripe = await loadStripe(data.publishableKey);
           setStripePromise(stripe);
+          console.log("✅ Stripe initialized successfully");
         }
       } catch (error: any) {
-        console.error('Error initializing Stripe:', error);
+        console.error('❌ Error initializing Stripe:', error);
       }
     };
 
@@ -214,10 +220,17 @@ const Checkout = () => {
 
   // Create clientSecret when card is selected and form is valid
   useEffect(() => {
+    console.log("🔄 Payment method effect triggered", { 
+      paymentMethod, 
+      isFormValid, 
+      hasClientSecret: !!clientSecret,
+      hasStripePromise: !!stripePromise 
+    });
+
     const createClientSecret = async () => {
-      if (paymentMethod === 'card' && isFormValid && !clientSecret && !isProcessing) {
+      if (paymentMethod === 'card' && isFormValid && !clientSecret && !isProcessing && stripePromise) {
         const formValues = form.getValues();
-        console.log("Creating PaymentIntent for card payment...");
+        console.log("💳 Creating PaymentIntent for card payment with data:", formValues);
         
         try {
           const { data: intentData, error: intentError } = await supabase.functions.invoke(
@@ -235,7 +248,7 @@ const Checkout = () => {
           );
 
           if (intentError) {
-            console.error("Error creating payment intent:", intentError);
+            console.error("❌ Error creating payment intent:", intentError);
             toast({
               title: "Errore",
               description: "Impossibile inizializzare il pagamento. Riprova.",
@@ -245,22 +258,33 @@ const Checkout = () => {
           }
 
           if (intentData?.clientSecret) {
-            console.log("PaymentIntent created successfully");
+            console.log("✅ PaymentIntent created, clientSecret:", intentData.clientSecret.substring(0, 20) + "...");
             setClientSecret(intentData.clientSecret);
+          } else {
+            console.error("❌ No clientSecret in response");
           }
         } catch (error: any) {
-          console.error('Error creating PaymentIntent:', error);
+          console.error('❌ Error creating PaymentIntent:', error);
         }
+      } else {
+        console.log("⏭️ Skipping PaymentIntent creation:", {
+          isCard: paymentMethod === 'card',
+          isFormValid,
+          hasClientSecret: !!clientSecret,
+          isProcessing,
+          hasStripePromise: !!stripePromise
+        });
       }
     };
 
-    if (paymentMethod === 'card' && isFormValid) {
+    if (paymentMethod === 'card' && isFormValid && stripePromise) {
       createClientSecret();
     } else if (paymentMethod === 'paypal') {
+      console.log("💰 Switched to PayPal, clearing clientSecret");
       setClientSecret('');
       setStripeReady(false);
     }
-  }, [paymentMethod, isFormValid]);
+  }, [paymentMethod, isFormValid, stripePromise, clientSecret, isProcessing]);
 
   const handleFormSubmit = async (values: z.infer<typeof checkoutSchema>) => {
     if (!acceptedTerms) {
