@@ -78,7 +78,6 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
               name: cardholderName,
             },
           },
-          return_url: `${window.location.origin}/payment-success`,
         });
 
         if (error) {
@@ -100,7 +99,9 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
             title: "Pagamento completato!",
             description: "Il tuo pagamento è stato elaborato con successo.",
           });
-          onSuccess(paymentIntent.id);
+          
+          // Redirect to success page with payment_intent_id
+          window.location.href = `/payment-success?payment_intent_id=${paymentIntent.id}`;
         }
       } catch (error) {
         const timestamp = new Date().toISOString();

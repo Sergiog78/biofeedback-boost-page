@@ -52,6 +52,16 @@ const PaymentSuccess = () => {
         console.log("✅ Email already sent, skipping");
         return;
       }
+
+      // Check localStorage to prevent duplicate sends on page reload
+      const emailSentKey = `email_sent_${sessionId || paymentIntentId}`;
+      const alreadySent = localStorage.getItem(emailSentKey);
+      if (alreadySent) {
+        console.log("✅ Email already sent (from localStorage), skipping");
+        setEmailSent(true);
+        return;
+      }
+
       try {
         console.log("📧 Invoking send-confirmation-email...", {
           sessionId,
@@ -76,7 +86,11 @@ const PaymentSuccess = () => {
           return;
         }
         console.log("✅ Confirmation email sent successfully:", data);
+        
+        // Mark as sent in both state and localStorage
         setEmailSent(true);
+        localStorage.setItem(emailSentKey, 'true');
+        
         toast({
           title: "Email inviata",
           description: "Controlla la tua casella di posta per la conferma."

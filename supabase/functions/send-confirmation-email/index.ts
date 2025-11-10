@@ -178,6 +178,29 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
+    // Check if email already sent to prevent duplicates
+    console.log("Checking for existing enrollment...");
+    const { data: existingEnrollment } = await supabaseClient
+      .from('course_enrollments')
+      .select('id, email_sent_at')
+      .or(`stripe_session_id.eq.${sessionId},stripe_payment_intent_id.eq.${paymentIntentId}`)
+      .single();
+
+    if (existingEnrollment?.email_sent_at) {
+      console.log("Email already sent for this enrollment, skipping");
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Email already sent",
+          enrollmentId: existingEnrollment.id 
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
+
     // Save enrollment data to database
     try {
       console.log("Saving enrollment data to database...");
@@ -310,6 +333,18 @@ serve(async (req) => {
     }
 
     console.log("Email sent successfully:", data);
+
+    // Update enrollment with email_sent_at timestamp
+    try {
+      await supabaseClient
+        .from('course_enrollments')
+        .update({ email_sent_at: new Date().toISOString() })
+        .or(`stripe_session_id.eq.${sessionId},stripe_payment_intent_id.eq.${paymentIntentId}`);
+      console.log("Updated enrollment with email_sent_at timestamp");
+    } catch (updateError) {
+      console.error("Failed to update email_sent_at:", updateError);
+      // Don't fail the request if this update fails
+    }
 
     return new Response(
       JSON.stringify({ success: true, emailId: data?.id }),
