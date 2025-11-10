@@ -85,23 +85,62 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
           console.error(`[${timestamp}] ❌ Payment error:`, error);
           toast({
             title: "Errore pagamento",
-            description: error.message,
+            description: error.message || "Si è verificato un errore durante il pagamento. Verifica i dati della carta e riprova.",
             variant: "destructive",
           });
-        } else if (paymentIntent && paymentIntent.status === "succeeded") {
+        } else if (paymentIntent) {
           const timestamp = new Date().toISOString();
-          console.log(`[${timestamp}] ✅ Payment succeeded`, {
+          console.log(`[${timestamp}] 💳 Payment Intent response:`, {
             paymentIntentId: paymentIntent.id,
-            amount: paymentIntent.amount,
-            status: paymentIntent.status
+            status: paymentIntent.status,
+            amount: paymentIntent.amount
           });
+
+          if (paymentIntent.status === "succeeded") {
+            console.log(`[${timestamp}] ✅ Payment succeeded`);
+            toast({
+              title: "Pagamento completato!",
+              description: "Il tuo pagamento è stato elaborato con successo.",
+            });
+            
+            // Redirect to success page with payment_intent_id
+            window.location.href = `/payment-success?payment_intent_id=${paymentIntent.id}`;
+          } else if (paymentIntent.status === "requires_payment_method") {
+            console.error(`[${timestamp}] ❌ Payment requires payment method - card was declined or invalid`);
+            toast({
+              title: "Pagamento rifiutato",
+              description: "La carta è stata rifiutata o i dati non sono validi. Verifica i dati della carta e riprova.",
+              variant: "destructive",
+            });
+          } else if (paymentIntent.status === "requires_action") {
+            console.warn(`[${timestamp}] ⚠️ Payment requires additional action (e.g., 3D Secure)`);
+            toast({
+              title: "Autenticazione richiesta",
+              description: "Il pagamento richiede un'autenticazione aggiuntiva. Segui le istruzioni della tua banca.",
+              variant: "default",
+            });
+          } else if (paymentIntent.status === "processing") {
+            console.log(`[${timestamp}] ⏳ Payment is processing`);
+            toast({
+              title: "Pagamento in elaborazione",
+              description: "Il tuo pagamento è in elaborazione. Riceverai una conferma a breve.",
+            });
+          } else {
+            console.error(`[${timestamp}] ❌ Unexpected payment status: ${paymentIntent.status}`);
+            toast({
+              title: "Stato pagamento sconosciuto",
+              description: `Il pagamento ha uno stato inatteso (${paymentIntent.status}). Contatta il supporto.`,
+              variant: "destructive",
+            });
+          }
+        } else {
+          const timestamp = new Date().toISOString();
+          console.error(`[${timestamp}] ❌ No error and no paymentIntent returned from confirmCardPayment`);
           toast({
-            title: "Pagamento completato!",
-            description: "Il tuo pagamento è stato elaborato con successo.",
+            title: "Errore imprevisto",
+            description: "Si è verificato un errore imprevisto. Riprova o contatta il supporto.",
+            variant: "destructive",
           });
-          
-          // Redirect to success page with payment_intent_id
-          window.location.href = `/payment-success?payment_intent_id=${paymentIntent.id}`;
         }
       } catch (error) {
         const timestamp = new Date().toISOString();
