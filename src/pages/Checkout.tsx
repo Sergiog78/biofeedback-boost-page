@@ -219,28 +219,14 @@ const Checkout = () => {
 
   const isFormValid = form.formState.isValid;
   
-  // Watch form values to detect changes
-  const watchedEmail = form.watch('email');
-  const watchedFirstName = form.watch('firstName');
-  const watchedLastName = form.watch('lastName');
-  const watchedPhone = form.watch('phone');
-  const watchedProfession = form.watch('profession');
-
-  // Invalidate clientSecret when form data changes (with 300ms debounce)
-  useEffect(() => {
-    if (!clientSecret || paymentMethod !== 'card') return;
-
-    const timer = setTimeout(() => {
-      console.log(`[${new Date().toISOString()}] 📝 Form data changed, invalidating clientSecret because form values were modified`);
-      
-      setClientSecret('');
-      setStripeReady(false);
-      isCreatingIntent.current = false;
-    }, 300);
-
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watchedEmail, watchedFirstName, watchedLastName, watchedPhone, watchedProfession]);
+  // Store form values used to create clientSecret (to detect staleness)
+  const clientSecretFormValuesRef = useRef<{
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    profession: string;
+  } | null>(null);
 
   // Create clientSecret when card is selected and form is valid
   useEffect(() => {
@@ -294,6 +280,14 @@ const Checkout = () => {
               clientSecretPreview: intentData.clientSecret.substring(0, 20) + "...",
               formData: formValues
             });
+            // Store form values used for this clientSecret
+            clientSecretFormValuesRef.current = {
+              email: formValues.email,
+              firstName: formValues.firstName,
+              lastName: formValues.lastName,
+              phone: formValues.phone,
+              profession: formValues.profession,
+            };
             setClientSecret(intentData.clientSecret);
           } else {
             console.error(`[${new Date().toISOString()}] ❌ No clientSecret in response`);
@@ -321,8 +315,9 @@ const Checkout = () => {
       setClientSecret('');
       setStripeReady(false);
       isCreatingIntent.current = false;
+      clientSecretFormValuesRef.current = null;
     }
-  }, [paymentMethod, isFormValid, stripePromise, clientSecret]);
+  }, [paymentMethod, isFormValid, stripePromise]);
 
   const handleFormSubmit = async (values: z.infer<typeof checkoutSchema>) => {
     if (!acceptedTerms) {
@@ -345,7 +340,74 @@ const Checkout = () => {
     localStorage.setItem('checkoutFormData', JSON.stringify(values));
 
     if (paymentMethod === 'card') {
-      // Submit payment directly using existing clientSecret
+      // CRITICAL: Check if form values changed since clientSecret was created
+      const currentValues = form.getValues();
+      const storedValues = clientSecretFormValuesRef.current;
+      
+      const hasFormChanged = storedValues && (
+        currentValues.email !== storedValues.email ||
+        currentValues.firstName !== storedValues.firstName ||
+        currentValues.lastName !== storedValues.lastName ||
+        currentValues.phone !== storedValues.phone ||
+        currentValues.profession !== storedValues.profession
+      );
+
+      if (hasFormChanged) {
+        console.log(`[${new Date().toISOString()}] ⚠️ Form values changed since clientSecret creation, recreating...`);
+        setIsProcessing(true);
+        
+        try {
+          // Recreate clientSecret with current values
+          const { data: intentData, error: intentError } = await supabase.functions.invoke(
+            'create-payment-intent',
+            {
+              body: { 
+                amount: 280,
+                email: currentValues.email,
+                firstName: currentValues.firstName,
+                lastName: currentValues.lastName,
+                phone: currentValues.phone,
+                profession: currentValues.profession,
+              },
+            }
+          );
+
+          if (intentError || !intentData?.clientSecret) {
+            console.error(`[${new Date().toISOString()}] ❌ Error recreating payment intent`);
+            toast({
+              title: "Errore",
+              description: "Impossibile aggiornare il pagamento. Riprova.",
+              variant: "destructive",
+            });
+            setIsProcessing(false);
+            return;
+          }
+
+          console.log(`[${new Date().toISOString()}] ✅ PaymentIntent recreated with updated data`);
+          clientSecretFormValuesRef.current = {
+            email: currentValues.email!,
+            firstName: currentValues.firstName!,
+            lastName: currentValues.lastName!,
+            phone: currentValues.phone!,
+            profession: currentValues.profession!,
+          };
+          setClientSecret(intentData.clientSecret);
+          
+          // Wait a bit for Stripe to process the new secret
+          await new Promise(resolve => setTimeout(resolve, 500));
+        } catch (error: any) {
+          console.error(`[${new Date().toISOString()}] ❌ Error recreating PaymentIntent:`, error);
+          toast({
+            title: "Errore",
+            description: "Si è verificato un errore. Riprova.",
+            variant: "destructive",
+          });
+          setIsProcessing(false);
+          return;
+        }
+      }
+
+      // Submit payment with current (or recreated) clientSecret
       setIsProcessing(true);
       try {
         if (stripeFormRef.current) {
