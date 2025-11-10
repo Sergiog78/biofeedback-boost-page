@@ -59,6 +59,7 @@ const Checkout = () => {
   const [stripePromise, setStripePromise] = useState<any>(null);
   const [stripeReady, setStripeReady] = useState(false);
   const stripeFormRef = useRef<StripePaymentFormRef>(null);
+  const isCreatingIntent = useRef(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
@@ -218,19 +219,42 @@ const Checkout = () => {
 
   const isFormValid = form.formState.isValid;
 
+  // Invalidate clientSecret when form data changes
+  useEffect(() => {
+    if (clientSecret && paymentMethod === 'card') {
+      console.log(`[${new Date().toISOString()}] 📝 Form data changed, invalidating clientSecret`);
+      setClientSecret('');
+      setStripeReady(false);
+      isCreatingIntent.current = false;
+    }
+  }, [
+    form.watch('email'),
+    form.watch('firstName'),
+    form.watch('lastName'),
+    form.watch('phone'),
+    form.watch('profession')
+  ]);
+
   // Create clientSecret when card is selected and form is valid
   useEffect(() => {
-    console.log("🔄 Payment method effect triggered", { 
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] 🔄 Payment method effect triggered`, { 
       paymentMethod, 
       isFormValid, 
       hasClientSecret: !!clientSecret,
-      hasStripePromise: !!stripePromise 
+      hasStripePromise: !!stripePromise,
+      isCreatingIntent: isCreatingIntent.current
     });
 
     const createClientSecret = async () => {
-      if (paymentMethod === 'card' && isFormValid && !clientSecret && !isProcessing && stripePromise) {
+      if (paymentMethod === 'card' && isFormValid && !clientSecret && !isCreatingIntent.current && stripePromise) {
+        isCreatingIntent.current = true;
         const formValues = form.getValues();
-        console.log("💳 Creating PaymentIntent for card payment with data:", formValues);
+        console.log(`[${new Date().toISOString()}] 💳 Creating PaymentIntent for card payment`, {
+          formData: formValues,
+          hasExistingSecret: !!clientSecret,
+          stripeInitialized: !!stripePromise
+        });
         
         try {
           const { data: intentData, error: intentError } = await supabase.functions.invoke(
@@ -248,30 +272,36 @@ const Checkout = () => {
           );
 
           if (intentError) {
-            console.error("❌ Error creating payment intent:", intentError);
+            console.error(`[${new Date().toISOString()}] ❌ Error creating payment intent:`, intentError);
             toast({
               title: "Errore",
               description: "Impossibile inizializzare il pagamento. Riprova.",
               variant: "destructive",
             });
+            isCreatingIntent.current = false;
             return;
           }
 
           if (intentData?.clientSecret) {
-            console.log("✅ PaymentIntent created, clientSecret:", intentData.clientSecret.substring(0, 20) + "...");
+            console.log(`[${new Date().toISOString()}] ✅ PaymentIntent created successfully`, {
+              clientSecretPreview: intentData.clientSecret.substring(0, 20) + "...",
+              formData: formValues
+            });
             setClientSecret(intentData.clientSecret);
           } else {
-            console.error("❌ No clientSecret in response");
+            console.error(`[${new Date().toISOString()}] ❌ No clientSecret in response`);
           }
         } catch (error: any) {
-          console.error('❌ Error creating PaymentIntent:', error);
+          console.error(`[${new Date().toISOString()}] ❌ Error creating PaymentIntent:`, error);
+        } finally {
+          isCreatingIntent.current = false;
         }
       } else {
-        console.log("⏭️ Skipping PaymentIntent creation:", {
+        console.log(`[${new Date().toISOString()}] ⏭️ Skipping PaymentIntent creation:`, {
           isCard: paymentMethod === 'card',
           isFormValid,
           hasClientSecret: !!clientSecret,
-          isProcessing,
+          isCreatingIntent: isCreatingIntent.current,
           hasStripePromise: !!stripePromise
         });
       }
@@ -280,11 +310,12 @@ const Checkout = () => {
     if (paymentMethod === 'card' && isFormValid && stripePromise) {
       createClientSecret();
     } else if (paymentMethod === 'paypal') {
-      console.log("💰 Switched to PayPal, clearing clientSecret");
+      console.log(`[${new Date().toISOString()}] 💰 Switched to PayPal, clearing clientSecret`);
       setClientSecret('');
       setStripeReady(false);
+      isCreatingIntent.current = false;
     }
-  }, [paymentMethod, isFormValid, stripePromise, clientSecret, isProcessing]);
+  }, [paymentMethod, isFormValid, stripePromise]);
 
   const handleFormSubmit = async (values: z.infer<typeof checkoutSchema>) => {
     if (!acceptedTerms) {

@@ -19,14 +19,40 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
     const elements = useElements();
     const { toast } = useToast();
     const [isProcessing, setIsProcessing] = useState(false);
-    const [isReady, setIsReady] = useState(false);
     const [cardholderName, setCardholderName] = useState("");
+    
+    // Track completion status of all Stripe Elements
+    const [cardComplete, setCardComplete] = useState(false);
+    const [expiryComplete, setExpiryComplete] = useState(false);
+    const [cvcComplete, setCvcComplete] = useState(false);
+    const [nameComplete, setNameComplete] = useState(false);
 
-    // Validation handled via PaymentElement events instead of elements.getElement
+    // Update parent validation when all fields are complete
+    useEffect(() => {
+      const allValid = cardComplete && expiryComplete && cvcComplete && nameComplete;
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] 🔍 Stripe form validation state:`, {
+        cardComplete,
+        expiryComplete,
+        cvcComplete,
+        nameComplete,
+        allValid
+      });
+      onValidationChange(allValid);
+    }, [cardComplete, expiryComplete, cvcComplete, nameComplete, onValidationChange]);
 
 
     const submitPayment = async () => {
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] 💳 Starting payment submission`, {
+        hasStripe: !!stripe,
+        hasElements: !!elements,
+        hasClientSecret: !!clientSecret,
+        cardholderName
+      });
+
       if (!stripe || !elements) {
+        console.error(`[${timestamp}] ❌ Stripe or Elements not ready`);
         return;
       }
 
@@ -35,6 +61,7 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
       try {
         const cardNumberElement = elements.getElement(CardNumberElement);
         if (!cardNumberElement) {
+          console.error(`[${timestamp}] ❌ CardNumberElement not found`);
           toast({
             title: "Errore",
             description: "Modulo carta non pronto",
@@ -43,6 +70,7 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
           return;
         }
 
+        console.log(`[${timestamp}] 🔐 Confirming card payment...`);
         const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
           payment_method: { 
             card: cardNumberElement,
@@ -54,12 +82,20 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
         });
 
         if (error) {
+          const timestamp = new Date().toISOString();
+          console.error(`[${timestamp}] ❌ Payment error:`, error);
           toast({
             title: "Errore pagamento",
             description: error.message,
             variant: "destructive",
           });
         } else if (paymentIntent && paymentIntent.status === "succeeded") {
+          const timestamp = new Date().toISOString();
+          console.log(`[${timestamp}] ✅ Payment succeeded`, {
+            paymentIntentId: paymentIntent.id,
+            amount: paymentIntent.amount,
+            status: paymentIntent.status
+          });
           toast({
             title: "Pagamento completato!",
             description: "Il tuo pagamento è stato elaborato con successo.",
@@ -67,6 +103,8 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
           onSuccess(paymentIntent.id);
         }
       } catch (error) {
+        const timestamp = new Date().toISOString();
+        console.error(`[${timestamp}] ❌ Payment exception:`, error);
         toast({
           title: "Errore",
           description: "Si è verificato un errore durante il pagamento",
@@ -108,8 +146,13 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
                   showIcon: false,
                   placeholder: 'Numero carta'
                 }}
-                onReady={() => onValidationChange(true)}
-                onChange={(event) => onValidationChange((event as any).complete)}
+                onChange={(event) => {
+                  console.log(`[${new Date().toISOString()}] 💳 Card number changed:`, {
+                    complete: event.complete,
+                    error: event.error?.message
+                  });
+                  setCardComplete(event.complete);
+                }}
               />
             </div>
             <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -127,7 +170,14 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
               options={{ 
                 style: stripeElementStyle,
                 placeholder: 'Data di scadenza (MM/AA)'
-              }} 
+              }}
+              onChange={(event) => {
+                console.log(`[${new Date().toISOString()}] 📅 Expiry changed:`, {
+                  complete: event.complete,
+                  error: event.error?.message
+                });
+                setExpiryComplete(event.complete);
+              }}
             />
           </div>
           <div className="relative bg-[#f8f8f8] rounded-lg border border-gray-200">
@@ -136,7 +186,14 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
                 options={{ 
                   style: stripeElementStyle,
                   placeholder: 'Codice di sicurezza'
-                }} 
+                }}
+                onChange={(event) => {
+                  console.log(`[${new Date().toISOString()}] 🔒 CVC changed:`, {
+                    complete: event.complete,
+                    error: event.error?.message
+                  });
+                  setCvcComplete(event.complete);
+                }}
               />
             </div>
             <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -153,7 +210,16 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
           <input
             type="text"
             value={cardholderName}
-            onChange={(e) => setCardholderName(e.target.value)}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              setCardholderName(newValue);
+              const isValid = newValue.trim().length > 0;
+              console.log(`[${new Date().toISOString()}] ✍️ Cardholder name changed:`, {
+                length: newValue.length,
+                isValid
+              });
+              setNameComplete(isValid);
+            }}
             placeholder="Nome sulla carta"
             className="w-full bg-[#f8f8f8] border border-gray-200 rounded-lg px-4 py-4 text-base text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
