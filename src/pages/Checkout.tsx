@@ -190,27 +190,57 @@ const Checkout = () => {
   // Initialize Stripe on mount
   useEffect(() => {
     const initStripe = async () => {
+      const timestamp = new Date().toISOString();
+      console.log(`[${timestamp}] 🔵 Starting Stripe initialization...`);
+      
       try {
-        console.log("🔵 Initializing Stripe...");
+        console.log(`[${timestamp}] 📞 Calling get-stripe-publishable-key...`);
         const { data, error } = await supabase.functions.invoke('get-stripe-publishable-key');
         
         if (error) {
-          console.error("❌ Error getting Stripe key:", error);
+          console.error(`[${timestamp}] ❌ Error getting Stripe key:`, error);
           throw error;
         }
         
         if (data?.publishableKey) {
-          console.log("✅ Stripe key received, loading Stripe.js...");
+          console.log(`[${timestamp}] ✅ Stripe key received, loading Stripe.js...`);
           const stripe = await loadStripe(data.publishableKey);
+          
+          if (!stripe) {
+            throw new Error("Stripe.js failed to load");
+          }
+          
           setStripePromise(stripe);
-          console.log("✅ Stripe initialized successfully");
+          console.log(`[${timestamp}] ✅ Stripe initialized successfully`);
+        } else {
+          throw new Error("No publishable key in response");
         }
       } catch (error: any) {
-        console.error('❌ Error initializing Stripe:', error);
+        console.error(`[${timestamp}] ❌ Error initializing Stripe:`, error);
+        
+        toast({
+          title: "Errore caricamento pagamento",
+          description: "Impossibile caricare il sistema di pagamento. Riprova o usa PayPal.",
+          variant: "destructive",
+        });
+        setStripePromise(null);
       }
     };
 
+    // Timeout detection
+    const timeoutId = setTimeout(() => {
+      if (!stripePromise) {
+        console.warn("⚠️ Stripe initialization timeout after 10 seconds");
+        toast({
+          title: "Caricamento lento",
+          description: "Il sistema di pagamento sta impiegando più tempo del normale. Considera PayPal come alternativa.",
+        });
+      }
+    }, 10000);
+
     initStripe();
+    
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const handlePaymentSuccess = (paymentIntentId: string) => {
@@ -687,18 +717,40 @@ const Checkout = () => {
                         
                         {paymentMethod === 'card' && (
                           <div className="px-4 pb-4 pt-2 border-t animate-in slide-in-from-top-2">
-                            {clientSecret && stripePromise ? (
-                              <Elements key={clientSecret} stripe={stripePromise} options={{ clientSecret }}>
-                                <StripePaymentForm 
-                                  ref={stripeFormRef}
-                                  onSuccess={handlePaymentSuccess}
-                                  onValidationChange={setStripeReady}
-                                  clientSecret={clientSecret}
-                                />
-                              </Elements>
+                            {stripePromise ? (
+                              clientSecret ? (
+                                <Elements key={clientSecret} stripe={stripePromise} options={{ clientSecret }}>
+                                  <StripePaymentForm 
+                                    ref={stripeFormRef}
+                                    onSuccess={handlePaymentSuccess}
+                                    onValidationChange={setStripeReady}
+                                    clientSecret={clientSecret}
+                                  />
+                                </Elements>
+                              ) : (
+                                <div className="text-sm text-muted-foreground py-4 space-y-2">
+                                  <p>💳 Compila tutti i campi sopra per abilitare il pagamento con carta</p>
+                                </div>
+                              )
+                            ) : stripePromise === null ? (
+                              <div className="text-sm text-muted-foreground py-4 space-y-2">
+                                <p>⚠️ Impossibile caricare il sistema di pagamento con carta.</p>
+                                <p className="text-xs">
+                                  Riprova ricaricare la pagina o usa <strong>PayPal</strong> come metodo alternativo.
+                                </p>
+                                <Button 
+                                  onClick={() => setPaymentMethod('paypal')} 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="mt-2"
+                                >
+                                  Passa a PayPal
+                                </Button>
+                              </div>
                             ) : (
                               <div className="text-sm text-muted-foreground py-4">
-                                Caricamento dei metodi di pagamento...
+                                <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                                Caricamento del sistema di pagamento...
                               </div>
                             )}
                           </div>
