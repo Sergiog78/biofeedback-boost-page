@@ -56,7 +56,7 @@ const Checkout = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
   const [clientSecret, setClientSecret] = useState("");
-  const [stripePromise, setStripePromise] = useState<any>(null);
+  const [stripePromise, setStripePromise] = useState<any>(undefined);
   const [stripeReady, setStripeReady] = useState(false);
   const stripeFormRef = useRef<StripePaymentFormRef>(null);
   const isCreatingIntent = useRef(false);
@@ -187,59 +187,69 @@ const Checkout = () => {
     loadCheckoutData();
   }, []);
 
+  // Stripe loader with retry and timeout
+  const reloadStripe = async () => {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] 🔵 (Re)loading Stripe initialization...`);
+
+    try {
+      console.log(`[${timestamp}] 📞 Calling get-stripe-publishable-key...`);
+      const { data, error } = await supabase.functions.invoke('get-stripe-publishable-key');
+
+      if (error) {
+        console.error(`[${timestamp}] ❌ Error getting Stripe key:`, error);
+        throw error;
+      }
+
+      if (data?.publishableKey) {
+        console.log(`[${timestamp}] ✅ Stripe key received, loading Stripe.js...`);
+        // First attempt (default)
+        let stripe = await loadStripe(data.publishableKey);
+
+        // Fallback for aggressive blockers (Safari with content filters, etc.)
+        if (!stripe) {
+          console.warn(`[${timestamp}] ⚠️ First loadStripe returned null, retrying with advancedFraudSignals: false`);
+          stripe = await loadStripe(data.publishableKey, { advancedFraudSignals: false } as any);
+        }
+
+        if (!stripe) {
+          throw new Error('Stripe.js failed to load');
+        }
+
+        setStripePromise(stripe);
+        console.log(`[${timestamp}] ✅ Stripe initialized successfully`);
+      } else {
+        throw new Error('No publishable key in response');
+      }
+    } catch (error: any) {
+      console.error(`[${timestamp}] ❌ Error initializing Stripe:`, error);
+      toast({
+        title: 'Errore caricamento pagamento',
+        description: 'Impossibile caricare il sistema di pagamento. Riprova o usa PayPal.',
+        variant: 'destructive',
+      });
+      setStripePromise(null);
+    }
+  };
+
   // Initialize Stripe on mount
   useEffect(() => {
-    const initStripe = async () => {
-      const timestamp = new Date().toISOString();
-      console.log(`[${timestamp}] 🔵 Starting Stripe initialization...`);
-      
-      try {
-        console.log(`[${timestamp}] 📞 Calling get-stripe-publishable-key...`);
-        const { data, error } = await supabase.functions.invoke('get-stripe-publishable-key');
-        
-        if (error) {
-          console.error(`[${timestamp}] ❌ Error getting Stripe key:`, error);
-          throw error;
-        }
-        
-        if (data?.publishableKey) {
-          console.log(`[${timestamp}] ✅ Stripe key received, loading Stripe.js...`);
-          const stripe = await loadStripe(data.publishableKey);
-          
-          if (!stripe) {
-            throw new Error("Stripe.js failed to load");
-          }
-          
-          setStripePromise(stripe);
-          console.log(`[${timestamp}] ✅ Stripe initialized successfully`);
-        } else {
-          throw new Error("No publishable key in response");
-        }
-      } catch (error: any) {
-        console.error(`[${timestamp}] ❌ Error initializing Stripe:`, error);
-        
-        toast({
-          title: "Errore caricamento pagamento",
-          description: "Impossibile caricare il sistema di pagamento. Riprova o usa PayPal.",
-          variant: "destructive",
-        });
-        setStripePromise(null);
-      }
-    };
+    // mark as loading state
+    setStripePromise(undefined as any);
 
-    // Timeout detection
+    // Timeout detection (15s)
     const timeoutId = setTimeout(() => {
-      if (!stripePromise) {
-        console.warn("⚠️ Stripe initialization timeout after 10 seconds");
+      if (stripePromise === undefined) {
+        console.warn('⚠️ Stripe initialization timeout after 15 seconds');
         toast({
-          title: "Caricamento lento",
-          description: "Il sistema di pagamento sta impiegando più tempo del normale. Considera PayPal come alternativa.",
+          title: 'Caricamento lento',
+          description: 'Il sistema di pagamento sta impiegando più tempo del normale. Puoi attendere ancora o usare PayPal.',
         });
       }
-    }, 10000);
+    }, 15000);
 
-    initStripe();
-    
+    reloadStripe();
+
     return () => clearTimeout(timeoutId);
   }, []);
 
@@ -738,14 +748,21 @@ const Checkout = () => {
                                 <p className="text-xs">
                                   Riprova ricaricare la pagina o usa <strong>PayPal</strong> come metodo alternativo.
                                 </p>
-                                <Button 
-                                  onClick={() => setPaymentMethod('paypal')} 
-                                  variant="outline" 
-                                  size="sm"
-                                  className="mt-2"
-                                >
-                                  Passa a PayPal
-                                </Button>
+                                <div className="flex gap-2 mt-2">
+                                  <Button 
+                                    onClick={reloadStripe}
+                                    size="sm"
+                                  >
+                                    Riprova
+                                  </Button>
+                                  <Button 
+                                    onClick={() => setPaymentMethod('paypal')} 
+                                    variant="outline" 
+                                    size="sm"
+                                  >
+                                    Passa a PayPal
+                                  </Button>
+                                </div>
                               </div>
                             ) : (
                               <div className="text-sm text-muted-foreground py-4">
