@@ -225,7 +225,7 @@ const StripePaymentForm = forwardRef<StripePaymentFormRef, StripePaymentFormProp
               <CardCvcElement 
                 options={{ 
                   style: stripeElementStyle,
-                  placeholder: 'Codice di sicurezza'
+                  placeholder: 'CVV'
                 }}
                 onChange={(event) => {
                   console.log(`[${new Date().toISOString()}] 🔒 CVC changed:`, {
