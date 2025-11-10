@@ -309,7 +309,7 @@ serve(async (req) => {
               <p>Abbiamo ricevuto correttamente il pagamento della quota di <strong>280€</strong>: la sua iscrizione è ora confermata ✅</p>
               
               <div class="highlight">
-                <p><span class="emoji">🧠</span> Il corso inizierà <strong>mercoledì 4 dicembre 2025</strong> e si svolgerà in diretta online, offrendo un percorso pratico e approfondito per integrare le tecniche di biofeedback nella pratica clinica.</p>
+                <p><span class="emoji">🧠</span> Il corso inizierà <strong>Giovedi 4 dicembre 2025</strong> e si svolgerà in diretta online, offrendo un percorso pratico e approfondito per integrare le tecniche di biofeedback nella pratica clinica.</p>
               </div>
               
               <p><strong>Nelle prossime settimane riceverà via email:</strong></p>
@@ -321,7 +321,7 @@ serve(async (req) => {
               
               <p><strong>Dettagli del corso:</strong></p>
               <ul>
-                <li>📅 Inizio: mercoledì 4 dicembre 2025</li>
+                <li>📅 Inizio: Giovedi 4 dicembre 2025</li>
                 <li>⏰ 10 lezioni da 2 ore (20 ore totali)</li>
                 <li>💻 Modalità: online in diretta</li>
                 <li>🎓 Certificazione BFE Italia</li>
