@@ -212,13 +212,55 @@ const Checkout = () => {
 
   const isFormValid = form.formState.isValid;
 
-  // Reset clientSecret when switching to PayPal
+  // Create clientSecret when card is selected and form is valid
   useEffect(() => {
-    if (paymentMethod === 'paypal') {
+    const createClientSecret = async () => {
+      if (paymentMethod === 'card' && isFormValid && !clientSecret && !isProcessing) {
+        const formValues = form.getValues();
+        console.log("Creating PaymentIntent for card payment...");
+        
+        try {
+          const { data: intentData, error: intentError } = await supabase.functions.invoke(
+            'create-payment-intent',
+            {
+              body: { 
+                amount: 280,
+                email: formValues.email,
+                firstName: formValues.firstName,
+                lastName: formValues.lastName,
+                phone: formValues.phone,
+                profession: formValues.profession,
+              },
+            }
+          );
+
+          if (intentError) {
+            console.error("Error creating payment intent:", intentError);
+            toast({
+              title: "Errore",
+              description: "Impossibile inizializzare il pagamento. Riprova.",
+              variant: "destructive",
+            });
+            return;
+          }
+
+          if (intentData?.clientSecret) {
+            console.log("PaymentIntent created successfully");
+            setClientSecret(intentData.clientSecret);
+          }
+        } catch (error: any) {
+          console.error('Error creating PaymentIntent:', error);
+        }
+      }
+    };
+
+    if (paymentMethod === 'card' && isFormValid) {
+      createClientSecret();
+    } else if (paymentMethod === 'paypal') {
       setClientSecret('');
       setStripeReady(false);
     }
-  }, [paymentMethod]);
+  }, [paymentMethod, isFormValid]);
 
   const handleFormSubmit = async (values: z.infer<typeof checkoutSchema>) => {
     if (!acceptedTerms) {
@@ -241,40 +283,11 @@ const Checkout = () => {
     localStorage.setItem('checkoutFormData', JSON.stringify(values));
 
     if (paymentMethod === 'card') {
-      // Create PaymentIntent with complete form data
+      // Submit payment directly using existing clientSecret
       setIsProcessing(true);
       try {
-        console.log("Creating PaymentIntent with complete data:", values);
-        
-        const { data: intentData, error: intentError } = await supabase.functions.invoke(
-          'create-payment-intent',
-          {
-            body: { 
-              amount: 280,
-              email: values.email,
-              firstName: values.firstName,
-              lastName: values.lastName,
-              phone: values.phone,
-              profession: values.profession,
-            },
-          }
-        );
-
-        if (intentError) {
-          console.error("Error creating payment intent:", intentError);
-          throw intentError;
-        }
-
-        if (intentData?.clientSecret) {
-          console.log("PaymentIntent created successfully");
-          setClientSecret(intentData.clientSecret);
-          
-          // Wait a bit for clientSecret to be set, then submit payment
-          setTimeout(async () => {
-            if (stripeFormRef.current) {
-              await stripeFormRef.current.submitPayment();
-            }
-          }, 100);
+        if (stripeFormRef.current) {
+          await stripeFormRef.current.submitPayment();
         }
       } catch (error: any) {
         console.error('Error in card payment flow:', error);
@@ -352,7 +365,10 @@ const Checkout = () => {
     }
   };
 
-  const canSubmit = isFormValid && acceptedTerms && (paymentMethod === 'paypal' || paymentMethod === 'card');
+  const canSubmit = isFormValid && acceptedTerms && (
+    paymentMethod === 'paypal' || 
+    (paymentMethod === 'card' && stripeReady && clientSecret)
+  );
 
   return (
     <div className="min-h-screen bg-white">
