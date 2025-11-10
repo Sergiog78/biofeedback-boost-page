@@ -218,21 +218,59 @@ const Checkout = () => {
   };
 
   const isFormValid = form.formState.isValid;
+  
+  // Track form values for change detection (using useRef to avoid triggering re-renders)
+  const formValuesRef = useRef<{
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    profession?: string;
+  }>({
+    email: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    profession: ''
+  });
 
-  // Invalidate clientSecret when form data changes
+  // Invalidate clientSecret when form data changes (with debounce)
   useEffect(() => {
-    if (clientSecret && paymentMethod === 'card') {
-      console.log(`[${new Date().toISOString()}] 📝 Form data changed, invalidating clientSecret`);
+    if (!clientSecret || paymentMethod !== 'card') return;
+
+    const currentValues = form.getValues();
+    const previousValues = formValuesRef.current;
+
+    // Check if any critical field has changed
+    const hasChanged = 
+      currentValues.email !== previousValues.email ||
+      currentValues.firstName !== previousValues.firstName ||
+      currentValues.lastName !== previousValues.lastName ||
+      currentValues.phone !== previousValues.phone ||
+      currentValues.profession !== previousValues.profession;
+
+    if (hasChanged && clientSecret) {
+      console.log(`[${new Date().toISOString()}] 📝 Form data changed, invalidating clientSecret`, {
+        changed: {
+          email: currentValues.email !== previousValues.email,
+          firstName: currentValues.firstName !== previousValues.firstName,
+          lastName: currentValues.lastName !== previousValues.lastName,
+          phone: currentValues.phone !== previousValues.phone,
+          profession: currentValues.profession !== previousValues.profession,
+        }
+      });
+      
       setClientSecret('');
       setStripeReady(false);
       isCreatingIntent.current = false;
+      
+      // Update ref with current values
+      formValuesRef.current = { ...currentValues };
     }
   }, [
-    form.watch('email'),
-    form.watch('firstName'),
-    form.watch('lastName'),
-    form.watch('phone'),
-    form.watch('profession')
+    clientSecret, 
+    paymentMethod, 
+    form.formState.submitCount, // Trigger only on meaningful form interactions
   ]);
 
   // Create clientSecret when card is selected and form is valid

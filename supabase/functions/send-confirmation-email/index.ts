@@ -180,14 +180,25 @@ serve(async (req) => {
 
     // Check if email already sent to prevent duplicates
     console.log("Checking for existing enrollment...");
-    const { data: existingEnrollment } = await supabaseClient
+    
+    // Build query based on which ID is present
+    let query = supabaseClient
       .from('course_enrollments')
-      .select('id, email_sent_at')
-      .or(`stripe_session_id.eq.${sessionId},stripe_payment_intent_id.eq.${paymentIntentId}`)
-      .single();
+      .select('id, email_sent_at');
+    
+    if (sessionId) {
+      query = query.eq('stripe_session_id', sessionId);
+    } else if (paymentIntentId) {
+      query = query.eq('stripe_payment_intent_id', paymentIntentId);
+    }
+    
+    const { data: existingEnrollment } = await query.maybeSingle();
 
     if (existingEnrollment?.email_sent_at) {
-      console.log("Email already sent for this enrollment, skipping");
+      console.log("Email already sent for this enrollment, skipping", {
+        enrollmentId: existingEnrollment.id,
+        emailSentAt: existingEnrollment.email_sent_at
+      });
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -336,11 +347,23 @@ serve(async (req) => {
 
     // Update enrollment with email_sent_at timestamp
     try {
-      await supabaseClient
+      let updateQuery = supabaseClient
         .from('course_enrollments')
-        .update({ email_sent_at: new Date().toISOString() })
-        .or(`stripe_session_id.eq.${sessionId},stripe_payment_intent_id.eq.${paymentIntentId}`);
-      console.log("Updated enrollment with email_sent_at timestamp");
+        .update({ email_sent_at: new Date().toISOString() });
+      
+      if (sessionId) {
+        updateQuery = updateQuery.eq('stripe_session_id', sessionId);
+      } else if (paymentIntentId) {
+        updateQuery = updateQuery.eq('stripe_payment_intent_id', paymentIntentId);
+      }
+      
+      const { error: updateError } = await updateQuery;
+      
+      if (updateError) {
+        console.error("Failed to update email_sent_at:", updateError);
+      } else {
+        console.log("Updated enrollment with email_sent_at timestamp");
+      }
     } catch (updateError) {
       console.error("Failed to update email_sent_at:", updateError);
       // Don't fail the request if this update fails
