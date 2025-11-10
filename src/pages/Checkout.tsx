@@ -219,59 +219,28 @@ const Checkout = () => {
 
   const isFormValid = form.formState.isValid;
   
-  // Track form values for change detection (using useRef to avoid triggering re-renders)
-  const formValuesRef = useRef<{
-    email?: string;
-    firstName?: string;
-    lastName?: string;
-    phone?: string;
-    profession?: string;
-  }>({
-    email: '',
-    firstName: '',
-    lastName: '',
-    phone: '',
-    profession: ''
-  });
+  // Watch form values to detect changes
+  const watchedEmail = form.watch('email');
+  const watchedFirstName = form.watch('firstName');
+  const watchedLastName = form.watch('lastName');
+  const watchedPhone = form.watch('phone');
+  const watchedProfession = form.watch('profession');
 
-  // Invalidate clientSecret when form data changes (with debounce)
+  // Invalidate clientSecret when form data changes (with 300ms debounce)
   useEffect(() => {
     if (!clientSecret || paymentMethod !== 'card') return;
 
-    const currentValues = form.getValues();
-    const previousValues = formValuesRef.current;
-
-    // Check if any critical field has changed
-    const hasChanged = 
-      currentValues.email !== previousValues.email ||
-      currentValues.firstName !== previousValues.firstName ||
-      currentValues.lastName !== previousValues.lastName ||
-      currentValues.phone !== previousValues.phone ||
-      currentValues.profession !== previousValues.profession;
-
-    if (hasChanged && clientSecret) {
-      console.log(`[${new Date().toISOString()}] 📝 Form data changed, invalidating clientSecret`, {
-        changed: {
-          email: currentValues.email !== previousValues.email,
-          firstName: currentValues.firstName !== previousValues.firstName,
-          lastName: currentValues.lastName !== previousValues.lastName,
-          phone: currentValues.phone !== previousValues.phone,
-          profession: currentValues.profession !== previousValues.profession,
-        }
-      });
+    const timer = setTimeout(() => {
+      console.log(`[${new Date().toISOString()}] 📝 Form data changed, invalidating clientSecret because form values were modified`);
       
       setClientSecret('');
       setStripeReady(false);
       isCreatingIntent.current = false;
-      
-      // Update ref with current values
-      formValuesRef.current = { ...currentValues };
-    }
-  }, [
-    clientSecret, 
-    paymentMethod, 
-    form.formState.submitCount, // Trigger only on meaningful form interactions
-  ]);
+    }, 300);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedEmail, watchedFirstName, watchedLastName, watchedPhone, watchedProfession]);
 
   // Create clientSecret when card is selected and form is valid
   useEffect(() => {
@@ -353,7 +322,7 @@ const Checkout = () => {
       setStripeReady(false);
       isCreatingIntent.current = false;
     }
-  }, [paymentMethod, isFormValid, stripePromise]);
+  }, [paymentMethod, isFormValid, stripePromise, clientSecret]);
 
   const handleFormSubmit = async (values: z.infer<typeof checkoutSchema>) => {
     if (!acceptedTerms) {
