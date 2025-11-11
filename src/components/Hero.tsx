@@ -48,17 +48,7 @@ const Hero = () => {
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             
-            <div className="text-white/80">
-              <div className="flex items-center justify-center gap-3 flex-wrap">
-                <span className="text-accent font-bold text-3xl">497€</span>
-              </div>
-              <div className="mt-3 px-4 py-2 bg-gradient-to-r from-amber-500/30 to-yellow-500/30 rounded-lg">
-                <p className="text-amber-200 font-semibold text-sm">
-                  ⚠️ OFFERTA RISERVATA esclusivamente ai partecipanti al 1° Convegno Nazionale sul Biofeedback in Psicoterapia • Valida solo 48 ore
-                </p>
-              </div>
-              <p className="text-sm mt-2 text-accent">Offerta valida fino al 10 novembre 2025</p>
-            </div>
+            
             
             <div className="mt-8 flex justify-center gap-4">
               <div className="bg-white/5 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/10">
