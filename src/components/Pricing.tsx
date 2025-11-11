@@ -55,11 +55,11 @@ const Pricing = () => {
               <div className="space-y-4">
                 <div className="flex flex-col items-center gap-3">
                   <div className="flex items-center justify-center gap-4">
-                    <span className="text-2xl line-through opacity-70">500€</span>
-                    <span className="text-5xl font-bold">280€</span>
+                    <span className="text-2xl line-through opacity-70">700€</span>
+                    <span className="text-5xl font-bold">497€</span>
                   </div>
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 backdrop-blur-sm rounded-full border border-green-500/30">
-                    <span className="text-sm font-medium text-green-400">Sconto 56% • Risparmi 220€</span>
+                    <span className="text-sm font-medium text-green-400">Sconto 29% • Risparmi 203€</span>
                   </div>
                 </div>
                 <p className="text-white/90 text-lg">Offerta speciale riservata ai partecipanti del I Convegno di Biofeedback</p>
@@ -103,7 +103,7 @@ const Pricing = () => {
               
               <div className="space-y-4">
                 <Button variant="hero" size="xl" className="w-full text-xl py-6" onClick={handleCheckout}>
-                  Iscriviti Ora - 280€
+                  Iscriviti Ora - 497€
                 </Button>
                 
                 

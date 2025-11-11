@@ -294,7 +294,7 @@ const Checkout = () => {
             'create-payment-intent',
             {
               body: { 
-                amount: 280,
+                amount: 497,
                 email: formValues.email,
                 firstName: formValues.firstName,
                 lastName: formValues.lastName,
@@ -402,7 +402,7 @@ const Checkout = () => {
             'create-payment-intent',
             {
               body: { 
-                amount: 280,
+                amount: 497,
                 email: currentValues.email,
                 firstName: currentValues.firstName,
                 lastName: currentValues.lastName,
@@ -895,7 +895,7 @@ const Checkout = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground">Certificazione BFE di I° livello</p>
                   </div>
-                  <p className="font-semibold text-sm">€500,00</p>
+                  <p className="font-semibold text-sm">€700,00</p>
                 </div>
               </div>
 
@@ -905,7 +905,7 @@ const Checkout = () => {
                   <div className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
                     SCONTO CONVEGNO
                   </div>
-                  <span className="text-muted-foreground">-€220 di risparmio</span>
+                  <span className="text-muted-foreground">-€203 di risparmio</span>
                 </div>
 
                 {/* Countdown Timer */}
@@ -940,13 +940,13 @@ const Checkout = () => {
                 {/* Subtotal */}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotale</span>
-                  <span>€500,00</span>
+                  <span>€700,00</span>
                 </div>
 
                 {/* Discount */}
                 <div className="flex justify-between text-sm text-green-600">
-                  <span>Sconto Convegno (-44%)</span>
-                  <span>-€220,00</span>
+                  <span>Sconto Convegno (-29%)</span>
+                  <span>-€203,00</span>
                 </div>
               </div>
 
@@ -954,7 +954,7 @@ const Checkout = () => {
                 <div className="flex justify-between items-baseline mb-2">
                   <span className="text-base font-semibold">Totale</span>
                   <div className="text-right">
-                    <div className="text-2xl font-bold">€280,00</div>
+                    <div className="text-2xl font-bold">€497,00</div>
                     <div className="text-sm text-muted-foreground">IVA inclusa</div>
                   </div>
                 </div>

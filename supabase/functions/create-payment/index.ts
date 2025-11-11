@@ -85,7 +85,7 @@ serve(async (req) => {
       payment_method_types: ['paypal'],
       line_items: [
         {
-          price: "price_1SPPGeGSUlmGTzYSahKSeVIJ",
+          price: "price_1SSCy5GSUlmGTzYSAaeoVKcu",
           quantity: 1,
         },
       ],
