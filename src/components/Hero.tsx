@@ -50,9 +50,7 @@ const Hero = () => {
             
             <div className="text-white/80">
               <div className="flex items-center justify-center gap-3 flex-wrap">
-                <span className="text-sm line-through opacity-70">700€</span>
-                <span className="text-accent font-bold text-2xl">497€</span>
-                <span className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-full text-green-400 text-xs font-medium">-29% • Risparmi 203€</span>
+                <span className="text-accent font-bold text-3xl">497€</span>
               </div>
               <div className="mt-3 px-4 py-2 bg-gradient-to-r from-amber-500/30 to-yellow-500/30 rounded-lg">
                 <p className="text-amber-200 font-semibold text-sm">
