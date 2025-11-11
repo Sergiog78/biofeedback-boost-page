@@ -60,7 +60,6 @@ const Checkout = () => {
   const [stripeReady, setStripeReady] = useState(false);
   const stripeFormRef = useRef<StripePaymentFormRef>(null);
   const isCreatingIntent = useRef(false);
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
@@ -73,30 +72,6 @@ const Checkout = () => {
     },
     mode: "onChange",
   });
-
-  // Countdown timer
-  useEffect(() => {
-    const targetDate = new Date('2025-11-10T23:59:59').getTime();
-    
-    const updateCountdown = () => {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-      
-      if (distance > 0) {
-        setTimeLeft({
-          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((distance % (1000 * 60)) / 1000)
-        });
-      }
-    };
-    
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
 
   // Load saved data or PayPal data on mount
   useEffect(() => {
@@ -900,35 +875,6 @@ const Checkout = () => {
               </div>
 
               <div className="border-t pt-4 space-y-3">
-                {/* Countdown Timer */}
-                <div className="rounded-xl p-5 shadow-sm border-2 border-[#003383]/30" style={{ backgroundColor: '#003383' }}>
-                  <div className="flex items-center justify-center gap-2 mb-4">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span className="text-sm font-semibold text-white">Offerta scade tra:</span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-3">
-                    <div className="bg-white/95 rounded-lg p-3 text-center border border-white/20 shadow-sm">
-                      <div className="text-2xl font-bold text-[#003383] tabular-nums">{timeLeft.days}</div>
-                      <div className="text-xs text-gray-600 font-medium mt-1">Giorni</div>
-                    </div>
-                    <div className="bg-white/95 rounded-lg p-3 text-center border border-white/20 shadow-sm">
-                      <div className="text-2xl font-bold text-[#003383] tabular-nums">{timeLeft.hours}</div>
-                      <div className="text-xs text-gray-600 font-medium mt-1">Ore</div>
-                    </div>
-                    <div className="bg-white/95 rounded-lg p-3 text-center border border-white/20 shadow-sm">
-                      <div className="text-2xl font-bold text-[#003383] tabular-nums">{timeLeft.minutes}</div>
-                      <div className="text-xs text-gray-600 font-medium mt-1">Min</div>
-                    </div>
-                    <div className="bg-white/95 rounded-lg p-3 text-center border border-white/20 shadow-sm">
-                      <div className="text-2xl font-bold text-[#003383] tabular-nums">{timeLeft.seconds}</div>
-                      <div className="text-xs text-gray-600 font-medium mt-1">Sec</div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-white/80 mt-4 text-center font-medium">Scadenza: 10 novembre 2025</p>
-                </div>
-
                 {/* Total */}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Totale</span>
