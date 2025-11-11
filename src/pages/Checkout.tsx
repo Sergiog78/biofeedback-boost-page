@@ -19,6 +19,7 @@ import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
 import mastercardLogo from "@/assets/mastercard.svg";
 import bfePartnerLogo from "@/assets/bfe-partner-logo.png";
+import { useMetaPixel } from "@/hooks/use-meta-pixel";
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
@@ -60,6 +61,7 @@ const Checkout = () => {
   const [stripeReady, setStripeReady] = useState(false);
   const stripeFormRef = useRef<StripePaymentFormRef>(null);
   const isCreatingIntent = useRef(false);
+  const { trackViewContent, trackInitiateCheckout } = useMetaPixel();
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
@@ -72,6 +74,17 @@ const Checkout = () => {
     },
     mode: "onChange",
   });
+
+  // Scroll to top on mount + track Meta Pixel events
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    
+    // Track ViewContent when page loads
+    trackViewContent("Checkout - Corso Biofeedback", 497, "EUR");
+    
+    // Track InitiateCheckout
+    trackInitiateCheckout(497, "EUR");
+  }, []);
 
   // Load saved data or PayPal data on mount
   useEffect(() => {

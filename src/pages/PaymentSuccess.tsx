@@ -6,6 +6,7 @@ import { Check, Home, Mail } from "lucide-react";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useMetaPixel } from "@/hooks/use-meta-pixel";
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -18,8 +19,9 @@ const PaymentSuccess = () => {
     (searchParams.get("payment_intent_client_secret")?.split("_secret")[0] ?? null);
   const { toast } = useToast();
   const [emailSent, setEmailSent] = useState(false);
+  const { trackPurchase } = useMetaPixel();
 
-  // DEBUG: Log URL parameters on mount
+  // DEBUG: Log URL parameters on mount + track Purchase event
   useEffect(() => {
     console.log("=== PaymentSuccess Page Loaded ===");
     console.log("Current URL:", window.location.href);
@@ -29,6 +31,10 @@ const PaymentSuccess = () => {
 
     // Scroll to top on mount
     window.scrollTo(0, 0);
+    
+    // Track Purchase conversion
+    const transactionId = sessionId || paymentIntentId || undefined;
+    trackPurchase(497, "EUR", transactionId);
   }, []);
   useEffect(() => {
     console.log("=== Email Send Effect Triggered ===");
