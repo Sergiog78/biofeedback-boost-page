@@ -44,7 +44,7 @@ const Hero = () => {
           
           <div className="space-y-4">
             <Button variant="hero" size="xl" className="text-lg" onClick={() => navigate('/checkout')}>
-              Iscriviti ora con lo sconto
+              Iscriviti ora a 497 euro
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             
