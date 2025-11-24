@@ -124,7 +124,7 @@ const sessions = [
     ]
   },
   {
-    date: "17 febbraio 2026",
+    date: "12 febbraio 2026",
     number: "9ª Lezione",
     title: "Casi clinici complessi",
     subtitle: "Il corpo racconta la mente",
