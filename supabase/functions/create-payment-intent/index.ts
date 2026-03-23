@@ -66,7 +66,7 @@ serve(async (req) => {
       );
     }
     
-    const { email, firstName, lastName, amount, phone, profession } = body;
+    const { email, firstName, lastName, phone, profession } = body;
 
     console.log("Creating PaymentIntent with data:", { email, firstName, lastName, phone, profession });
 
