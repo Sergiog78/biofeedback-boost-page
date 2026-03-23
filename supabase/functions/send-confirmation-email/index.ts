@@ -50,8 +50,8 @@ serve(async (req) => {
         throw new Error("Payment not completed");
       }
 
-      // CRITICAL: Verify this is for the Biofeedback course (280 EUR = 28000 cents)
-      if (paymentIntent.amount !== 28000) {
+      // CRITICAL: Verify this is for the Biofeedback course (497 EUR = 49700 cents)
+      if (paymentIntent.amount !== 49700) {
         console.log("Skipping email - not a Biofeedback course purchase (wrong amount)");
         return new Response(
           JSON.stringify({ 
