@@ -113,24 +113,7 @@ const Checkout = () => {
             throw error;
           }
 
-          if (data?.customer) {
-            console.log("✅ Customer data received:", data.customer);
-            // Prefill form with PayPal data
-            form.reset({
-              firstName: data.customer.firstName || '',
-              lastName: data.customer.lastName || '',
-              email: data.customer.email || '',
-              phone: data.customer.phone || '',
-              profession: '',
-            });
-
-            toast({
-              title: "Dati importati da PayPal",
-              description: "I tuoi dati sono stati precompilati. Completa la professione per continuare.",
-            });
-
-            // Check if payment was already completed
-            if (data.customer.paymentStatus === 'paid') {
+          if (data?.paymentStatus === 'paid') {
               console.log("✅ PayPal payment confirmed, redirecting to success page with session_id:", sessionId);
               toast({
                 title: "Pagamento completato",
@@ -141,7 +124,7 @@ const Checkout = () => {
                 navigate(`/payment-success?session_id=${sessionId}`);
               }, 2000);
             } else {
-              console.log("⚠️ Payment not completed yet. Status:", data.customer.paymentStatus);
+              console.log("⚠️ Payment not completed yet. Status:", data?.paymentStatus);
             }
           } else {
             console.warn("⚠️ No customer data in response");
