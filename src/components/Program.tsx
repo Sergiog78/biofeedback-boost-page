@@ -186,12 +186,23 @@ const Program = () => {
         
         <Accordion type="single" collapsible className="max-w-6xl mx-auto space-y-4">
           {sessions.map((session, sessionIndex) => (
-            <div key={sessionIndex} className="space-y-4">
-              <div className="flex items-center gap-3 px-2">
-                <Calendar className="h-5 w-5 text-accent" />
-                <span className="font-semibold text-lg">{session.date}</span>
-                <span className="text-muted-foreground">– {session.time}</span>
+            <div key={sessionIndex} className={`space-y-4 ${sessionIndex > 0 ? 'mt-10' : ''}`}>
+              <div className="flex items-center gap-4 px-6 py-4 bg-secondary/60 rounded-xl border-l-4 border-accent">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <span className="inline-block px-3 py-1 bg-accent text-accent-foreground text-sm font-bold rounded-full whitespace-nowrap">
+                    Giornata {sessionIndex + 1}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-accent" />
+                    <span className="font-bold text-lg">{session.date}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground font-medium">{session.time}</span>
+                  </div>
+                </div>
               </div>
+              <div className="ml-2 border-l-2 border-accent/20 pl-4 space-y-4">
               {session.modules.map((module, moduleIndex) => {
                 const itemValue = `item-${sessionIndex}-${moduleIndex}`;
                 return (
@@ -254,6 +265,7 @@ const Program = () => {
                   </AccordionItem>
                 );
               })}
+              </div>
             </div>
           ))}
         </Accordion>
