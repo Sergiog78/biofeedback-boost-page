@@ -64,6 +64,7 @@ const Checkout = () => {
   const stripeFormRef = useRef<StripePaymentFormRef>(null);
   const isCreatingIntent = useRef(false);
   const { trackViewContent, trackInitiateCheckout } = useMetaPixel();
+  const [tierInfo, setTierInfo] = useState(getCurrentTier());
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
