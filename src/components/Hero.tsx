@@ -24,17 +24,17 @@ const Hero = () => {
           </h1>
           
           <p className="text-xl md:text-2xl mb-8 text-white/90 leading-relaxed">
-            Percorso formativo online di 10 incontri per integrare il biofeedback nella pratica clinica
+            Percorso formativo online di 4 giornate per integrare il biofeedback nella pratica clinica
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <div className="flex items-center gap-2 text-white/90">
               <div className="w-2 h-2 bg-accent rounded-full"></div>
-              <span className="font-medium">20 ore totali</span>
+              <span className="font-medium">16 ore totali</span>
             </div>
             <div className="flex items-center gap-2 text-white/90">
               <div className="w-2 h-2 bg-accent rounded-full"></div>
-              <span className="font-medium">10 incontri live</span>
+              <span className="font-medium">4 giornate live</span>
             </div>
             <div className="flex items-center gap-2 text-white/90">
               <div className="w-2 h-2 bg-accent rounded-full"></div>

@@ -13,10 +13,10 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Corso</h3>
             <ul className="space-y-2 text-primary-foreground/80">
-              <li>10 incontri online</li>
-              <li>20 ore totali</li>
+              <li>4 giornate online</li>
+              <li>16 ore totali</li>
               <li>Certificazione BFE</li>
-              <li>Inizio: 4 dicembre 2025</li>
+              <li>Inizio: 9 maggio 2026</li>
             </ul>
           </div>
           

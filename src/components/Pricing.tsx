@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-const benefits = ["10 incontri online live (20 ore totali)", "Certificazione BFE di I livello", "Materiali digitali e casi clinici guidati", "Dimostrazioni pratiche in tempo reale", "Accesso a convenzioni per dispositivi professionali", "Supporto e discussioni interattive"];
+const benefits = ["4 giornate online live (16 ore totali)", "Certificazione BFE di I livello", "Materiali digitali e casi clinici guidati", "Dimostrazioni pratiche in tempo reale", "Accesso a convenzioni per dispositivi professionali", "Supporto e discussioni interattive"];
 const Pricing = () => {
   const navigate = useNavigate();
   
