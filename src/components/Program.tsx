@@ -265,6 +265,7 @@ const Program = () => {
                   </AccordionItem>
                 );
               })}
+              </div>
             </div>
           ))}
         </Accordion>
