@@ -14,32 +14,24 @@ serve(async (req) => {
   try {
     const { sessionId } = await req.json();
     
-    if (!sessionId) {
-      throw new Error("Session ID is required");
+    if (!sessionId || typeof sessionId !== 'string' || sessionId.length > 200) {
+      throw new Error("Valid Session ID is required");
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Retrieve the checkout session with customer details
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['customer', 'customer_details'],
-    });
+    // Retrieve the checkout session
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     console.log("Retrieved session:", session.id);
 
-    // Extract customer information
-    const customerData = {
-      email: session.customer_details?.email || session.customer_email,
-      firstName: session.customer_details?.name?.split(' ')[0] || '',
-      lastName: session.customer_details?.name?.split(' ').slice(1).join(' ') || '',
-      phone: session.customer_details?.phone || '',
-      paymentStatus: session.payment_status,
-    };
-
+    // Only return payment status — no PII
     return new Response(
-      JSON.stringify({ customer: customerData }),
+      JSON.stringify({ 
+        paymentStatus: session.payment_status,
+      }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,

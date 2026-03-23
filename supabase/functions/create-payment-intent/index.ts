@@ -91,9 +91,9 @@ serve(async (req) => {
       console.log("Created new customer:", customerId);
     }
 
-    // Create payment intent restricted to card only
+    // Create payment intent with server-side price
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // cents
+      amount: COURSE_PRICE_CENTS,
       currency: "eur",
       customer: customerId,
       payment_method_types: ["card"],

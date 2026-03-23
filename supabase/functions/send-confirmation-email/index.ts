@@ -33,7 +33,7 @@ serve(async (req) => {
     let customerName = "Cliente";
     let customerPhone: string | null = null;
     let stripeCustomerId: string | null = null;
-    let amountPaid = 28000; // Default 280 EUR
+    let amountPaid = 49700; // Default 497 EUR
     let profession: string | null = null;
 
     // Handle PaymentIntent (card payments)

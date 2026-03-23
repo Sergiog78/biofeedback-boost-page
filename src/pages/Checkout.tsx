@@ -282,7 +282,6 @@ const Checkout = () => {
             'create-payment-intent',
             {
               body: { 
-                amount: 497,
                 email: formValues.email,
                 firstName: formValues.firstName,
                 lastName: formValues.lastName,
