@@ -20,6 +20,8 @@ import righettoLogo from "@/assets/righetto-logo.png";
 import mastercardLogo from "@/assets/mastercard.svg";
 import bfePartnerLogo from "@/assets/bfe-partner-logo.png";
 import { useMetaPixel } from "@/hooks/use-meta-pixel";
+import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
+import PricingRoadmap from "@/components/PricingRoadmap";
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
