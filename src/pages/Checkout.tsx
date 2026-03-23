@@ -868,7 +868,7 @@ const Checkout = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground">Certificazione BFE di I° livello</p>
                   </div>
-                  <p className="font-semibold text-sm">€497,00</p>
+                  <p className="font-semibold text-sm">€{formatPrice(tierInfo.tier.totalPrice)}</p>
                 </div>
               </div>
 
