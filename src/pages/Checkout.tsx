@@ -126,9 +126,6 @@ const Checkout = () => {
             } else {
               console.log("⚠️ Payment not completed yet. Status:", data?.paymentStatus);
             }
-          } else {
-            console.warn("⚠️ No customer data in response");
-          }
 
           // Clean up URL
           console.log("🧹 Cleaning up URL");
