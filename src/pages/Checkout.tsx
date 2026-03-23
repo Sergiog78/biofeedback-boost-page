@@ -20,6 +20,8 @@ import righettoLogo from "@/assets/righetto-logo.png";
 import mastercardLogo from "@/assets/mastercard.svg";
 import bfePartnerLogo from "@/assets/bfe-partner-logo.png";
 import { useMetaPixel } from "@/hooks/use-meta-pixel";
+import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
+import PricingRoadmap from "@/components/PricingRoadmap";
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
@@ -62,6 +64,7 @@ const Checkout = () => {
   const stripeFormRef = useRef<StripePaymentFormRef>(null);
   const isCreatingIntent = useRef(false);
   const { trackViewContent, trackInitiateCheckout } = useMetaPixel();
+  const [tierInfo, setTierInfo] = useState(getCurrentTier());
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
@@ -75,15 +78,19 @@ const Checkout = () => {
     mode: "onChange",
   });
 
+  // Update tier info every second
+  useEffect(() => {
+    const interval = setInterval(() => setTierInfo(getCurrentTier()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Scroll to top on mount + track Meta Pixel events
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Track ViewContent when page loads
-    trackViewContent("Checkout - Corso Biofeedback", 497, "EUR");
-    
-    // Track InitiateCheckout
-    trackInitiateCheckout(497, "EUR");
+    const price = getCurrentTier().tier.totalPrice;
+    trackViewContent("Checkout - Corso Biofeedback", price, "EUR");
+    trackInitiateCheckout(price, "EUR");
   }, []);
 
   // Load saved data or PayPal data on mount
@@ -369,7 +376,6 @@ const Checkout = () => {
             'create-payment-intent',
             {
               body: { 
-                amount: 497,
                 email: currentValues.email,
                 firstName: currentValues.firstName,
                 lastName: currentValues.lastName,
@@ -862,15 +868,24 @@ const Checkout = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground">Certificazione BFE di I° livello</p>
                   </div>
-                  <p className="font-semibold text-sm">€497,00</p>
+                  <p className="font-semibold text-sm">€{formatPrice(tierInfo.tier.totalPrice)}</p>
                 </div>
+              </div>
+
+              {/* Pricing Roadmap */}
+              <div className="border-t pt-4">
+                <PricingRoadmap compact />
               </div>
 
               <div className="border-t pt-4 space-y-3">
                 {/* Total */}
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Totale</span>
-                  <span>€497,00</span>
+                  <span className="text-muted-foreground">Imponibile</span>
+                  <span>€{formatPrice(tierInfo.tier.basePrice)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">IVA 22%</span>
+                  <span>€{formatPrice(tierInfo.tier.totalPrice - tierInfo.tier.basePrice)}</span>
                 </div>
               </div>
 
@@ -878,7 +893,7 @@ const Checkout = () => {
                 <div className="flex justify-between items-baseline mb-2">
                   <span className="text-base font-semibold">Totale Finale</span>
                   <div className="text-right">
-                    <div className="text-2xl font-bold">€497,00</div>
+                    <div className="text-2xl font-bold">€{formatPrice(tierInfo.tier.totalPrice)}</div>
                     <div className="text-sm text-muted-foreground">IVA inclusa</div>
                   </div>
                 </div>

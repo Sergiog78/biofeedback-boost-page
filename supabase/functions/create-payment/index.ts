@@ -6,6 +6,54 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// ── Pricing tiers (same logic as frontend) ──
+const IVA_RATE = 0.22;
+const LAUNCH_DATE = new Date('2026-03-25T09:00:00Z'); // 10:00 CET
+const COURSE_DATE = new Date('2026-05-08T21:59:59Z');
+
+const TIER_DEFS = [
+  { basePrice: 139, durationHours: 72 },
+  { basePrice: 169, durationHours: 7 * 24 },
+  { basePrice: 179, durationHours: 7 * 24 },
+  { basePrice: 199, durationHours: 0 },
+];
+
+function getCurrentPriceCents(): number {
+  const now = Date.now();
+  let start = LAUNCH_DATE.getTime();
+
+  for (let i = 0; i < TIER_DEFS.length; i++) {
+    const def = TIER_DEFS[i];
+    const end = i === TIER_DEFS.length - 1
+      ? COURSE_DATE.getTime()
+      : start + def.durationHours * 3600000;
+
+    if (now < end || i === TIER_DEFS.length - 1) {
+      return Math.round(def.basePrice * (1 + IVA_RATE) * 100);
+    }
+    start = end;
+  }
+  return Math.round(199 * (1 + IVA_RATE) * 100);
+}
+
+function getCurrentBasePrice(): number {
+  const now = Date.now();
+  let start = LAUNCH_DATE.getTime();
+
+  for (let i = 0; i < TIER_DEFS.length; i++) {
+    const def = TIER_DEFS[i];
+    const end = i === TIER_DEFS.length - 1
+      ? COURSE_DATE.getTime()
+      : start + def.durationHours * 3600000;
+
+    if (now < end || i === TIER_DEFS.length - 1) {
+      return def.basePrice;
+    }
+    start = end;
+  }
+  return 199;
+}
+
 // Input validation
 const validateInput = (data: any) => {
   const errors: string[] = [];
@@ -38,7 +86,6 @@ const validateInput = (data: any) => {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -46,7 +93,6 @@ serve(async (req) => {
   try {
     const body = await req.json();
     
-    // Validate inputs
     const validationErrors = validateInput(body);
     if (validationErrors.length > 0) {
       return new Response(
@@ -60,12 +106,14 @@ serve(async (req) => {
     
     const { email, firstName, lastName, profession } = body;
 
-    // Initialize Stripe with secret key
+    const priceCents = getCurrentPriceCents();
+    const basePrice = getCurrentBasePrice();
+    console.log("Creating PayPal checkout with dynamic price:", priceCents, "cents (base:", basePrice, "EUR)");
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
 
-    // Check if customer exists
     const customers = await stripe.customers.list({ email, limit: 1 });
     let customerId;
     
@@ -79,13 +127,17 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Create checkout session for PayPal payment
+    // Use price_data with dynamic amount instead of fixed price_id
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['paypal'],
       line_items: [
         {
-          price: "price_1SSCy5GSUlmGTzYSAaeoVKcu",
+          price_data: {
+            currency: 'eur',
+            product: 'prod_TU2MR8jyYAbKva',
+            unit_amount: priceCents,
+          },
           quantity: 1,
         },
       ],
@@ -108,7 +160,7 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    // Don't expose detailed error messages
+    console.error("Payment error:", error);
     return new Response(
       JSON.stringify({ error: "Payment processing failed" }),
       {

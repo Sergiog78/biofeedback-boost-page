@@ -1,11 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import heroImage from "@/assets/biofeedback-hero.jpg";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
+import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
 const Hero = () => {
   const navigate = useNavigate();
+  const [tierInfo, setTierInfo] = useState(getCurrentTier());
+  useEffect(() => {
+    const interval = setInterval(() => setTierInfo(getCurrentTier()), 1000);
+    return () => clearInterval(interval);
+  }, []);
   return <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-20">
       <div className="absolute inset-0 z-0" style={{
       backgroundImage: `linear-gradient(rgba(0, 8, 49, 0.85), rgba(0, 8, 49, 0.75)), url(${heroImage})`,
@@ -44,7 +51,7 @@ const Hero = () => {
           
           <div className="space-y-4">
             <Button variant="hero" size="xl" className="text-lg" onClick={() => navigate('/checkout')}>
-              Iscriviti ora a 497 euro
+              Iscriviti ora a €{formatPrice(tierInfo.tier.totalPrice)}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             
