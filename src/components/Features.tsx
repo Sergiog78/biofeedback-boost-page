@@ -17,7 +17,7 @@ const features = [
   {
     icon: onlineIcon,
     title: "Formazione Online Live",
-    description: "10 incontri da 2 ore su piattaforma interattiva. Lezioni al mattino per massima attenzione, con cadenza settimanale ideale per l'apprendimento.",
+    description: "4 giornate da 4 ore su piattaforma interattiva. Lezioni il sabato mattina per massima attenzione, con cadenza settimanale ideale per l'apprendimento.",
   },
 ];
 
