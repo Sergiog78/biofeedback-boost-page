@@ -6,6 +6,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Course price is hard-coded server-side to prevent manipulation
+const COURSE_PRICE_CENTS = 49700; // €497
+
 // Input validation schema
 const validateInput = (data: any) => {
   const errors: string[] = [];
@@ -26,10 +29,6 @@ const validateInput = (data: any) => {
     errors.push('Last name is required');
   } else if (data.lastName.length > 100 || !/^[a-zA-ZÀ-ÿ\s'-]+$/.test(data.lastName)) {
     errors.push('Invalid last name');
-  }
-  
-  if (!data.amount || typeof data.amount !== 'number' || data.amount < 1 || data.amount > 100000) {
-    errors.push('Invalid amount');
   }
 
   // Phone is optional but if provided must be valid
@@ -67,7 +66,7 @@ serve(async (req) => {
       );
     }
     
-    const { email, firstName, lastName, amount, phone, profession } = body;
+    const { email, firstName, lastName, phone, profession } = body;
 
     console.log("Creating PaymentIntent with data:", { email, firstName, lastName, phone, profession });
 
@@ -92,9 +91,9 @@ serve(async (req) => {
       console.log("Created new customer:", customerId);
     }
 
-    // Create payment intent restricted to card only
+    // Create payment intent with server-side price
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // cents
+      amount: COURSE_PRICE_CENTS,
       currency: "eur",
       customer: customerId,
       payment_method_types: ["card"],
