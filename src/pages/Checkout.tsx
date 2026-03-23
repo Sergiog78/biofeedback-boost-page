@@ -78,15 +78,19 @@ const Checkout = () => {
     mode: "onChange",
   });
 
+  // Update tier info every second
+  useEffect(() => {
+    const interval = setInterval(() => setTierInfo(getCurrentTier()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Scroll to top on mount + track Meta Pixel events
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Track ViewContent when page loads
-    trackViewContent("Checkout - Corso Biofeedback", 497, "EUR");
-    
-    // Track InitiateCheckout
-    trackInitiateCheckout(497, "EUR");
+    const price = getCurrentTier().tier.totalPrice;
+    trackViewContent("Checkout - Corso Biofeedback", price, "EUR");
+    trackInitiateCheckout(price, "EUR");
   }, []);
 
   // Load saved data or PayPal data on mount
