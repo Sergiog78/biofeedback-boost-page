@@ -6,13 +6,13 @@ import { useState, useEffect } from "react";
 import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
 import PricingRoadmap from "@/components/PricingRoadmap";
 
-const benefits = [
+const benefits: (string | React.ReactNode)[] = [
   "16 ore di formazione live con applicazione clinica",
   "Certificazione BFE di I livello",
   "Materiali pratici e casi clinici guidati",
   "Dimostrazioni reali durante le lezioni",
   "Accesso a convenzioni per dispositivi professionali",
-  "Accesso a un gruppo privato di confronto clinico continuo, con colleghi, tutor e docenti, per chiarimenti, domande e supporto anche dopo il corso",
+  <><span className="font-bold text-accent">Accesso a un gruppo privato</span> di confronto clinico continuo, con colleghi, tutor e docenti, per chiarimenti, domande e supporto anche dopo il corso</>,
 ];
 
 const Pricing = () => {
