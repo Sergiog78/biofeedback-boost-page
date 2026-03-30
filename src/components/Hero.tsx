@@ -7,7 +7,7 @@ import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
 import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
 
-const VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/videos/vsl.mp4`;
+const VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/videos/WSL.mp4`;
 
 const Hero = () => {
   const navigate = useNavigate();
