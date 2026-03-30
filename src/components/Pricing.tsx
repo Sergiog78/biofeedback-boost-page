@@ -6,7 +6,14 @@ import { useState, useEffect } from "react";
 import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
 import PricingRoadmap from "@/components/PricingRoadmap";
 
-const benefits = ["4 giornate online live (16 ore totali)", "Certificazione BFE di I livello", "Materiali digitali e casi clinici guidati", "Dimostrazioni pratiche in tempo reale", "Accesso a convenzioni per dispositivi professionali", "Supporto e discussioni interattive"];
+const benefits = [
+  "16 ore di formazione live con applicazione clinica",
+  "Certificazione BFE di I livello",
+  "Materiali pratici e casi clinici guidati",
+  "Dimostrazioni reali durante le lezioni",
+  "Accesso a convenzioni per dispositivi professionali",
+  "Supporto e confronto continuo con docenti e colleghi",
+];
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -23,21 +30,31 @@ const Pricing = () => {
     navigate('/checkout');
   };
 
-  const { tier } = tierInfo;
+  const { tier, nextTier } = tierInfo;
 
   return (
     <section id="pricing" className="py-20 bg-gradient-to-b from-secondary/30 to-background">
       <div className="container px-4">
-        <div className="text-center mb-16">
+        <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-accent/10 rounded-full">
             <Star className="h-5 w-5 text-accent fill-accent" />
-            <span className="text-accent font-semibold">Offerta Speciale</span>
+            <span className="text-accent font-semibold">Accesso al corso</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Investi nella Tua Formazione
+            Inizia a integrare il biofeedback nella tua pratica clinica
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Approfitta del prezzo riservato e inizia il tuo percorso nel biofeedback
+            Un percorso completo, pratico e guidato per passare dalla teoria all'utilizzo reale in seduta
+          </p>
+        </div>
+
+        {/* Pre-bridge emotivo */}
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <p className="text-lg text-muted-foreground">
+            Questo non è un corso in più da seguire.
+          </p>
+          <p className="text-lg text-muted-foreground mt-3">
+            È uno strumento che puoi iniziare a usare nella tua pratica clinica per avere più chiarezza, più sicurezza e un riferimento oggettivo nel lavoro con i pazienti.
           </p>
         </div>
 
@@ -50,9 +67,13 @@ const Pricing = () => {
                   <div className="flex items-center justify-center">
                     <span className="text-5xl font-bold">€{tier.basePrice} + IVA</span>
                   </div>
-                  <p className="text-white/70 text-sm">IVA 22% inclusa nel totale</p>
+                  <p className="text-white/70 text-sm">IVA inclusa nel totale</p>
                 </div>
-                <p className="text-white/90 text-lg">{tier.label === "Early Bird" ? "Prezzo Early Bird — solo per pochi giorni!" : `${tier.label} — Prezzo riservato`}</p>
+                <p className="text-white/90 text-lg">
+                  {tier.label === "Early Bird"
+                    ? "Prezzo Early Bird — solo per pochi giorni!"
+                    : `${tier.label} — Prezzo riservato`}
+                </p>
               </div>
             </CardHeader>
             <CardContent className="p-8">
@@ -74,21 +95,23 @@ const Pricing = () => {
 
               <div className="space-y-4">
                 <Button variant="hero" size="xl" className="w-full text-xl py-6" onClick={handleCheckout}>
-                  Iscriviti Ora - €{tier.basePrice} + IVA
+                  👉 Iscriviti ora e blocca il prezzo attuale
                 </Button>
 
-                <p className="text-center text-sm text-muted-foreground">
-                  Pagamento sicuro tramite Stripe • Riceverai conferma immediata via email
-                </p>
+                <div className="text-center space-y-1">
+                  <p className="text-sm font-medium text-foreground">
+                    Prezzo attuale: €{tier.basePrice} + IVA
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Il prezzo aumenterà nei prossimi giorni
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Pagamento sicuro tramite Stripe · Accesso immediato dopo l'iscrizione
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
-
-          <div className="mt-12 text-center">
-            <p className="text-muted-foreground mb-6">
-              Hai domande? Contattaci per maggiori informazioni
-            </p>
-          </div>
         </div>
       </div>
     </section>
