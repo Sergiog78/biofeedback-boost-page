@@ -108,7 +108,7 @@ const Hero = () => {
 
             {/* Microcopy sotto CTA */}
             <div className="text-sm text-white/70 -mt-3">
-              <p>Prezzo attuale: <span className="font-semibold text-white/90">€{formatPrice(tierInfo.tier.totalPrice)}</span>{tierInfo.nextTier && <span className="line-through ml-1.5 text-white/40">€{formatPrice(tierInfo.nextTier.totalPrice)}</span>}</p>
+              <p>Prezzo attuale: <span className="font-semibold text-white/90">€{tierInfo.tier.basePrice} + IVA</span>{tierInfo.nextTier && <span className="line-through ml-1.5 text-white/40">€{tierInfo.nextTier.basePrice} + IVA</span>}</p>
               <p className="text-white/50 text-xs mt-0.5">Il prezzo aumenterà nei prossimi giorni</p>
             </div>
 
