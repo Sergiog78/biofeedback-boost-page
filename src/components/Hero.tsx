@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import heroImage from "@/assets/biofeedback-hero.jpg";
@@ -214,18 +214,45 @@ const Hero = () => {
           showStickyCta ? "translate-y-0" : "translate-y-full"
         }`}
       >
-        <div className="bg-white/95 backdrop-blur-md border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.1)] px-3 py-3">
+        <div className="bg-white/95 backdrop-blur-md border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.1)] px-3 py-2.5">
           <div className="container mx-auto flex items-center justify-between gap-3">
-            <span className="text-foreground font-medium text-sm hidden sm:block">
-              €{tierInfo.tier.basePrice} + IVA — Posti limitati
-            </span>
+            <div className="hidden sm:flex items-center gap-3 text-sm">
+              <span className="text-foreground font-medium">
+                €{tierInfo.tier.basePrice} + IVA
+              </span>
+              {tierInfo.nextTier && tierInfo.timeRemaining.totalMs > 0 && (
+                <div className="flex items-center gap-1.5 text-accent">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span className="font-semibold tabular-nums">
+                    {String(tierInfo.timeRemaining.days).padStart(2, "0")}g{" "}
+                    {String(tierInfo.timeRemaining.hours).padStart(2, "0")}h{" "}
+                    {String(tierInfo.timeRemaining.minutes).padStart(2, "0")}m{" "}
+                    {String(tierInfo.timeRemaining.seconds).padStart(2, "0")}s
+                  </span>
+                </div>
+              )}
+            </div>
+            {/* Mobile: price + countdown inline */}
+            <div className="flex sm:hidden items-center gap-2 text-xs">
+              <span className="text-foreground font-semibold">
+                €{tierInfo.tier.basePrice}+IVA
+              </span>
+              {tierInfo.nextTier && tierInfo.timeRemaining.totalMs > 0 && (
+                <div className="flex items-center gap-1 text-accent">
+                  <Clock className="w-3 h-3" />
+                  <span className="font-semibold tabular-nums">
+                    {String(tierInfo.timeRemaining.days).padStart(2, "0")}:{String(tierInfo.timeRemaining.hours).padStart(2, "0")}:{String(tierInfo.timeRemaining.minutes).padStart(2, "0")}:{String(tierInfo.timeRemaining.seconds).padStart(2, "0")}
+                  </span>
+                </div>
+              )}
+            </div>
             <Button
               variant="hero"
               size="sm"
-              className="font-semibold w-full sm:w-auto"
+              className="font-semibold shrink-0"
               onClick={() => navigate("/checkout")}
             >
-              Iscriviti al corso
+              Iscriviti ora
               <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
