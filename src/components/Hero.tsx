@@ -217,7 +217,7 @@ const Hero = () => {
         <div className="bg-white/95 backdrop-blur-md border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.1)] px-3 py-3">
           <div className="container mx-auto flex items-center justify-between gap-3">
             <span className="text-foreground font-medium text-sm hidden sm:block">
-              €{formatPrice(tierInfo.tier.totalPrice)} — Posti limitati
+              €{tierInfo.tier.basePrice} + IVA — Posti limitati
             </span>
             <Button
               variant="hero"
