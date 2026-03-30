@@ -127,8 +127,8 @@ const Hero = () => {
               👉 Guarda questo video prima di iscriverti
             </p>
 
-            {/* Video container — 16:9 */}
-            <div className="w-full aspect-video rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 bg-black/40">
+            {/* Video container — 9:16 vertical */}
+            <div className="w-full max-w-[320px] mx-auto lg:mx-0 aspect-[9/16] rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 bg-black/40">
               <video
                 className="w-full h-full object-cover"
                 controls
