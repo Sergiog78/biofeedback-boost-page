@@ -99,7 +99,7 @@ const Features = () => {
             <div className="max-w-[760px] mx-auto text-center md:text-left">
               {/* Label */}
               <span className="text-sm font-semibold uppercase tracking-widest text-accent mb-4 block">
-                La nostra tesi
+                Cosa succede davvero nella pratica
               </span>
 
               {/* Headline */}
