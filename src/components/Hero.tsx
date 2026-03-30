@@ -101,7 +101,7 @@ const Hero = () => {
               className="text-base font-semibold w-full sm:w-fit"
               onClick={() => navigate("/checkout")}
             >
-              👉 Iscriviti ora e blocca il prezzo early bird
+              Iscriviti ora e blocca il prezzo early bird
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
 
