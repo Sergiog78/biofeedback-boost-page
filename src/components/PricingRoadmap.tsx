@@ -134,6 +134,9 @@ const PricingRoadmap = ({ compact = false }: PricingRoadmapProps) => {
             <span className="font-semibold text-foreground">€{nextTier.basePrice} + IVA</span>
             <ArrowRight className="w-3 h-3" />
           </div>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            👉 Dopo questo aumento, non sarà più possibile accedere a questo prezzo
+          </p>
         </div>
       )}
     </div>
