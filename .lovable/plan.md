@@ -1,75 +1,70 @@
 
 
-## Dynamic Pricing System with Countdown
+## Hero Section Redesign — VSL + New Copy + Sticky CTA
 
-### Overview
-Implement a time-based pricing system that starts at €139+IVA on March 25, 2026 and increases through 4 tiers until the course date (May 8). Each tier shows a countdown and a visual pricing roadmap.
+### What changes
 
-### Pricing Tiers (launch: 25 marzo 2026, ore 10:00 CET)
+Complete rewrite of the Hero section following the mobile-first conversion structure provided, with a VSL video block and sticky CTA.
 
-| Fascia | Periodo | Prezzo (+ IVA 22%) | Totale IVA incl. | Durata |
-|--------|---------|-------------------|-------------------|--------|
-| 1 | 25 mar 10:00 → 28 mar 10:00 | €139 | €169,58 | 72 ore |
-| 2 | 28 mar 10:00 → 4 apr 10:00 | €169 | €206,18 | 7 giorni |
-| 3 | 4 apr 10:00 → 11 apr 10:00 | €179 | €218,38 | 7 giorni |
-| 4 | 11 apr 10:00 → 8 mag 23:59 | €199 | €242,78 | fino al corso |
+### Structure (exact order, mobile-first)
 
-### Architecture
-
-**1. Shared pricing config** — `src/lib/pricing-tiers.ts`
-- Single source of truth for tier dates, base prices, and IVA-inclusive prices
-- `getCurrentTier()` function returns active tier + time remaining to next tier
-- Used by both frontend components and passed as reference for backend validation
-
-**2. Backend enforcement (security-critical)**
-- Update `create-payment-intent` edge function: replace hardcoded €497 with date-based tier calculation (same logic, server-side)
-- Update `create-payment` edge function (PayPal): create 4 Stripe Price objects (one per tier) and select the correct one based on current date server-side
-- Create 4 new Stripe prices via Stripe tools for the PayPal checkout flow
-
-**3. Frontend — Pricing Roadmap component** — `src/components/PricingRoadmap.tsx`
-- Visual stepper showing all 4 tiers vertically
-- Past tiers: strikethrough price, grayed out, with a checkmark
-- Current tier: highlighted with accent color, shows the active price prominently
-- Future tiers: visible but subdued
-- Countdown timer (days, hours, minutes, seconds) showing time until next price increase
-- Used in both `Pricing.tsx` and `Checkout.tsx` order summary
-
-**4. Update existing components**
-- **Hero.tsx**: Change CTA button text to show current dynamic price instead of hardcoded "497 euro"
-- **Pricing.tsx**: Replace static €497 card with the PricingRoadmap component + current price display
-- **Checkout.tsx**: Update order summary sidebar (right column) to show current tier price instead of €497, include the PricingRoadmap, update Meta Pixel tracking values
-- **Checkout.tsx**: Remove hardcoded `amount: 497` from the form re-creation flow (line 372)
-
-### Technical Details
-
-**Pricing config structure:**
 ```text
-LAUNCH_DATE = 2026-03-25T10:00:00+01:00 (CET)
-
-tiers[] = [
-  { end: LAUNCH + 72h,  basePrice: 139, label: "Early Bird" },
-  { end: LAUNCH + 72h + 7d, basePrice: 169, label: "Fase 2" },
-  { end: LAUNCH + 72h + 14d, basePrice: 179, label: "Fase 3" },
-  { end: 2026-05-08T23:59:59, basePrice: 199, label: "Prezzo Finale" },
-]
-
-IVA_RATE = 0.22
+┌──────────────────────────────┐
+│  Eyebrow (pill badge)        │
+│  Headline (h1)               │
+│  Sottotitolo (p)             │
+│  Social proof line (⭐)      │
+│  CTA primaria (button)       │
+│  Microproof (3 checkmarks)   │
+│                              │
+│  Video intro text            │
+│  ┌────────────────────────┐  │
+│  │   VIDEO VSL (mp4)      │  │
+│  │   9:16 aspect ratio    │  │
+│  └────────────────────────┘  │
+│  Bullet points (4 items)     │
+│  CTA secondaria (button)     │
+│                              │
+│  Partner logos (BFE+Righetto) │
+└──────────────────────────────┘
 ```
 
-**Server-side price calculation** (in both edge functions):
-- Calculate current tier from `new Date()` using same date boundaries
-- Use tier's price in cents for PaymentIntent amount
-- For PayPal, map tier index → corresponding Stripe price_id
+### Video hosting
 
-**Countdown component**: Uses `setInterval(1000)` with cleanup, recalculates `getCurrentTier()` each tick. When a tier expires, the UI automatically transitions to the next tier.
+- Create a **public** Supabase Storage bucket `videos` via SQL migration
+- User will upload the mp4 file, which gets served from the bucket URL
+- For now, render a placeholder thumbnail container with a play button overlay; the video `<video>` element loads the mp4 with `controls`, no autoplay, showing duration
+- Aspect ratio: vertical (9:16) on mobile, constrained max-width ~400px centered on desktop
 
-### Files to create/modify
-1. **Create** `src/lib/pricing-tiers.ts` — shared config + helper functions
-2. **Create** `src/components/PricingRoadmap.tsx` — visual tier stepper with countdown
-3. **Modify** `src/components/Pricing.tsx` — integrate roadmap, dynamic price
-4. **Modify** `src/components/Hero.tsx` — dynamic CTA price
-5. **Modify** `src/pages/Checkout.tsx` — dynamic prices in order summary + roadmap
-6. **Modify** `supabase/functions/create-payment-intent/index.ts` — date-based amount
-7. **Modify** `supabase/functions/create-payment/index.ts` — date-based price_id selection
-8. **Create** 4 Stripe prices via Stripe tools (for PayPal flow)
+### Copy (verbatim from brief)
+
+- **Eyebrow**: "Corso online live di 16 ore | Introduzione al Biofeedback in Psicoterapia"
+- **Headline**: "Impara a integrare il biofeedback nella tua pratica clinica in modo semplice, concreto e scientificamente rigoroso"
+- **Sottotitolo**: "Per psicologi e psicoterapeuti che vogliono iniziare a usare il biofeedback in seduta senza perdersi nella complessità tecnica e senza snaturare la relazione terapeutica."
+- **Social proof**: "⭐ Già scelto da psicologi e psicoterapeuti che vogliono integrare il biofeedback nella pratica clinica"
+- **CTA primaria**: "Iscriviti ora al corso" + dynamic price
+- **Microproof**: 3 check items (Corso live, Accessibile senza basi tecniche, Supporto + community + supervisione)
+- **Video intro**: "Guarda il video e scopri perché il biofeedback non è complesso come ti hanno fatto credere"
+- **Bullets** (under video): 4 discovery points
+- **CTA secondaria**: "Iscriviti ora e inizia a usare il biofeedback nella tua pratica clinica"
+
+### Sticky CTA
+
+- After 5-7 seconds of scrolling, show a fixed bottom bar (mobile) / bottom-right floating button (desktop) with "Iscriviti al corso" that navigates to checkout
+- Disappears when hero section is back in viewport
+- Uses Intersection Observer + timeout
+
+### Files to change
+
+1. **SQL migration** — Create `videos` storage bucket (public) with open read policy
+2. **`src/components/Hero.tsx`** — Full rewrite with new structure, copy, video container, sticky CTA logic
+3. No other files need changes; dynamic pricing imports remain the same
+
+### Design details
+
+- Dark overlay background stays (same as current)
+- Video container: rounded corners, subtle border, max-w-sm centered, 9:16 aspect ratio
+- Bullet points: left-aligned list with check icons, white/90 text
+- Sticky CTA: bg-accent, full-width on mobile, z-50, smooth slide-up animation
+- All spacing optimized mobile-first with responsive adjustments
 
