@@ -82,7 +82,8 @@ const Pricing = () => {
                 <PricingRoadmap />
               </div>
 
-              <div className="space-y-4 mb-8">
+              {/* Benefits — keep left aligned */}
+              <div className="space-y-4 mb-8 text-left">
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-start gap-3">
                     <div className="mt-1">

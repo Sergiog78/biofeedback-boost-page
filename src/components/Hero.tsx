@@ -22,7 +22,6 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Sticky CTA: show after 5s of scrolling, hide when hero is visible
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -70,11 +69,11 @@ const Hero = () => {
           }}
         />
 
-        {/* Content: 2-col on desktop, stacked on mobile/tablet */}
+        {/* Content */}
         <div className="relative z-10 mx-auto max-w-[1320px] px-4 py-8 pt-24 md:px-5 lg:grid lg:grid-cols-[1.4fr_auto] lg:gap-12 lg:items-start lg:py-16 lg:pt-28 lg:pb-12 lg:px-3">
           
           {/* LEFT COLUMN — Copy */}
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-5 text-center lg:text-left items-center lg:items-start">
             {/* Eyebrow */}
             <span className="inline-block bg-white text-primary text-sm md:text-base font-semibold tracking-wide uppercase px-5 py-2 rounded-full">
               Corso online <span className="text-destructive">live</span> di 16 ore · Introduzione al Biofeedback in Psicoterapia
@@ -113,7 +112,7 @@ const Hero = () => {
             </div>
 
             {/* Microproof */}
-            <div className="flex flex-col gap-1.5 text-sm text-white/70">
+            <div className="flex flex-col gap-1.5 text-sm text-white/70 items-center lg:items-start">
               <span className="flex items-center gap-1.5">
                 <Check className="h-4 w-4 text-accent-foreground shrink-0" /> Corso live (non registrato)
               </span>
@@ -127,13 +126,13 @@ const Hero = () => {
           </div>
 
           {/* RIGHT COLUMN — Video */}
-          <div className="mt-8 lg:mt-0 w-full lg:w-[380px] lg:shrink-0">
+          <div className="mt-8 lg:mt-0 w-full lg:w-[380px] lg:shrink-0 text-center lg:text-left">
             {/* Caption sopra video */}
             <p className="text-sm font-medium text-white/80 mb-3">
               👉 Guarda questo video prima di iscriverti
             </p>
 
-            {/* Video container — 9:16 vertical */}
+            {/* Video container */}
             <div className="w-full aspect-[9/16] rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 bg-black/40">
               <video
                 className="w-full h-full object-cover"
@@ -146,7 +145,7 @@ const Hero = () => {
               </video>
             </div>
 
-            {/* Bullet points sotto video */}
+            {/* Bullet points sotto video — keep left aligned */}
             <div className="mt-6 text-left">
               <p className="text-white/90 font-semibold mb-3 text-sm md:text-base">
                 In questo video scoprirai:
@@ -208,7 +207,7 @@ const Hero = () => {
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
-      {/* Sticky CTA — mobile-optimized */}
+      {/* Sticky CTA */}
       <div
         className={`fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ${
           showStickyCta ? "translate-y-0" : "translate-y-full"
@@ -232,7 +231,6 @@ const Hero = () => {
                 </div>
               )}
             </div>
-            {/* Mobile: price + countdown inline */}
             <div className="flex sm:hidden items-center gap-2 text-xs">
               <span className="text-foreground font-semibold">
                 €{tierInfo.tier.basePrice}+IVA

@@ -29,7 +29,7 @@ const Instructor = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center border rounded-lg p-8">
             {/* Left - Text */}
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-8 text-center lg:text-left">
               <div>
                 <Badge variant="outline" className="mb-4">Docente</Badge>
                 <h3 className="text-3xl lg:text-5xl tracking-tighter font-regular mb-6">
@@ -45,8 +45,9 @@ const Instructor = () => {
                 </p>
               </div>
 
-              <div>
-                <p className="font-semibold text-lg mb-4">Esperienza clinica e formazione:</p>
+              {/* Credentials — keep left aligned */}
+              <div className="text-left">
+                <p className="font-semibold text-lg mb-4 text-center lg:text-left">Esperienza clinica e formazione:</p>
                 <div className="flex flex-col gap-4">
                   {credentials.map((item, i) => (
                     <div key={i} className="flex items-start gap-3">
@@ -58,7 +59,7 @@ const Instructor = () => {
               </div>
 
               {/* Social proof */}
-              <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground">
+              <blockquote className="border-l-4 border-primary pl-4 italic text-muted-foreground text-left">
                 "Mi ha aperto un mondo"
               </blockquote>
             </div>

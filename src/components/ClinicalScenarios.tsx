@@ -83,15 +83,15 @@ const ClinicalScenarios = () => {
           </p>
         </div>
 
-        {/* Scenarios */}
+        {/* Scenarios — card text centered on mobile, left on md+ */}
         <div className="grid md:grid-cols-3 gap-6 md:gap-8 mb-16 md:mb-20">
           {scenarios.map((scenario, index) => (
             <Card
               key={index}
               className="bg-card border-border/50 shadow-sm hover:shadow-md transition-shadow"
             >
-              <CardContent className="p-6 md:p-8">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5">
+              <CardContent className="p-6 md:p-8 text-center md:text-left">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 mx-auto md:mx-0">
                   <scenario.icon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-4">

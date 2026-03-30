@@ -23,7 +23,7 @@ const Features = () => {
         {/* ===== BLOCCO PROBLEMA ===== */}
         <Card className="border-border/40 shadow-sm mb-16 md:mb-20">
           <CardContent className="p-8 md:p-12 lg:p-16">
-            <div className="max-w-[760px] mx-auto">
+            <div className="max-w-[760px] mx-auto text-center md:text-left">
               {/* Label */}
               <span className="text-sm font-semibold uppercase tracking-widest text-accent mb-4 block">
                 Perché oggi molti terapeuti restano bloccati
@@ -54,8 +54,8 @@ const Features = () => {
               </div>
 
               {/* Elenco problemi percepiti */}
-              <div>
-                <h3 className="text-lg md:text-xl font-semibold text-foreground mb-6">
+              <div className="text-left">
+                <h3 className="text-lg md:text-xl font-semibold text-foreground mb-6 text-center md:text-left">
                   Se ti sei riconosciuto in uno di questi pensieri, non sei il solo
                 </h3>
                 <div className="space-y-3">
@@ -78,7 +78,7 @@ const Features = () => {
                 <div className="space-y-4 text-muted-foreground leading-relaxed text-base md:text-lg">
                   <p>Il punto non è il biofeedback in sé.</p>
                   <p>Il punto è che molta formazione in questo ambito è ancora:</p>
-                  <ul className="list-disc list-inside space-y-1 pl-2">
+                  <ul className="list-disc list-inside space-y-1 pl-2 text-left">
                     <li>troppo accademica</li>
                     <li>troppo fredda</li>
                     <li>troppo focalizzata sulla spiegazione tecnica</li>
@@ -96,7 +96,7 @@ const Features = () => {
         {/* ===== BLOCCO TESI ===== */}
         <Card className="border-border/40 shadow-sm">
           <CardContent className="p-8 md:p-12 lg:p-16">
-            <div className="max-w-[760px] mx-auto">
+            <div className="max-w-[760px] mx-auto text-center md:text-left">
               {/* Label */}
               <span className="text-sm font-semibold uppercase tracking-widest text-accent mb-4 block">
                 La nostra tesi
@@ -119,8 +119,8 @@ const Features = () => {
               </div>
 
               {/* Mini bullet di rinforzo */}
-              <div className="mb-10">
-                <p className="text-foreground font-semibold mb-4 text-base md:text-lg">
+              <div className="mb-10 text-left">
+                <p className="text-foreground font-semibold mb-4 text-base md:text-lg text-center md:text-left">
                   Con questo approccio puoi iniziare a:
                 </p>
                 <div className="space-y-3">

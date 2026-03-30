@@ -47,7 +47,7 @@ const Solution = () => {
     <section className="py-20 md:py-28 bg-background">
       <div className="container px-4 max-w-[1200px] mx-auto">
         {/* ===== INTRO ===== */}
-        <div className="max-w-[760px] mx-auto mb-16 md:mb-20">
+        <div className="max-w-[760px] mx-auto mb-16 md:mb-20 text-center md:text-left">
           <span className="text-sm font-semibold uppercase tracking-widest text-accent mb-4 block">
             Cosa cambia davvero con questo approccio
           </span>
@@ -80,7 +80,7 @@ const Solution = () => {
           <div className="grid md:grid-cols-2 gap-6 max-w-[900px] mx-auto">
             {/* PRIMA */}
             <Card className="border-border/40 shadow-sm">
-              <CardContent className="p-6 md:p-8">
+              <CardContent className="p-6 md:p-8 text-left">
                 <div className="flex items-center gap-2 mb-5">
                   <span className="inline-block w-3 h-3 rounded-full bg-muted-foreground/40" />
                   <h4 className="text-lg font-semibold text-muted-foreground uppercase tracking-wide">
@@ -100,7 +100,7 @@ const Solution = () => {
 
             {/* DOPO */}
             <Card className="border-accent/30 shadow-sm bg-accent/5">
-              <CardContent className="p-6 md:p-8">
+              <CardContent className="p-6 md:p-8 text-left">
                 <div className="flex items-center gap-2 mb-5">
                   <span className="inline-block w-3 h-3 rounded-full bg-accent" />
                   <h4 className="text-lg font-semibold text-accent uppercase tracking-wide">
@@ -124,10 +124,10 @@ const Solution = () => {
         <Card className="border-border/40 shadow-sm mb-16 md:mb-20">
           <CardContent className="p-8 md:p-12 lg:p-16">
             <div className="max-w-[760px] mx-auto">
-              <h3 className="text-xl md:text-2xl font-bold text-foreground mb-6">
+              <h3 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-center md:text-left">
                 Durante il corso imparerai a:
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-4 text-left">
                 {competencies.map((item, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <Check className="w-5 h-5 text-accent mt-0.5 shrink-0" />
@@ -143,14 +143,14 @@ const Solution = () => {
 
         {/* ===== STRUTTURA CORSO ===== */}
         <div className="max-w-[760px] mx-auto mb-16 md:mb-20">
-          <h3 className="text-xl md:text-2xl font-bold text-foreground mb-6">
+          <h3 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-center md:text-left">
             Un formato pensato per l'apprendimento reale
           </h3>
           <div className="grid sm:grid-cols-2 gap-4">
             {courseFormat.map((item, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 bg-secondary/50 rounded-xl p-4 md:p-5"
+                className="flex items-start gap-3 bg-secondary/50 rounded-xl p-4 md:p-5 text-left"
               >
                 <BookOpen className="w-5 h-5 text-accent mt-0.5 shrink-0" />
                 <span className="text-muted-foreground text-base leading-relaxed">
@@ -164,7 +164,7 @@ const Solution = () => {
         {/* ===== DIFFERENZIAZIONE ===== */}
         <Card className="border-border/40 shadow-sm mb-16 md:mb-20">
           <CardContent className="p-8 md:p-12 lg:p-16">
-            <div className="max-w-[760px] mx-auto">
+            <div className="max-w-[760px] mx-auto text-center md:text-left">
               <h3 className="text-xl md:text-2xl font-bold text-foreground mb-6">
                 Perché questo corso è diverso
               </h3>
@@ -189,10 +189,10 @@ const Solution = () => {
 
         {/* ===== SUPPORTO ===== */}
         <div className="max-w-[760px] mx-auto mb-16 md:mb-20">
-          <h3 className="text-xl md:text-2xl font-bold text-foreground mb-6">
+          <h3 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-center md:text-left">
             E soprattutto, non rimani solo
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-4 text-left">
             {supportItems.map((item, i) => (
               <div key={i} className="flex items-start gap-3 bg-secondary/50 rounded-xl p-4 md:p-5">
                 {i === 0 ? (
