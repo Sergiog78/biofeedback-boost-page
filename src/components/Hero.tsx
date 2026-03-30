@@ -108,7 +108,7 @@ const Hero = () => {
 
             {/* Microcopy sotto CTA */}
             <div className="text-sm text-white/70 -mt-3">
-              <p>Prezzo attuale: <span className="font-semibold text-white/90">€{formatPrice(tierInfo.tier.totalPrice)}</span>{tierInfo.nextTier && <span className="line-through ml-1.5 text-white/40">€{formatPrice(tierInfo.nextTier.totalPrice)}</span>}</p>
+              <p>Prezzo attuale: <span className="font-semibold text-white/90">€{tierInfo.tier.basePrice} + IVA</span>{tierInfo.nextTier && <span className="line-through ml-1.5 text-white/40">€{tierInfo.nextTier.basePrice} + IVA</span>}</p>
               <p className="text-white/50 text-xs mt-0.5">Il prezzo aumenterà nei prossimi giorni</p>
             </div>
 
@@ -217,7 +217,7 @@ const Hero = () => {
         <div className="bg-white/95 backdrop-blur-md border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.1)] px-3 py-3">
           <div className="container mx-auto flex items-center justify-between gap-3">
             <span className="text-foreground font-medium text-sm hidden sm:block">
-              €{formatPrice(tierInfo.tier.totalPrice)} — Posti limitati
+              €{tierInfo.tier.basePrice} + IVA — Posti limitati
             </span>
             <Button
               variant="hero"

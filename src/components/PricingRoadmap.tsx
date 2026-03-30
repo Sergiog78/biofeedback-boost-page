@@ -79,14 +79,14 @@ const PricingRoadmap = ({ compact = false }: PricingRoadmapProps) => {
                     <div className="flex items-center gap-1.5 shrink-0">
                       {isPast ? (
                         <span className="text-sm text-muted-foreground line-through">
-                          €{formatPrice(t.totalPrice)}
+                          €{t.basePrice} + IVA
                         </span>
                       ) : (
                         <span className={cn(
-                          "font-bold",
+                          "font-semibold",
                           isCurrent ? "text-lg text-foreground" : "text-sm text-muted-foreground"
                         )}>
-                          €{formatPrice(t.totalPrice)}
+                          €{t.basePrice} + IVA
                         </span>
                       )}
                     </div>
@@ -131,7 +131,7 @@ const PricingRoadmap = ({ compact = false }: PricingRoadmapProps) => {
           </div>
           <div className="mt-3 flex items-center justify-center gap-1 text-xs text-muted-foreground">
             <span>Prossimo prezzo:</span>
-            <span className="font-semibold text-foreground">€{formatPrice(nextTier.totalPrice)}</span>
+            <span className="font-semibold text-foreground">€{nextTier.basePrice} + IVA</span>
             <ArrowRight className="w-3 h-3" />
           </div>
         </div>

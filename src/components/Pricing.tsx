@@ -48,9 +48,9 @@ const Pricing = () => {
               <div className="space-y-4">
                 <div className="flex flex-col items-center gap-3">
                   <div className="flex items-center justify-center">
-                    <span className="text-5xl font-bold">€{formatPrice(tier.totalPrice)}</span>
+                    <span className="text-5xl font-bold">€{tier.basePrice} + IVA</span>
                   </div>
-                  <p className="text-white/70 text-sm">€{tier.basePrice} + IVA 22%</p>
+                  <p className="text-white/70 text-sm">IVA 22% inclusa nel totale</p>
                 </div>
                 <p className="text-white/90 text-lg">{tier.label === "Early Bird" ? "Prezzo Early Bird — solo per pochi giorni!" : `${tier.label} — Prezzo riservato`}</p>
               </div>
@@ -74,7 +74,7 @@ const Pricing = () => {
 
               <div className="space-y-4">
                 <Button variant="hero" size="xl" className="w-full text-xl py-6" onClick={handleCheckout}>
-                  Iscriviti Ora - €{formatPrice(tier.totalPrice)}
+                  Iscriviti Ora - €{tier.basePrice} + IVA
                 </Button>
 
                 <p className="text-center text-sm text-muted-foreground">
