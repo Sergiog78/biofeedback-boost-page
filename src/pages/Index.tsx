@@ -22,6 +22,7 @@ const Index = () => {
       <Program />
       <Instructor />
       <Pricing />
+      <FAQ />
       <Footer />
     </div>
   );
