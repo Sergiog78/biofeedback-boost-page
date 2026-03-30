@@ -71,10 +71,10 @@ const Hero = () => {
         />
 
         {/* Content: 2-col on desktop, stacked on mobile/tablet */}
-        <div className="relative z-10 mx-auto max-w-[1200px] px-5 py-8 pt-24 md:px-8 lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center lg:py-16 lg:pt-28 lg:pb-12">
+        <div className="relative z-10 mx-auto max-w-7xl px-5 py-8 pt-24 md:px-10 lg:grid lg:grid-cols-[1fr_auto] lg:gap-12 lg:items-start lg:py-16 lg:pt-28 lg:pb-12">
           
           {/* LEFT COLUMN — Copy */}
-          <div className="flex flex-col gap-5 lg:max-w-[540px]">
+          <div className="flex flex-col gap-5">
             {/* Eyebrow */}
             <span className="text-xs md:text-sm font-medium tracking-wide uppercase text-white/60">
               Corso online live di 16 ore · Introduzione al Biofeedback in Psicoterapia
@@ -121,14 +121,14 @@ const Hero = () => {
           </div>
 
           {/* RIGHT COLUMN — Video */}
-          <div className="mt-8 lg:mt-0 lg:max-w-[560px] w-full">
+          <div className="mt-8 lg:mt-0 w-full lg:w-[380px] lg:shrink-0">
             {/* Caption sopra video */}
             <p className="text-sm font-medium text-white/80 mb-3">
               👉 Guarda questo video prima di iscriverti
             </p>
 
             {/* Video container — 9:16 vertical */}
-            <div className="w-full max-w-[320px] mx-auto lg:mx-0 aspect-[9/16] rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 bg-black/40">
+            <div className="w-full aspect-[9/16] rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 bg-black/40">
               <video
                 className="w-full h-full object-cover"
                 controls
