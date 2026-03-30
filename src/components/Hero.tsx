@@ -71,7 +71,7 @@ const Hero = () => {
         />
 
         {/* Content: 2-col on desktop, stacked on mobile/tablet */}
-        <div className="relative z-10 mx-auto max-w-7xl px-5 py-8 pt-24 md:px-10 lg:grid lg:grid-cols-[1fr_auto] lg:gap-12 lg:items-start lg:py-16 lg:pt-28 lg:pb-12">
+        <div className="relative z-10 mx-auto max-w-[1200px] px-5 py-8 pt-24 md:px-6 lg:grid lg:grid-cols-[1.3fr_auto] lg:gap-12 lg:items-start lg:py-16 lg:pt-28 lg:pb-12 lg:px-4">
           
           {/* LEFT COLUMN — Copy */}
           <div className="flex flex-col gap-5">
