@@ -216,7 +216,7 @@ const Solution = () => {
             onClick={scrollToCheckout}
             className="inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold text-lg px-8 py-4 rounded-full transition-colors"
           >
-            👉 Iscriviti ora e inizia a integrare il biofeedback nella tua pratica clinica
+            Iscriviti ora e inizia a integrare il biofeedback nella tua pratica clinica
             <ArrowRight className="w-5 h-5" />
           </button>
         </div>
