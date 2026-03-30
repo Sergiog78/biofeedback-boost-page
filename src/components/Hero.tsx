@@ -102,9 +102,15 @@ const Hero = () => {
               className="text-base font-semibold w-full sm:w-fit"
               onClick={() => navigate("/checkout")}
             >
-              Iscriviti ora al corso — €{formatPrice(tierInfo.tier.totalPrice)}
+              👉 Iscriviti ora e blocca il prezzo early bird
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
+
+            {/* Microcopy sotto CTA */}
+            <div className="text-sm text-white/70 -mt-3">
+              <p>Prezzo attuale: <span className="font-semibold text-white/90">€{formatPrice(tierInfo.tier.totalPrice)}</span>{tierInfo.nextTier && <span className="line-through ml-1.5 text-white/40">€{formatPrice(tierInfo.nextTier.totalPrice)}</span>}</p>
+              <p className="text-white/50 text-xs mt-0.5">Il prezzo aumenterà nei prossimi giorni</p>
+            </div>
 
             {/* Microproof */}
             <div className="flex flex-col gap-1.5 text-sm text-white/70">
@@ -165,15 +171,15 @@ const Hero = () => {
               </ul>
             </div>
 
-            {/* CTA secondaria */}
-            <div className="mt-6">
+            {/* CTA secondaria — solo mobile */}
+            <div className="mt-6 lg:hidden">
               <Button
                 variant="hero"
                 size="xl"
-                className="text-base font-semibold w-full sm:w-fit"
+                className="text-base font-semibold w-full"
                 onClick={() => navigate("/checkout")}
               >
-                Iscriviti ora e inizia a usare il biofeedback
+                👉 Iscriviti ora e blocca il prezzo early bird
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
