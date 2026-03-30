@@ -18,10 +18,10 @@ export interface PricingTier {
 }
 
 const tierDefs = [
-  { label: "Early Bird", basePrice: 139, durationHours: 72 },
-  { label: "Fase 2", basePrice: 169, durationHours: 7 * 24 },
-  { label: "Fase 3", basePrice: 179, durationHours: 7 * 24 },
-  { label: "Prezzo Finale", basePrice: 199, durationHours: 0 }, // ends at COURSE_DATE
+  { label: "Early Bird", basePrice: 299, durationHours: 72 },
+  { label: "Fase 2", basePrice: 329, durationHours: 10 * 24 },
+  { label: "Fase 3", basePrice: 359, durationHours: 10 * 24 },
+  { label: "Prezzo Finale", basePrice: 399, durationHours: 0 }, // ends at COURSE_DATE
 ];
 
 function buildTiers(): PricingTier[] {

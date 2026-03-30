@@ -12,10 +12,10 @@ const LAUNCH_DATE = new Date('2026-03-25T09:00:00Z'); // 10:00 CET
 const COURSE_DATE = new Date('2026-05-08T21:59:59Z');
 
 const TIER_DEFS = [
-  { basePrice: 139, durationHours: 72 },
-  { basePrice: 169, durationHours: 7 * 24 },
-  { basePrice: 179, durationHours: 7 * 24 },
-  { basePrice: 199, durationHours: 0 },
+  { basePrice: 299, durationHours: 72 },
+  { basePrice: 329, durationHours: 10 * 24 },
+  { basePrice: 359, durationHours: 10 * 24 },
+  { basePrice: 399, durationHours: 0 },
 ];
 
 function getCurrentPriceCents(): number {
@@ -33,7 +33,7 @@ function getCurrentPriceCents(): number {
     }
     start = end;
   }
-  return Math.round(199 * (1 + IVA_RATE) * 100);
+  return Math.round(399 * (1 + IVA_RATE) * 100);
 }
 
 function getCurrentBasePrice(): number {
@@ -51,7 +51,7 @@ function getCurrentBasePrice(): number {
     }
     start = end;
   }
-  return 199;
+  return 399;
 }
 
 // Input validation
