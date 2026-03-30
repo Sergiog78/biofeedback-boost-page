@@ -12,7 +12,7 @@ const benefits = [
   "Materiali pratici e casi clinici guidati",
   "Dimostrazioni reali durante le lezioni",
   "Accesso a convenzioni per dispositivi professionali",
-  "Supporto e confronto continuo con docenti e colleghi",
+  "Accesso a un gruppo privato di confronto clinico continuo, con colleghi, tutor e docenti, per chiarimenti, domande e supporto anche dopo il corso",
 ];
 
 const Pricing = () => {
