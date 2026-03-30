@@ -77,7 +77,7 @@ const Hero = () => {
           <div className="flex flex-col gap-5">
             {/* Eyebrow */}
             <span className="inline-block bg-white text-primary text-sm md:text-base font-semibold tracking-wide uppercase px-5 py-2 rounded-full">
-              Corso online live di 16 ore · Introduzione al Biofeedback in Psicoterapia
+              Corso online <span className="text-destructive">live</span> di 16 ore · Introduzione al Biofeedback in Psicoterapia
             </span>
 
             {/* Headline */}
