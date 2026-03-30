@@ -76,7 +76,7 @@ const Hero = () => {
           {/* LEFT COLUMN — Copy */}
           <div className="flex flex-col gap-5">
             {/* Eyebrow */}
-            <span className="text-xs md:text-sm font-medium tracking-wide uppercase text-white/60">
+            <span className="text-sm md:text-base font-semibold tracking-wide uppercase text-accent-foreground">
               Corso online live di 16 ore · Introduzione al Biofeedback in Psicoterapia
             </span>
 
