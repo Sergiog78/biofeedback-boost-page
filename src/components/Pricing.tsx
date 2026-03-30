@@ -96,7 +96,7 @@ const Pricing = () => {
 
               <div className="space-y-4">
                 <Button variant="hero" size="xl" className="w-full text-xl py-6" onClick={handleCheckout}>
-                  👉 Iscriviti ora e blocca il prezzo attuale
+                  Iscriviti ora e blocca il prezzo attuale
                 </Button>
 
                 <div className="text-center space-y-1">

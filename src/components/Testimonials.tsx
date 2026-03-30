@@ -79,7 +79,7 @@ const Testimonials = () => {
           <div className="text-center">
             <Button size="lg" className="text-lg px-8 py-6" asChild>
               <a href="#pricing">
-                👉 Iscriviti ora e blocca il prezzo early bird
+                Iscriviti ora e blocca il prezzo early bird
               </a>
             </Button>
           </div>
