@@ -111,11 +111,10 @@ const Features = () => {
               {/* Paragrafo */}
               <div className="space-y-4 text-muted-foreground leading-relaxed text-base md:text-lg mb-10">
                 <p>
-                  Questo corso nasce esattamente da questa idea: rendere il biofeedback comprensibile, rigoroso e applicabile per psicologi e psicoterapeuti che vogliono iniziare a usarlo davvero, senza trasformarsi in tecnici e senza snaturare il proprio approccio terapeutico.
+                  Questo corso nasce esattamente da questa idea, ed è il risultato di oltre dieci anni di lavoro clinico e di ricerca sul biofeedback all'interno del Centro Nova Mentis.
                 </p>
                 <p>
-                  Non è una formazione pensata per impressionarti con la teoria.<br />
-                  È una formazione pensata per aiutarti a capire come integrare il biofeedback nella clinica reale.
+                  Un contesto in cui il biofeedback non viene studiato solo a livello teorico, ma utilizzato quotidianamente nella pratica psicoterapeutica.
                 </p>
               </div>
 
