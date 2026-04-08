@@ -9,7 +9,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -23,69 +22,44 @@ serve(async (req) => {
 
     console.log("Processing confirmation email", { sessionId, paymentIntentId });
 
-    // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    const BIOFEEDBACK_COURSE_PRICE_ID = "price_1SPPGeGSUlmGTzYSahKSeVIJ";
     let customerEmail: string | null = null;
     let customerName = "Cliente";
     let customerPhone: string | null = null;
     let stripeCustomerId: string | null = null;
-    let amountPaid = 49700; // Default 497 EUR
+    let amountPaid = 0;
     let profession: string | null = null;
 
     // Handle PaymentIntent (card payments)
-    let paymentIntent: any = null;
     if (paymentIntentId) {
       console.log("Processing PaymentIntent:", paymentIntentId);
       
-      paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
       console.log("Retrieved PaymentIntent:", paymentIntent.id, "Status:", paymentIntent.status);
 
-      // Verify payment was successful
       if (paymentIntent.status !== "succeeded") {
         throw new Error("Payment not completed");
       }
 
-      // CRITICAL: Verify this is for the Biofeedback course (497 EUR = 49700 cents)
-      if (paymentIntent.amount !== 49700) {
-        console.log("Skipping email - not a Biofeedback course purchase (wrong amount)");
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            message: "Not a Biofeedback course purchase - wrong amount" 
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          }
-        );
-      }
-
-      console.log("Confirmed: This is a Biofeedback course purchase (card payment)");
-
-      // PRIORITY: Get customer details from metadata FIRST (most recent and complete data from form)
+      // Get customer details from metadata FIRST
       if (paymentIntent.metadata) {
         customerEmail = paymentIntent.metadata.customerEmail || null;
         customerName = paymentIntent.metadata.customerName || "Cliente";
         customerPhone = paymentIntent.metadata.customerPhone || null;
         profession = paymentIntent.metadata.customerProfession || null;
-        console.log("Metadata found:", { email: customerEmail, name: customerName, phone: customerPhone, profession });
       }
 
-      // Get Stripe customer ID for reference
       if (paymentIntent.customer) {
         const customerId = typeof paymentIntent.customer === 'string' 
           ? paymentIntent.customer 
           : paymentIntent.customer.id;
         stripeCustomerId = customerId;
-        console.log("Stripe customer ID:", stripeCustomerId);
       }
 
-      // Fallback to Stripe customer object ONLY if metadata is empty
+      // Fallback to Stripe customer object if metadata is empty
       if (!customerEmail && paymentIntent.customer) {
         const customerId = typeof paymentIntent.customer === 'string' 
           ? paymentIntent.customer 
@@ -96,56 +70,27 @@ serve(async (req) => {
           customerEmail = customer.email;
           customerName = customer.name || "Cliente";
         }
-        console.log("Fallback to customer object:", { email: customerEmail, name: customerName });
       }
 
       amountPaid = paymentIntent.amount;
-      console.log("PaymentIntent customer details:", { email: customerEmail, name: customerName, phone: customerPhone });
+      console.log("PaymentIntent customer details:", { email: customerEmail, name: customerName, phone: customerPhone, amount: amountPaid });
     }
     
     // Handle Checkout Session (PayPal payments)
     if (sessionId) {
       console.log("Processing Checkout Session:", sessionId);
       
-      const session = await stripe.checkout.sessions.retrieve(sessionId, {
-        expand: ['line_items'],
-      });
-      
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
       console.log("Retrieved session:", session.id, "Payment status:", session.payment_status);
 
-      // Verify payment was completed
       if (session.payment_status !== 'paid') {
         throw new Error("Payment not completed");
       }
 
-      // CRITICAL: Verify this is for the Biofeedback course
-      const lineItems = session.line_items?.data || [];
-      const hasBiofeedbackCourse = lineItems.some((item: any) => 
-        item.price?.id === BIOFEEDBACK_COURSE_PRICE_ID
-      );
-
-      if (!hasBiofeedbackCourse) {
-        console.log("Skipping email - not a Biofeedback course purchase");
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            message: "Not a Biofeedback course purchase" 
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          }
-        );
-      }
-
-      console.log("Confirmed: This is a Biofeedback course purchase (PayPal payment)");
-
-      // Get customer details from session
       customerEmail = session.customer_details?.email || session.customer_email;
       customerName = session.customer_details?.name || "Cliente";
       customerPhone = session.customer_details?.phone || null;
       
-      // Get profession from session metadata
       if (session.metadata) {
         profession = session.metadata.customerProfession || null;
       }
@@ -156,20 +101,22 @@ serve(async (req) => {
           : session.customer.id;
       }
 
-      amountPaid = session.amount_total || 28000;
-      console.log("Session customer details:", { email: customerEmail, name: customerName, phone: customerPhone, profession });
+      amountPaid = session.amount_total || 0;
+      console.log("Session customer details:", { email: customerEmail, name: customerName, phone: customerPhone, amount: amountPaid });
     }
     
     if (!customerEmail) {
       throw new Error("Customer email not found");
     }
 
-    // Split customer name into first and last name
     const nameParts = customerName.split(' ');
     const firstName = nameParts[0] || customerName;
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    console.log("Final customer details:", { email: customerEmail, name: customerName, phone: customerPhone, profession });
+    // Format the amount paid in EUR
+    const amountEur = (amountPaid / 100).toFixed(2).replace('.', ',');
+
+    console.log("Final customer details:", { email: customerEmail, name: customerName, phone: customerPhone, profession, amountEur });
 
     // Initialize Supabase client
     const supabaseClient = createClient(
@@ -179,9 +126,6 @@ serve(async (req) => {
     );
 
     // Check if email already sent to prevent duplicates
-    console.log("Checking for existing enrollment...");
-    
-    // Build query based on which ID is present
     let query = supabaseClient
       .from('course_enrollments')
       .select('id, email_sent_at');
@@ -195,27 +139,15 @@ serve(async (req) => {
     const { data: existingEnrollment } = await query.maybeSingle();
 
     if (existingEnrollment?.email_sent_at) {
-      console.log("Email already sent for this enrollment, skipping", {
-        enrollmentId: existingEnrollment.id,
-        emailSentAt: existingEnrollment.email_sent_at
-      });
+      console.log("Email already sent for this enrollment, skipping");
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Email already sent",
-          enrollmentId: existingEnrollment.id 
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        }
+        JSON.stringify({ success: true, message: "Email already sent", enrollmentId: existingEnrollment.id }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
       );
     }
 
     // Save enrollment data to database
     try {
-      console.log("Saving enrollment data to database...");
-      
       const { data: enrollmentData, error: enrollmentError } = await supabaseClient
         .from('course_enrollments')
         .insert({
@@ -234,27 +166,22 @@ serve(async (req) => {
         .single();
 
       if (enrollmentError) {
-        // Log error but don't fail the entire function
         console.error("Error saving enrollment to database:", enrollmentError);
-        // Continue with sending email even if database save fails
       } else {
         console.log("Enrollment saved successfully:", enrollmentData?.id);
       }
     } catch (dbError) {
       console.error("Database operation failed:", dbError);
-      // Continue with sending email even if database save fails
     }
 
     console.log("Sending confirmation email to:", customerEmail);
 
-    // Initialize Resend
     const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-    // Send confirmation email
     const { data, error } = await resend.emails.send({
       from: "Centro Nova Mentis <formazione@centronovamentis.it>",
       to: [customerEmail],
-      subject: "✅ Conferma iscrizione al Corso Online di Biofeedback – Dott. Gabriele Ciccarese",
+      subject: "✅ Conferma iscrizione – Corso Online di Biofeedback in Psicoterapia",
       html: `
         <!DOCTYPE html>
         <html>
@@ -304,28 +231,31 @@ serve(async (req) => {
             <div class="content">
               <p>Gentile <strong>${customerName}</strong>,</p>
               
-              <p>la ringraziamo per la sua iscrizione al <strong>Corso Online di Biofeedback in Psicoterapia</strong> tenuto dal <strong>Dott. Gabriele Ciccarese</strong>.</p>
+              <p>la ringraziamo per la sua iscrizione al <strong>Corso Online di Biofeedback in Psicoterapia – "Dal dato fisiologico alla relazione terapeutica"</strong>, tenuto dal <strong>Dott. Gabriele Ciccarese</strong>.</p>
               
-              <p>Abbiamo ricevuto correttamente il pagamento della quota di <strong>280€</strong>: la sua iscrizione è ora confermata ✅</p>
+              <p>Abbiamo ricevuto correttamente il pagamento di <strong>€${amountEur}</strong>: la sua iscrizione è ora confermata ✅</p>
               
               <div class="highlight">
-                <p><span class="emoji">🧠</span> Il corso inizierà <strong>Giovedi 4 dicembre 2025</strong> e si svolgerà in diretta online, offrendo un percorso pratico e approfondito per integrare le tecniche di biofeedback nella pratica clinica.</p>
+                <p><span class="emoji">🧠</span> Il corso inizierà <strong>Sabato 9 maggio 2026</strong> e si svolgerà in diretta online il sabato mattina, offrendo un percorso pratico e approfondito per integrare le tecniche di biofeedback nella pratica clinica.</p>
               </div>
-              
-              <p><strong>Nelle prossime settimane riceverà via email:</strong></p>
-              <ul>
-                <li>📩 le istruzioni dettagliate per accedere alla piattaforma online,</li>
-                <li>📖 i materiali didattici preparatori,</li>
-                <li>👥 informazioni per interagire con il docente e gli altri partecipanti.</li>
-              </ul>
               
               <p><strong>Dettagli del corso:</strong></p>
               <ul>
-                <li>📅 Inizio: Giovedi 4 dicembre 2025</li>
-                <li>⏰ 10 lezioni da 2 ore (20 ore totali)</li>
-                <li>💻 Modalità: online in diretta</li>
-                <li>🎓 Certificazione BFE Italia</li>
+                <li>📅 <strong>Date:</strong> 9, 16, 23 e 30 maggio 2026</li>
+                <li>⏰ <strong>Orario:</strong> Sabato mattina, 09:00 – 13:00</li>
+                <li>📖 <strong>Durata:</strong> 4 giornate, 16 ore totali</li>
+                <li>💻 <strong>Modalità:</strong> Online in diretta</li>
+                <li>🎓 <strong>Certificazione:</strong> BFE di I livello (Biofeedback Federation of Europe)</li>
               </ul>
+              
+              <p><strong>Nelle prossime settimane riceverà via email:</strong></p>
+              <ul>
+                <li>📩 le istruzioni dettagliate per collegarsi e partecipare alle lezioni online,</li>
+                <li>📖 i materiali didattici preparatori,</li>
+                <li>👥 informazioni per interagire con il docente e gli altri partecipanti.</li>
+              </ul>
+
+              <p>Resti in attesa delle nostre comunicazioni: la contatteremo con tutti i dettagli operativi prima dell'inizio del corso.</p>
               
               <div class="footer">
                 <p>Per qualsiasi domanda o necessità, non esiti a contattarci:</p>
@@ -366,25 +296,18 @@ serve(async (req) => {
       }
     } catch (updateError) {
       console.error("Failed to update email_sent_at:", updateError);
-      // Don't fail the request if this update fails
     }
 
     return new Response(
       JSON.stringify({ success: true, emailId: data?.id }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error) {
     console.error("Error sending confirmation email:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
       JSON.stringify({ error: errorMessage }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }
 });
