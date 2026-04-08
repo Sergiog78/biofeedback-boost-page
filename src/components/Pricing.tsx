@@ -95,7 +95,7 @@ const Pricing = () => {
               </div>
 
               <div className="space-y-4">
-                <Button variant="hero" size="xl" className="w-full text-xl py-6" onClick={handleCheckout}>
+                <Button variant="hero" size="xl" className="w-full text-base sm:text-xl py-6 whitespace-normal leading-snug" onClick={handleCheckout}>
                   Iscriviti ora e blocca il prezzo attuale
                 </Button>
 
