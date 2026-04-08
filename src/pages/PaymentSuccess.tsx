@@ -33,6 +33,21 @@ const PaymentSuccess = () => {
 
     const trackRealPurchase = async () => {
       const transactionId = sessionId || paymentIntentId || undefined;
+      
+      // Retrieve user data from localStorage for CAPI
+      let userData: { email?: string; firstName?: string; lastName?: string; phone?: string } | undefined;
+      try {
+        const saved = localStorage.getItem('checkoutFormData');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          userData = {
+            email: parsed.email,
+            firstName: parsed.firstName,
+            lastName: parsed.lastName,
+            phone: parsed.phone,
+          };
+        }
+      } catch (e) { /* ignore */ }
 
       if (sessionId) {
         try {
@@ -42,7 +57,7 @@ const PaymentSuccess = () => {
           if (data?.amountTotal) {
             const amountEur = data.amountTotal / 100;
             console.log(`🎯 Tracking Purchase: €${amountEur}`);
-            trackPurchase(amountEur, (data.currency || "eur").toUpperCase(), transactionId);
+            trackPurchase(amountEur, (data.currency || "eur").toUpperCase(), transactionId, userData);
             setPurchaseTracked(true);
             return;
           }
@@ -55,7 +70,7 @@ const PaymentSuccess = () => {
       const { getCurrentTier } = await import("@/lib/pricing-tiers");
       const price = getCurrentTier().tier.totalPrice;
       console.log(`🎯 Tracking Purchase (fallback): €${price}`);
-      trackPurchase(price, "EUR", transactionId);
+      trackPurchase(price, "EUR", transactionId, userData);
       setPurchaseTracked(true);
     };
 
