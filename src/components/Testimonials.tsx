@@ -1,22 +1,21 @@
-import { Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+
+const SUPABASE_URL = "https://unawxvbbievblwkdttzi.supabase.co/storage/v1/object/public/videos";
 
 const testimonials = [
   {
-    name: "Nome Cognome",
+    name: "Ilaria Mazzotta",
     role: "Psicologa / Psicoterapeuta",
     quote: "Mi ha aperto un mondo",
+    video: `${SUPABASE_URL}/ilaria-mazzotta.mp4`,
   },
   {
-    name: "Nome Cognome",
-    role: "Psicoterapeuta",
+    name: "Simona Carnevale",
+    role: "Psicologa / Psicoterapeuta",
     quote: "Finalmente ho capito come usarlo in seduta",
-  },
-  {
-    name: "Nome Cognome",
-    role: "Psicologa",
-    quote: "Ora ho molta più chiarezza nel lavoro clinico",
+    video: `${SUPABASE_URL}/simona-carnevale.mp4`,
   },
 ];
 
@@ -46,15 +45,18 @@ const Testimonials = () => {
           </div>
 
           {/* Video Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-14">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-14 max-w-3xl mx-auto">
             {testimonials.map((t, i) => (
               <Card key={i} className="overflow-hidden">
-                {/* Video placeholder */}
-                <div className="relative aspect-[9/16] bg-muted flex items-center justify-center cursor-pointer group">
-                  <div className="absolute inset-0 bg-foreground/5 group-hover:bg-foreground/10 transition-colors" />
-                  <div className="w-16 h-16 rounded-full bg-primary/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <Play className="w-7 h-7 text-primary-foreground ml-1" />
-                  </div>
+                <div className="relative aspect-[9/16] bg-muted">
+                  <video
+                    className="w-full h-full object-cover"
+                    controls
+                    preload="metadata"
+                    playsInline
+                  >
+                    <source src={t.video} type="video/mp4" />
+                  </video>
                 </div>
                 <CardContent className="pt-5 pb-6 text-center">
                   <p className="font-semibold text-lg">{t.name}</p>
@@ -80,6 +82,7 @@ const Testimonials = () => {
             <Button size="lg" className="text-lg px-8 py-6" asChild>
               <a href="#pricing">
                 Iscriviti ora e blocca il prezzo early bird
+                <ArrowRight className="ml-2 w-5 h-5" />
               </a>
             </Button>
           </div>
