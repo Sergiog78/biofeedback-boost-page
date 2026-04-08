@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.resend-missing-emails]
 verify_jwt = false
+
+[functions.meta-conversions-api]
+verify_jwt = false
