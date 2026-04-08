@@ -20,22 +20,47 @@ const PaymentSuccess = () => {
   const { toast } = useToast();
   const [emailSent, setEmailSent] = useState(false);
   const { trackPurchase } = useMetaPixel();
+  const [purchaseTracked, setPurchaseTracked] = useState(false);
 
-  // DEBUG: Log URL parameters on mount + track Purchase event
+  // Scroll to top on mount
   useEffect(() => {
-    console.log("=== PaymentSuccess Page Loaded ===");
-    console.log("Current URL:", window.location.href);
-    console.log("Session ID from URL:", sessionId);
-    console.log("Payment Intent ID from URL:", paymentIntentId);
-    console.log("Search params:", searchParams.toString());
-
-    // Scroll to top on mount
     window.scrollTo(0, 0);
-    
-    // Track Purchase conversion
-    const transactionId = sessionId || paymentIntentId || undefined;
-    trackPurchase(497, "EUR", transactionId);
   }, []);
+
+  // Track Purchase with real amount from Stripe
+  useEffect(() => {
+    if (purchaseTracked) return;
+
+    const trackRealPurchase = async () => {
+      const transactionId = sessionId || paymentIntentId || undefined;
+
+      if (sessionId) {
+        try {
+          const { data } = await supabase.functions.invoke("get-checkout-session", {
+            body: { sessionId },
+          });
+          if (data?.amountTotal) {
+            const amountEur = data.amountTotal / 100;
+            console.log(`🎯 Tracking Purchase: €${amountEur}`);
+            trackPurchase(amountEur, (data.currency || "eur").toUpperCase(), transactionId);
+            setPurchaseTracked(true);
+            return;
+          }
+        } catch (e) {
+          console.warn("Could not fetch session amount, using fallback", e);
+        }
+      }
+
+      // Fallback: use current tier price
+      const { getCurrentTier } = await import("@/lib/pricing-tiers");
+      const price = getCurrentTier().tier.totalPrice;
+      console.log(`🎯 Tracking Purchase (fallback): €${price}`);
+      trackPurchase(price, "EUR", transactionId);
+      setPurchaseTracked(true);
+    };
+
+    trackRealPurchase();
+  }, [sessionId, paymentIntentId, purchaseTracked]);
   useEffect(() => {
     console.log("=== Email Send Effect Triggered ===");
     console.log("sessionId:", sessionId);

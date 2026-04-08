@@ -27,10 +27,12 @@ serve(async (req) => {
 
     console.log("Retrieved session:", session.id);
 
-    // Only return payment status — no PII
+    // Only return payment status and amount — no PII
     return new Response(
       JSON.stringify({ 
         paymentStatus: session.payment_status,
+        amountTotal: session.amount_total,
+        currency: session.currency,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
