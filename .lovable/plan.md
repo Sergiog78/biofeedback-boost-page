@@ -1,70 +1,29 @@
 
 
-## Hero Section Redesign — VSL + New Copy + Sticky CTA
+## Modifiche alla sezione Testimonials
 
-### What changes
+### Cosa cambia
 
-Complete rewrite of the Hero section following the mobile-first conversion structure provided, with a VSL video block and sticky CTA.
+1. **Ridurre da 3 a 2 video** — Aggiornare l'array `testimonials` con i dati reali:
+   - Video 1: **Ilaria Mazzotta** (Psicologa / Psicoterapeuta)
+   - Video 2: **Simona Carnevale** (Psicologa / Psicoterapeuta)
 
-### Structure (exact order, mobile-first)
+2. **Griglia da 3 a 2 colonne** — Cambiare `md:grid-cols-3` → `md:grid-cols-2` con `max-w-3xl mx-auto` per centrare i due video
 
-```text
-┌──────────────────────────────┐
-│  Eyebrow (pill badge)        │
-│  Headline (h1)               │
-│  Sottotitolo (p)             │
-│  Social proof line (⭐)      │
-│  CTA primaria (button)       │
-│  Microproof (3 checkmarks)   │
-│                              │
-│  Video intro text            │
-│  ┌────────────────────────┐  │
-│  │   VIDEO VSL (mp4)      │  │
-│  │   9:16 aspect ratio    │  │
-│  └────────────────────────┘  │
-│  Bullet points (4 items)     │
-│  CTA secondaria (button)     │
-│                              │
-│  Partner logos (BFE+Righetto) │
-└──────────────────────────────┘
+3. **Video reali con tag `<video>`** — Ogni card mostrerà un elemento `<video>` con `controls` e `poster` placeholder, che carica il file mp4 dal bucket storage pubblico `videos`
+
+### Dove caricare i video
+
+I video vanno caricati nel **bucket storage "videos"** già configurato nel backend. I file saranno accessibili all'URL:
+
+```
+https://unawxvbbievblwkdttzi.supabase.co/storage/v1/object/public/videos/ilaria-mazzotta.mp4
+https://unawxvbbievblwkdttzi.supabase.co/storage/v1/object/public/videos/simona-carnevale.mp4
 ```
 
-### Video hosting
+Dopo l'implementazione, ti indicherò come caricarli direttamente tramite il pannello Lovable Cloud oppure potrai fornirmeli come file e li carico io nel bucket.
 
-- Create a **public** Supabase Storage bucket `videos` via SQL migration
-- User will upload the mp4 file, which gets served from the bucket URL
-- For now, render a placeholder thumbnail container with a play button overlay; the video `<video>` element loads the mp4 with `controls`, no autoplay, showing duration
-- Aspect ratio: vertical (9:16) on mobile, constrained max-width ~400px centered on desktop
+### File da modificare
 
-### Copy (verbatim from brief)
-
-- **Eyebrow**: "Corso online live di 16 ore | Introduzione al Biofeedback in Psicoterapia"
-- **Headline**: "Impara a integrare il biofeedback nella tua pratica clinica in modo semplice, concreto e scientificamente rigoroso"
-- **Sottotitolo**: "Per psicologi e psicoterapeuti che vogliono iniziare a usare il biofeedback in seduta senza perdersi nella complessità tecnica e senza snaturare la relazione terapeutica."
-- **Social proof**: "⭐ Già scelto da psicologi e psicoterapeuti che vogliono integrare il biofeedback nella pratica clinica"
-- **CTA primaria**: "Iscriviti ora al corso" + dynamic price
-- **Microproof**: 3 check items (Corso live, Accessibile senza basi tecniche, Supporto + community + supervisione)
-- **Video intro**: "Guarda il video e scopri perché il biofeedback non è complesso come ti hanno fatto credere"
-- **Bullets** (under video): 4 discovery points
-- **CTA secondaria**: "Iscriviti ora e inizia a usare il biofeedback nella tua pratica clinica"
-
-### Sticky CTA
-
-- After 5-7 seconds of scrolling, show a fixed bottom bar (mobile) / bottom-right floating button (desktop) with "Iscriviti al corso" that navigates to checkout
-- Disappears when hero section is back in viewport
-- Uses Intersection Observer + timeout
-
-### Files to change
-
-1. **SQL migration** — Create `videos` storage bucket (public) with open read policy
-2. **`src/components/Hero.tsx`** — Full rewrite with new structure, copy, video container, sticky CTA logic
-3. No other files need changes; dynamic pricing imports remain the same
-
-### Design details
-
-- Dark overlay background stays (same as current)
-- Video container: rounded corners, subtle border, max-w-sm centered, 9:16 aspect ratio
-- Bullet points: left-aligned list with check icons, white/90 text
-- Sticky CTA: bg-accent, full-width on mobile, z-50, smooth slide-up animation
-- All spacing optimized mobile-first with responsive adjustments
+- `src/components/Testimonials.tsx` — Unico file da aggiornare
 
