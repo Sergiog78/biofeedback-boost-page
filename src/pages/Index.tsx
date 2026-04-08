@@ -9,6 +9,7 @@ import Instructor from "@/components/Instructor";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 const Index = () => {
   return (
@@ -24,6 +25,7 @@ const Index = () => {
       <Pricing />
       <FAQ />
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 };
