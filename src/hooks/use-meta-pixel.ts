@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 // Extend Window interface to include fbq
 declare global {
   interface Window {
-    fbq?: (action: string, event: string, params?: Record<string, any>) => void;
+    fbq?: (...args: any[]) => void;
   }
 }
 
