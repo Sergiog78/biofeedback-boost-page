@@ -9,7 +9,7 @@ const WhatsAppButton = () => {
   const [dismissed, setDismissed] = useState(false);
 
   return (
-    <div className="fixed bottom-20 right-4 z-40 flex items-center gap-3">
+    <div className="fixed bottom-20 right-2 sm:right-4 z-40 flex items-center gap-3">
       {/* Tooltip / messaggio */}
       {!dismissed && (
         <div className="relative bg-white text-foreground text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg border border-border max-w-[200px] leading-snug animate-fade-in">
