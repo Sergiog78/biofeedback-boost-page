@@ -6,13 +6,13 @@ const SUPABASE_URL = "https://unawxvbbievblwkdttzi.supabase.co/storage/v1/object
 
 const testimonials = [
   {
-    name: "Ilaria Mazzotta",
+    name: "Dott.ssa Ilaria Mazzotta",
     role: "Psicologa / Psicoterapeuta",
     quote: "Mi ha aperto un mondo",
     video: `${SUPABASE_URL}/ilaria-mazzotta.mp4`,
   },
   {
-    name: "Simona Carnevale",
+    name: "Dott.ssa Simona Carnevale",
     role: "Psicologa / Psicoterapeuta",
     quote: "Finalmente ho capito come usarlo in seduta",
     video: `${SUPABASE_URL}/simona-carnevale.mp4`,
