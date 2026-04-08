@@ -1,29 +1,31 @@
 
 
-## Modifiche alla sezione Testimonials
+## Aggiornamento email di conferma
 
-### Cosa cambia
+### Problema attuale
+L'email di conferma contiene dati del primo corso (dicembre 2025, 20 ore, prezzo fisso €280) e una verifica hardcoded dell'importo a 49700 centesimi che blocca l'invio per i nuovi prezzi dinamici.
 
-1. **Ridurre da 3 a 2 video** — Aggiornare l'array `testimonials` con i dati reali:
-   - Video 1: **Ilaria Mazzotta** (Psicologa / Psicoterapeuta)
-   - Video 2: **Simona Carnevale** (Psicologa / Psicoterapeuta)
+### Modifiche previste
 
-2. **Griglia da 3 a 2 colonne** — Cambiare `md:grid-cols-3` → `md:grid-cols-2` con `max-w-3xl mx-auto` per centrare i due video
+**File: `supabase/functions/send-confirmation-email/index.ts`**
 
-3. **Video reali con tag `<video>`** — Ogni card mostrerà un elemento `<video>` con `controls` e `poster` placeholder, che carica il file mp4 dal bucket storage pubblico `videos`
+1. **Rimuovere il controllo hardcoded sull'importo** (riga 54) — attualmente rifiuta pagamenti che non siano esattamente €497. Con il pricing dinamico (€299–€399 + IVA), questo blocco impedisce l'invio dell'email. Sostituirlo con un range ragionevole (es. 30000–60000 centesimi) o rimuoverlo del tutto.
 
-### Dove caricare i video
+2. **Mostrare il prezzo reale pagato nell'email** — usare la variabile `amountPaid` (già disponibile dal PaymentIntent/Session) per calcolare e visualizzare il prezzo effettivo: `(amountPaid / 100).toFixed(2)` formattato in euro.
 
-I video vanno caricati nel **bucket storage "videos"** già configurato nel backend. I file saranno accessibili all'URL:
+3. **Aggiornare i dettagli del corso nell'HTML**:
+   - Inizio: **Sabato 9 maggio 2026**
+   - Durata: **4 giornate, 16 ore totali** (sabato mattina 9:00–13:00)
+   - Date: 9, 16, 23, 30 maggio 2026
+   - Certificazione: **BFE di I livello**
+   - Modalità: online in diretta
 
-```
-https://unawxvbbievblwkdttzi.supabase.co/storage/v1/object/public/videos/ilaria-mazzotta.mp4
-https://unawxvbbievblwkdttzi.supabase.co/storage/v1/object/public/videos/simona-carnevale.mp4
-```
+4. **Aggiornare la sezione "prossime comunicazioni"** — informare che riceveranno istruzioni per collegarsi e partecipare al corso online con comunicazioni future.
 
-Dopo l'implementazione, ti indicherò come caricarli direttamente tramite il pannello Lovable Cloud oppure potrai fornirmeli come file e li carico io nel bucket.
+5. **Rimuovere il riferimento al `BIOFEEDBACK_COURSE_PRICE_ID`** hardcoded per la verifica PayPal (riga 31, 123-125), dato che il pricing è ora dinamico con `price_data` inline.
 
-### File da modificare
-
-- `src/components/Testimonials.tsx` — Unico file da aggiornare
+### Dettagli tecnici
+- Il prezzo nell'email sarà calcolato dinamicamente da `amountPaid` (centesimi Stripe → euro)
+- La verifica del pagamento rimarrà basata sullo status (`succeeded` / `paid`) senza controllare l'importo esatto
+- L'Edge Function verrà ri-deployata automaticamente dopo la modifica
 
