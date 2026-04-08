@@ -122,6 +122,9 @@ const Hero = () => {
               <span className="flex items-center gap-1.5">
                 <Check className="h-4 w-4 text-accent-foreground shrink-0" /> Supporto + community + supervisione
               </span>
+              <span className="flex items-center gap-1.5 font-semibold text-accent-foreground">
+                <Check className="h-4 w-4 shrink-0" /> Certificazione BFE di I livello
+              </span>
             </div>
           </div>
 
