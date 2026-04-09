@@ -3,7 +3,7 @@ import { ArrowRight, Check, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import heroImage from "@/assets/biofeedback-hero.jpg";
-import bfeLogo from "@/assets/bfe-logo-text.png";
+import centersLogo from "@/assets/centers-of-excellence.jpeg";
 import righettoLogo from "@/assets/righetto-logo.png";
 import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
 
