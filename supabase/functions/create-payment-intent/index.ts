@@ -8,13 +8,13 @@ const corsHeaders = {
 
 // ── Pricing tiers (same logic as frontend) ──
 const IVA_RATE = 0.22;
-const LAUNCH_DATE = new Date('2026-03-25T09:00:00Z'); // 10:00 CET
+const LAUNCH_DATE = new Date('2026-04-09T08:00:00Z'); // 10:00 CEST
 const COURSE_DATE = new Date('2026-05-08T21:59:59Z');
 
 const TIER_DEFS = [
-  { basePrice: 299, durationHours: 72 },
-  { basePrice: 329, durationHours: 10 * 24 },
-  { basePrice: 359, durationHours: 10 * 24 },
+  { basePrice: 299, durationHours: 7 * 24 },
+  { basePrice: 329, durationHours: 7 * 24 },
+  { basePrice: 359, durationHours: 7 * 24 },
   { basePrice: 399, durationHours: 0 },
 ];
 
