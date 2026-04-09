@@ -1,31 +1,29 @@
 
 
-## Aggiornamento email di conferma
+## Piano: Aggiornamento scaglioni di prezzo con nuovo lancio (9 aprile 2026)
 
-### Problema attuale
-L'email di conferma contiene dati del primo corso (dicembre 2025, 20 ore, prezzo fisso €280) e una verifica hardcoded dell'importo a 49700 centesimi che blocca l'invio per i nuovi prezzi dinamici.
+### Nuovi scaglioni
 
-### Modifiche previste
+Il lancio parte oggi, 9 aprile 2026. Il corso inizia il 9 maggio, quindi l'ultimo giorno utile è l'8 maggio. Circa 29 giorni divisi in 4 fasce settimanali:
 
-**File: `supabase/functions/send-confirmation-email/index.ts`**
+```text
+Scaglione       Prezzo      Periodo                  Durata
+─────────────────────────────────────────────────────────────
+Early Bird      €299+IVA    9 apr → 16 apr           7 giorni
+Fase 2          €329+IVA    16 apr → 23 apr          7 giorni
+Fase 3          €359+IVA    23 apr → 30 apr          7 giorni
+Prezzo Finale   €399+IVA    30 apr → 8 mag           8 giorni
+```
 
-1. **Rimuovere il controllo hardcoded sull'importo** (riga 54) — attualmente rifiuta pagamenti che non siano esattamente €497. Con il pricing dinamico (€299–€399 + IVA), questo blocco impedisce l'invio dell'email. Sostituirlo con un range ragionevole (es. 30000–60000 centesimi) o rimuoverlo del tutto.
+### File da modificare (3 file, stessa logica)
 
-2. **Mostrare il prezzo reale pagato nell'email** — usare la variabile `amountPaid` (già disponibile dal PaymentIntent/Session) per calcolare e visualizzare il prezzo effettivo: `(amountPaid / 100).toFixed(2)` formattato in euro.
+1. **`src/lib/pricing-tiers.ts`** — Aggiornare `LAUNCH_DATE` a `2026-04-09T08:00:00Z` (10:00 CEST) e le durate dei tier a 7 giorni ciascuno (168 ore).
 
-3. **Aggiornare i dettagli del corso nell'HTML**:
-   - Inizio: **Sabato 9 maggio 2026**
-   - Durata: **4 giornate, 16 ore totali** (sabato mattina 9:00–13:00)
-   - Date: 9, 16, 23, 30 maggio 2026
-   - Certificazione: **BFE di I livello**
-   - Modalità: online in diretta
+2. **`supabase/functions/create-payment-intent/index.ts`** — Stesso aggiornamento di `LAUNCH_DATE` e durate.
 
-4. **Aggiornare la sezione "prossime comunicazioni"** — informare che riceveranno istruzioni per collegarsi e partecipare al corso online con comunicazioni future.
+3. **`supabase/functions/create-payment/index.ts`** — Stesso aggiornamento.
 
-5. **Rimuovere il riferimento al `BIOFEEDBACK_COURSE_PRICE_ID`** hardcoded per la verifica PayPal (riga 31, 123-125), dato che il pricing è ora dinamico con `price_data` inline.
+### Test
 
-### Dettagli tecnici
-- Il prezzo nell'email sarà calcolato dinamicamente da `amountPaid` (centesimi Stripe → euro)
-- La verifica del pagamento rimarrà basata sullo status (`succeeded` / `paid`) senza controllare l'importo esatto
-- L'Edge Function verrà ri-deployata automaticamente dopo la modifica
+Dopo le modifiche, testerò la edge function `create-payment-intent` con una chiamata diretta per verificare che il prezzo calcolato server-side corrisponda allo scaglione attivo (oggi = €299+IVA = 36478 centesimi).
 
