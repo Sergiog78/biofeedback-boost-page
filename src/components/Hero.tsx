@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import heroImage from "@/assets/biofeedback-hero.jpg";
 import centersLogo from "@/assets/centers-of-excellence.jpeg";
 import righettoLogo from "@/assets/righetto-logo.png";
-import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
+import { getCurrentTier, formatPrice, getDiscountPercent } from "@/lib/pricing-tiers";
 
 const VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/videos/VSL nuova.mp4`;
 
