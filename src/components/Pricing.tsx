@@ -64,8 +64,13 @@ const Pricing = () => {
               <CardTitle className="text-3xl mb-4">Corso Completo di Biofeedback</CardTitle>
               <div className="space-y-4">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-center gap-3 flex-wrap">
                     <span className="text-5xl font-bold">€{tier.basePrice} + IVA</span>
+                    {getDiscountPercent(tier) > 0 && (
+                      <span className="inline-flex items-center rounded-full bg-white/20 text-white text-sm font-medium px-3 py-1">
+                        −{getDiscountPercent(tier)}%
+                      </span>
+                    )}
                   </div>
                   <p className="text-white/70 text-sm">IVA inclusa nel totale</p>
                 </div>
@@ -100,8 +105,13 @@ const Pricing = () => {
                 </Button>
 
                 <div className="text-center space-y-1">
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-sm font-medium text-foreground flex items-center justify-center gap-2 flex-wrap">
                     Prezzo attuale: €{tier.basePrice} + IVA
+                    {getDiscountPercent(tier) > 0 && (
+                      <span className="inline-flex items-center rounded-full bg-accent/10 text-accent text-xs font-medium px-2.5 py-0.5">
+                        Risparmi €{399 - tier.basePrice} rispetto al prezzo finale
+                      </span>
+                    )}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Il prezzo aumenterà nei prossimi giorni
