@@ -3,7 +3,7 @@ import { ArrowRight, Check, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import heroImage from "@/assets/biofeedback-hero.jpg";
-import bfeLogo from "@/assets/bfe-logo-text.png";
+import centersLogo from "@/assets/centers-of-excellence.jpeg";
 import righettoLogo from "@/assets/righetto-logo.png";
 import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
 
@@ -192,8 +192,8 @@ const Hero = () => {
         <div className="relative z-10 flex justify-center gap-4 pb-10">
           <div className="bg-white/5 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/10">
             <img
-              src={bfeLogo}
-              alt="BFE - Biofeedback Federation of Europe"
+              src={centersLogo}
+              alt="Centers of Excellence 2025-26"
               className="h-8 md:h-10 w-auto opacity-80 hover:opacity-100 transition-opacity"
             />
           </div>
