@@ -135,3 +135,10 @@ function msToTimeRemaining(ms: number) {
 export function formatPrice(price: number): string {
   return price.toFixed(2).replace('.', ',');
 }
+
+/** Returns discount % vs final tier (e.g. 25 for Early Bird). 0 if already final. */
+export function getDiscountPercent(tier: PricingTier): number {
+  const finalPrice = PRICING_TIERS[PRICING_TIERS.length - 1].basePrice;
+  if (tier.basePrice >= finalPrice) return 0;
+  return Math.round(((finalPrice - tier.basePrice) / finalPrice) * 100);
+}

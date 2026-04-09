@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import heroImage from "@/assets/biofeedback-hero.jpg";
 import centersLogo from "@/assets/centers-of-excellence.jpeg";
 import righettoLogo from "@/assets/righetto-logo.png";
-import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
+import { getCurrentTier, formatPrice, getDiscountPercent } from "@/lib/pricing-tiers";
 
 const VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/videos/VSL nuova.mp4`;
 
@@ -107,7 +107,15 @@ const Hero = () => {
 
             {/* Microcopy sotto CTA */}
             <div className="text-sm text-white/70 -mt-3">
-              <p>Prezzo attuale: <span className="font-semibold text-white/90">€{tierInfo.tier.basePrice} + IVA</span>{tierInfo.nextTier && <span className="line-through ml-1.5 text-white/40">€{tierInfo.nextTier.basePrice} + IVA</span>}</p>
+              <p className="flex items-center justify-center lg:justify-start gap-2 flex-wrap">
+                Prezzo attuale: <span className="font-semibold text-white/90">€{tierInfo.tier.basePrice} + IVA</span>
+                {getDiscountPercent(tierInfo.tier) > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-accent/20 text-accent-foreground text-xs font-medium px-2.5 py-0.5">
+                    −{getDiscountPercent(tierInfo.tier)}% rispetto al prezzo finale
+                  </span>
+                )}
+                {tierInfo.nextTier && <span className="line-through ml-1.5 text-white/40">€{tierInfo.nextTier.basePrice} + IVA</span>}
+              </p>
               <p className="text-white/50 text-xs mt-0.5">Il prezzo aumenterà nei prossimi giorni</p>
             </div>
 
