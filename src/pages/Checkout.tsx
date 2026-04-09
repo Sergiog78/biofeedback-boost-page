@@ -18,7 +18,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
 import mastercardLogo from "@/assets/mastercard.svg";
-import bfePartnerLogo from "@/assets/bfe-partner-logo.png";
+import centersOfExcellenceLogo from "@/assets/centers-of-excellence.jpeg";
 import { useMetaPixel } from "@/hooks/use-meta-pixel";
 import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
 import PricingRoadmap from "@/components/PricingRoadmap";
@@ -904,7 +904,7 @@ const Checkout = () => {
                 <p className="text-xs text-muted-foreground mb-3">In collaborazione con:</p>
                 <div className="flex items-center justify-start gap-6">
                   <img src={righettoLogo} alt="Righetto" className="h-8 object-contain" />
-                  <img src={bfePartnerLogo} alt="BFE" className="h-8 object-contain" />
+                  <img src={centersOfExcellenceLogo} alt="Centers of Excellence 2025-26" className="h-8 object-contain" />
                 </div>
               </div>
 
