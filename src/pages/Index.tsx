@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
+import InstrumentationObjection from "@/components/InstrumentationObjection";
 import Solution from "@/components/Solution";
 import ClinicalScenarios from "@/components/ClinicalScenarios";
 import Testimonials from "@/components/Testimonials";
