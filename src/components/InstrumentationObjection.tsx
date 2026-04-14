@@ -70,7 +70,7 @@ const InstrumentationObjection = () => {
               {/* Mission */}
               <div className="space-y-4 text-muted-foreground leading-relaxed text-base md:text-lg mb-12">
                 <p>
-                  Ed è proprio da qui che nasce anche la missione di <strong className="text-foreground">Gabriele Ciccarese</strong>:
+                  Ed è proprio da qui che nasce anche la mia missione:
                 </p>
                 <p className="text-foreground font-medium pl-1">
                   <span className="mr-1.5">👉</span> rendere il biofeedback accessibile, sostenibile e utilizzabile davvero da tutti i clinici
