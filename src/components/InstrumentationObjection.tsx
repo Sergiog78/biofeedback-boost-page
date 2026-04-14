@@ -53,7 +53,7 @@ const InstrumentationObjection = () => {
               {/* Prova autorità */}
               <div className="space-y-4 text-muted-foreground leading-relaxed text-base md:text-lg mb-12">
                 <p>
-                  È esattamente così che ha iniziato anche <strong className="text-foreground">Gabriele Ciccarese</strong>.
+                  È esattamente così che ho iniziato anche io.
                 </p>
                 <p>
                   Con strumenti semplici, accessibili e sostenibili, che ha integrato in terapia e con cui ha lavorato per anni nella pratica clinica.
