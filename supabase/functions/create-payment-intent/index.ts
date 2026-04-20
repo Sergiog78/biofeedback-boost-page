@@ -63,10 +63,29 @@ const validateInput = (data: any) => {
     errors.push('Invalid phone number');
   }
 
-  if (!data.profession || typeof data.profession !== 'string') {
-    errors.push('Profession is required');
-  } else if (data.profession.length > 100) {
+  // Profession is OPTIONAL
+  if (data.profession && typeof data.profession === 'string' && data.profession.length > 100) {
     errors.push('Profession too long');
+  }
+
+  // Billing details validation (only when requested)
+  if (data.billingDetails) {
+    const b = data.billingDetails;
+    if (!b.businessName || typeof b.businessName !== 'string' || b.businessName.trim().length < 1 || b.businessName.length > 200) {
+      errors.push('Invalid business name');
+    }
+    if (!b.vatNumber || typeof b.vatNumber !== 'string' || b.vatNumber.trim().length < 5 || b.vatNumber.length > 30) {
+      errors.push('Invalid VAT number');
+    }
+    if (b.fiscalCode && (typeof b.fiscalCode !== 'string' || b.fiscalCode.length > 30)) {
+      errors.push('Invalid fiscal code');
+    }
+    if (!b.sdiOrPec || typeof b.sdiOrPec !== 'string' || b.sdiOrPec.trim().length < 3 || b.sdiOrPec.length > 100) {
+      errors.push('Invalid SDI/PEC');
+    }
+    if (!b.billingAddress || typeof b.billingAddress !== 'string' || b.billingAddress.trim().length < 5 || b.billingAddress.length > 500) {
+      errors.push('Invalid billing address');
+    }
   }
   
   return errors;
