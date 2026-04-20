@@ -118,30 +118,21 @@ const Hero = () => {
                 )}
               </p>
               <p className="text-white/50 text-xs mt-0.5">IVA 22% inclusa nel totale. Deducibile per professionisti con P.IVA.</p>
-              <p className="text-white/60 text-xs mt-1">
-                oppure <span className="font-semibold text-white/80">3 rate da €{(tierInfo.tier.totalPrice / 3).toFixed(2).replace(".", ",")}</span> senza interessi · Klarna
+              <p className="text-sm text-white/80 mt-2 pt-2 border-t border-white/20">
+                💳 oppure <span className="font-semibold text-white">3 rate da €{(tierInfo.tier.totalPrice / 3).toFixed(2).replace(".", ",")}</span> senza interessi · Klarna
               </p>
             </div>
 
-            {/* Microproof */}
-            <div className="flex flex-col gap-1.5 text-sm text-white/70 items-center lg:items-start">
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-accent-foreground shrink-0" /> Corso live (non registrato)
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-accent-foreground shrink-0" /> Accessibile anche senza basi tecniche
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-accent-foreground shrink-0" /> Supporto + community + supervisione
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-accent-foreground shrink-0" /> Slide complete del corso incluse
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Check className="h-4 w-4 text-accent-foreground shrink-0" /> Gruppo WhatsApp riservato con supervisioni gratuite di gruppo
-              </span>
+            {/* Microproof — 3 bullet essenziali in riga */}
+            <div className="flex flex-wrap justify-center lg:justify-start gap-x-4 gap-y-2 text-xs md:text-sm text-white/80">
               <span className="flex items-center gap-1.5 font-semibold text-accent-foreground">
-                <Check className="h-4 w-4 shrink-0" /> Certificazione BFE di I livello
+                <Check className="h-3.5 w-3.5 shrink-0" /> Certificazione BFE
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-accent-foreground shrink-0" /> Slide + materiali
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-accent-foreground shrink-0" /> Gruppo WhatsApp
               </span>
             </div>
           </div>
