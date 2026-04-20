@@ -16,12 +16,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import bfeLogo from "@/assets/bfe-logo-text.png";
-import righettoLogo from "@/assets/righetto-logo.png";
+import bfeLogo from "@/assets/bfe-logo-text.webp";
+import righettoLogo from "@/assets/righetto-logo.webp";
 import mastercardLogo from "@/assets/mastercard.svg";
-import centersOfExcellenceLogo from "@/assets/centers-of-excellence.jpeg";
+import centersOfExcellenceLogo from "@/assets/centers-of-excellence.webp";
 import novaMentisLogo from "@/assets/logo-nova-mentis.svg";
-import gabrieleCiccarese from "@/assets/gabriele-ciccarese.png";
+import gabrieleCiccarese from "@/assets/gabriele-ciccarese.webp";
 import { useMetaPixel } from "@/hooks/use-meta-pixel";
 import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
 

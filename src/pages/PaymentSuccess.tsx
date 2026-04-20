@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, Home, Mail } from "lucide-react";
-import bfeLogo from "@/assets/bfe-logo-text.png";
+import bfeLogo from "@/assets/bfe-logo-text.webp";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useMetaPixel } from "@/hooks/use-meta-pixel";
