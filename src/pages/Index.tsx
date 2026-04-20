@@ -1,35 +1,43 @@
+import { lazy, Suspense } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import Features from "@/components/Features";
-import InstrumentationObjection from "@/components/InstrumentationObjection";
-import Solution from "@/components/Solution";
-import ClinicalScenarios from "@/components/ClinicalScenarios";
-import Testimonials from "@/components/Testimonials";
-import Program from "@/components/Program";
-import CourseIncludes from "@/components/CourseIncludes";
-import Instructor from "@/components/Instructor";
-import Pricing from "@/components/Pricing";
-import FAQ from "@/components/FAQ";
-import Footer from "@/components/Footer";
-import WhatsAppButton from "@/components/WhatsAppButton";
+
+// Above-the-fold: load eagerly (Header + Hero)
+// Below-the-fold: lazy load to reduce initial bundle and TBT
+const Features = lazy(() => import("@/components/Features"));
+const InstrumentationObjection = lazy(() => import("@/components/InstrumentationObjection"));
+const Solution = lazy(() => import("@/components/Solution"));
+const ClinicalScenarios = lazy(() => import("@/components/ClinicalScenarios"));
+const Testimonials = lazy(() => import("@/components/Testimonials"));
+const Program = lazy(() => import("@/components/Program"));
+const CourseIncludes = lazy(() => import("@/components/CourseIncludes"));
+const Instructor = lazy(() => import("@/components/Instructor"));
+const Pricing = lazy(() => import("@/components/Pricing"));
+const FAQ = lazy(() => import("@/components/FAQ"));
+const Footer = lazy(() => import("@/components/Footer"));
+const WhatsAppButton = lazy(() => import("@/components/WhatsAppButton"));
+
+const SectionFallback = () => <div className="min-h-[200px]" />;
 
 const Index = () => {
   return (
     <div className="min-h-screen">
       <Header />
       <Hero />
-      <Features />
-      <InstrumentationObjection />
-      <Solution />
-      <ClinicalScenarios />
-      <Testimonials />
-          <Program />
-          <CourseIncludes />
-          <Instructor />
-      <Pricing />
-      <FAQ />
-      <Footer />
-      <WhatsAppButton />
+      <Suspense fallback={<SectionFallback />}>
+        <Features />
+        <InstrumentationObjection />
+        <Solution />
+        <ClinicalScenarios />
+        <Testimonials />
+        <Program />
+        <CourseIncludes />
+        <Instructor />
+        <Pricing />
+        <FAQ />
+        <Footer />
+        <WhatsAppButton />
+      </Suspense>
     </div>
   );
 };
