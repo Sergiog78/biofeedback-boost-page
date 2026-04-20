@@ -817,11 +817,11 @@ const Checkout = () => {
                     size="lg"
                     className={`w-full h-14 text-base font-semibold ${
                       paymentMethod === 'paypal' && canSubmit
-                        ? 'bg-[#0070BA] hover:bg-[#003087] text-white' 
-                        : ''
+                        ? 'bg-[#0070BA] hover:bg-[#003087] text-white'
+                        : 'bg-primary text-primary-foreground hover:bg-primary/90'
                     }`}
                     disabled={!canSubmit || isProcessing || (stripeFormRef.current?.isProcessing ?? false)}
-                    variant={paymentMethod === 'card' ? 'hero' : 'default'}
+                    variant="default"
                   >
                     {isProcessing || (stripeFormRef.current?.isProcessing ?? false) ? (
                       <>
@@ -841,6 +841,21 @@ const Checkout = () => {
                       'Paga ora'
                     )}
                   </Button>
+
+                  {/* Trust info under button */}
+                  {paymentMethod === 'card' && (
+                    <div className="text-center space-y-1 pt-1">
+                      <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Pagamento sicuro tramite Stripe · Transazioni crittografate
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Accesso confermato via email entro pochi minuti dall'iscrizione
+                      </p>
+                    </div>
+                  )}
                 </form>
               </Form>
             </div>
@@ -868,19 +883,13 @@ const Checkout = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground">Certificazione BFE di I° livello</p>
                   </div>
-                  <p className="font-semibold text-sm">€{tierInfo.tier.basePrice} + IVA</p>
                 </div>
               </div>
 
-              {/* Pricing Roadmap */}
-              <div className="border-t pt-4">
-                <PricingRoadmap compact />
-              </div>
-
+              {/* Order Summary */}
               <div className="border-t pt-4 space-y-3">
-                {/* Total */}
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Imponibile</span>
+                  <span className="text-muted-foreground">Prezzo corrente ({tierInfo.tier.label})</span>
                   <span>€{formatPrice(tierInfo.tier.basePrice)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -891,12 +900,16 @@ const Checkout = () => {
 
               <div className="border-t pt-4">
                 <div className="flex justify-between items-baseline mb-2">
-                  <span className="text-base font-semibold">Totale Finale</span>
+                  <span className="text-base font-semibold">Totale IVA inclusa</span>
                   <div className="text-right">
                     <div className="text-2xl font-bold">€{formatPrice(tierInfo.tier.totalPrice)}</div>
-                    <div className="text-sm text-muted-foreground">IVA inclusa</div>
                   </div>
                 </div>
+                {tierInfo.nextTier && (
+                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                    Il prezzo passerà a €{tierInfo.nextTier.basePrice} + IVA alla scadenza del timer. Stai completando l'iscrizione al prezzo attuale.
+                  </p>
+                )}
               </div>
 
               {/* Partner Logos */}
