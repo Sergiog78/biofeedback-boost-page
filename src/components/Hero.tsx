@@ -2,9 +2,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import heroImage from "@/assets/biofeedback-hero.jpg";
-import centersLogo from "@/assets/centers-of-excellence.jpeg";
-import righettoLogo from "@/assets/righetto-logo.png";
+import heroImage from "@/assets/biofeedback-hero.webp";
+import centersLogo from "@/assets/centers-of-excellence.webp";
+import righettoLogo from "@/assets/righetto-logo.webp";
 import { getCurrentTier, formatPrice, getDiscountPercent } from "@/lib/pricing-tiers";
 
 const VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/videos/VSL nuova.mp4`;
@@ -154,8 +154,10 @@ const Hero = () => {
               <video
                 className="w-full h-full object-cover"
                 controls
-                preload="metadata"
+                preload="none"
                 playsInline
+                width="380"
+                height="676"
               >
                 <source src={VIDEO_URL} type="video/mp4" />
                 Il tuo browser non supporta il tag video.
@@ -211,6 +213,10 @@ const Hero = () => {
                 alt="Centers of Excellence 2025-26"
                 className="h-12 md:h-15 w-auto opacity-80 hover:opacity-100 transition-opacity"
                 style={{ height: "3.75rem" }}
+                width="120"
+                height="60"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <span className="text-xs text-white/60 font-medium">Centro di Eccellenza BFE</span>
@@ -222,6 +228,10 @@ const Hero = () => {
                 alt="Righetto - Partner dispositivi biofeedback"
                 className="h-12 md:h-15 w-auto opacity-80 hover:opacity-100 transition-opacity"
                 style={{ height: "3.75rem" }}
+                width="120"
+                height="60"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <span className="text-xs text-white/60 font-medium">Righetto</span>
