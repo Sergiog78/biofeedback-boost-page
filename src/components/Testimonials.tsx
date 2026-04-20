@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShieldCheck, Users } from "lucide-react";
 
 const SUPABASE_URL = "https://unawxvbbievblwkdttzi.supabase.co/storage/v1/object/public/videos";
 
@@ -30,7 +30,7 @@ const Testimonials = () => {
               Cosa succede quando inizi a usare davvero il biofeedback
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Le esperienze di psicologi e psicoterapeuti che hanno già partecipato alla prima edizione del corso
+              Le esperienze di psicoterapeuti che hanno già integrato il biofeedback nella loro pratica clinica grazie a questo percorso
             </p>
           </div>
 
@@ -78,13 +78,43 @@ const Testimonials = () => {
           </div>
 
           {/* CTA */}
-          <div className="text-center">
+          <div className="text-center mb-14">
             <Button size="lg" className="text-lg px-8 py-6" asChild>
               <a href="#pricing">
                 Iscriviti ora e blocca il prezzo attuale
                 <ArrowRight className="ml-2 w-5 h-5" />
               </a>
             </Button>
+            <p className="text-sm text-muted-foreground mt-4">
+              🎁 Slide complete + Gruppo WhatsApp + Supervisioni gratuite incluse
+            </p>
+          </div>
+
+          {/* Garanzie */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div className="rounded-xl border-2 border-success/40 bg-success-soft p-6">
+              <div className="flex items-start gap-3 mb-3">
+                <ShieldCheck className="w-6 h-6 text-success shrink-0 mt-0.5" />
+                <h3 className="font-bold text-lg leading-tight">
+                  Garanzia di applicabilità clinica
+                </h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Se dopo la prima sessione live (9 maggio) non riesci a vedere come iniziare ad applicare il biofeedback nella tua pratica, scrivici entro 48 ore: rimborso integrale, senza condizioni.
+              </p>
+            </div>
+
+            <div className="rounded-xl border-2 border-primary/30 bg-background p-6">
+              <div className="flex items-start gap-3 mb-3">
+                <Users className="w-6 h-6 text-primary shrink-0 mt-0.5" />
+                <h3 className="font-bold text-lg leading-tight">
+                  Supervisione gratuita di gruppo inclusa
+                </h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Tutti gli iscritti hanno accesso al gruppo WhatsApp riservato dove vengono organizzate sessioni di supervisione gratuita di gruppo con Gabriele Ciccarese. Per continuare a crescere anche dopo il corso, con il supporto diretto del docente e dei colleghi.
+              </p>
+            </div>
           </div>
         </div>
       </div>
