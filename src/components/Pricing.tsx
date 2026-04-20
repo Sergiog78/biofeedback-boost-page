@@ -81,9 +81,44 @@ const Pricing = () => {
               </div>
             </CardHeader>
             <CardContent className="p-8">
-              {/* Pricing Roadmap */}
-              <div className="mb-8">
-                <PricingRoadmap />
+              {/* Countdown to next tier */}
+              {nextTier && tierInfo.timeRemaining.totalMs > 0 && (
+                <div className="mb-6 bg-accent/5 border border-accent/20 rounded-lg p-4">
+                  <div className="flex items-center justify-center gap-2 mb-3">
+                    <Clock className="w-4 h-4 text-accent" />
+                    <span className="text-xs font-semibold text-accent uppercase tracking-wide">
+                      Il prezzo aumenta tra
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center max-w-xs mx-auto">
+                    {[
+                      { value: tierInfo.timeRemaining.days, label: "Giorni" },
+                      { value: tierInfo.timeRemaining.hours, label: "Ore" },
+                      { value: tierInfo.timeRemaining.minutes, label: "Min" },
+                    ].map(({ value, label }) => (
+                      <div key={label} className="bg-background rounded-md py-2 border">
+                        <div className="text-xl font-bold text-foreground tabular-nums">
+                          {String(value).padStart(2, "0")}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                          {label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Single info line — replaces previous 4-tier ladder */}
+              <div className="mb-8 text-center space-y-1">
+                <p className="text-base font-semibold text-foreground">
+                  Prezzo attuale: €{tier.basePrice} + IVA <span className="text-muted-foreground font-normal">(€{formatPrice(tier.totalPrice)} IVA inclusa)</span>
+                </p>
+                {nextTier && (
+                  <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mx-auto">
+                    Alla scadenza del timer il prezzo passerà a <span className="font-semibold text-foreground">€{nextTier.basePrice} + IVA</span>. Dopo non sarà più possibile accedere a questo prezzo.
+                  </p>
+                )}
               </div>
 
               {/* Benefits — keep left aligned */}
