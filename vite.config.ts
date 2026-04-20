@@ -20,20 +20,30 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
-        // Split heavy vendor libs into their own long-cacheable chunks so the
-        // initial landing-page bundle stays small.
+        // Split heavy vendor libs into long-cacheable chunks.
+        // CRITICAL: react, react-dom, scheduler, and react-router MUST stay
+        // together in the same chunk. Splitting them causes
+        // "Cannot read properties of undefined (reading '__SECRET_INTERNALS...')"
+        // because react-dom evaluates before react is initialized.
         manualChunks: (id) => {
           if (!id.includes("node_modules")) return undefined;
+          // React core + everything that depends synchronously on it at import time
+          if (
+            id.includes("/react/") ||
+            id.includes("/react-dom/") ||
+            id.includes("/scheduler/") ||
+            id.includes("/react-router") ||
+            id.includes("/react-router-dom/") ||
+            id.includes("@remix-run/router")
+          ) {
+            return "vendor-react";
+          }
           if (id.includes("@stripe")) return "vendor-stripe";
-          if (id.includes("@radix-ui")) return "vendor-radix";
           if (id.includes("@supabase")) return "vendor-supabase";
-          if (id.includes("@tanstack")) return "vendor-query";
-          if (id.includes("react-hook-form") || id.includes("@hookform")) return "vendor-forms";
           if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
           if (id.includes("embla-carousel")) return "vendor-carousel";
-          if (id.includes("lucide-react")) return "vendor-icons";
-          if (id.includes("react-router")) return "vendor-router";
-          if (id.includes("react-dom") || id.includes("scheduler")) return "vendor-react";
+          // Everything else stays in the default vendor chunk so Rollup can
+          // resolve cross-package dependencies safely.
           return "vendor";
         },
       },
