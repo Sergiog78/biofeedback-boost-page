@@ -1087,6 +1087,52 @@ const Checkout = () => {
                 )}
               </div>
 
+              {/* Trust signal — Docente */}
+              <div className="border-t pt-4 flex items-center gap-3">
+                <img
+                  src={gabrieleCiccarese}
+                  alt="Dott. Gabriele Ciccarese"
+                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                />
+                <div className="text-sm leading-tight">
+                  <p className="font-semibold text-foreground">Dott. Gabriele Ciccarese</p>
+                  <p className="text-xs text-muted-foreground">Fondatore Centro Nova Mentis · Esperto BFE</p>
+                </div>
+              </div>
+
+              {/* Testimonial mini */}
+              <div className="bg-secondary/20 rounded-md px-3 py-2 text-sm">
+                <p className="text-foreground">
+                  ⭐ "Mi ha aperto un mondo" — <span className="text-muted-foreground">Dott.ssa I. Mazzotta, Psicologa</span>
+                </p>
+              </div>
+
+              {/* Logos BFE + Nova Mentis */}
+              <div className="flex items-center gap-4">
+                <img src={bfeLogo} alt="BFE" className="h-7 object-contain" />
+                <img src={novaMentisLogo} alt="Centro Nova Mentis" className="h-7 object-contain" />
+              </div>
+
+              {/* Cosa è incluso (bonus) */}
+              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                <p className="text-sm font-semibold text-foreground">🎁 Con l'iscrizione ricevi anche:</p>
+                <ul className="space-y-1.5 text-sm text-muted-foreground">
+                  {[
+                    "Slide complete del corso in PDF",
+                    "Accesso al gruppo WhatsApp riservato agli iscritti",
+                    "Supervisioni gratuite di gruppo nel gruppo WhatsApp",
+                    "Certificazione BFE di I° livello",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <svg className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               {/* Partner Logos */}
               <div className="border-t pt-6">
                 <p className="text-xs text-muted-foreground mb-3">In collaborazione con:</p>
@@ -1094,6 +1140,14 @@ const Checkout = () => {
                   <img src={righettoLogo} alt="Righetto" className="h-8 object-contain" />
                   <img src={centersOfExcellenceLogo} alt="Centers of Excellence 2025-26" className="h-8 object-contain" />
                 </div>
+              </div>
+
+              {/* Contatto WhatsApp */}
+              <div className="border-t pt-6">
+                <p className="text-sm font-semibold text-foreground mb-1">💬 Hai dubbi prima di iscriverti?</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Scrivici su WhatsApp: clicca l'icona verde della chat in basso a destra. Risposta entro poche ore.
+                </p>
               </div>
 
               {/* Course Benefits */}
