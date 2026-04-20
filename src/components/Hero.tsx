@@ -7,12 +7,13 @@ import centersLogo from "@/assets/centers-of-excellence.webp";
 import righettoLogo from "@/assets/righetto-logo.webp";
 import { getCurrentTier, formatPrice, getDiscountPercent } from "@/lib/pricing-tiers";
 
-const VIDEO_URL = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/videos/VSL nuova.mp4`;
+const YOUTUBE_VIDEO_ID = "dV9ER9Hx3J8";
 
 const Hero = () => {
   const navigate = useNavigate();
   const [tierInfo, setTierInfo] = useState(getCurrentTier());
   const [showStickyCta, setShowStickyCta] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasScrolledRef = useRef(false);
