@@ -725,8 +725,8 @@ const Checkout = () => {
                         <FormItem>
                           <FormControl>
                             <Input 
-                              placeholder="Professione (es. Psicologo, Psicoterapeuta)" 
-                              {...field} 
+                              placeholder="Professione (opzionale, es. Psicologo, Psicoterapeuta)"
+                              {...field}
                               className="h-14 text-base border-gray-300"
                             />
                           </FormControl>
@@ -734,6 +734,69 @@ const Checkout = () => {
                         </FormItem>
                       )}
                     />
+                  </div>
+
+                  {/* Fatturazione P.IVA Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id="invoice"
+                        checked={wantsInvoice}
+                        onCheckedChange={(checked) => setWantsInvoice(checked as boolean)}
+                        className="mt-1"
+                      />
+                      <Label
+                        htmlFor="invoice"
+                        className="text-sm font-medium cursor-pointer leading-relaxed"
+                      >
+                        Richiedo fattura con P.IVA / dati di fatturazione
+                      </Label>
+                    </div>
+
+                    {wantsInvoice && (
+                      <div className="space-y-3 animate-in slide-in-from-top-2 pl-7">
+                        <Input
+                          placeholder="Ragione sociale / Nome professionista *"
+                          value={billing.businessName}
+                          onChange={(e) => setBilling({ ...billing, businessName: e.target.value })}
+                          maxLength={200}
+                          className="h-12 text-base border-gray-300"
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <Input
+                            placeholder="Partita IVA *"
+                            value={billing.vatNumber}
+                            onChange={(e) => setBilling({ ...billing, vatNumber: e.target.value })}
+                            maxLength={30}
+                            className="h-12 text-base border-gray-300"
+                          />
+                          <Input
+                            placeholder="Codice fiscale"
+                            value={billing.fiscalCode}
+                            onChange={(e) => setBilling({ ...billing, fiscalCode: e.target.value })}
+                            maxLength={30}
+                            className="h-12 text-base border-gray-300"
+                          />
+                        </div>
+                        <Input
+                          placeholder="Codice SDI oppure PEC *"
+                          value={billing.sdiOrPec}
+                          onChange={(e) => setBilling({ ...billing, sdiOrPec: e.target.value })}
+                          maxLength={100}
+                          className="h-12 text-base border-gray-300"
+                        />
+                        <Input
+                          placeholder="Indirizzo di fatturazione *"
+                          value={billing.billingAddress}
+                          onChange={(e) => setBilling({ ...billing, billingAddress: e.target.value })}
+                          maxLength={500}
+                          className="h-12 text-base border-gray-300"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          La fattura elettronica verrà inviata tramite SDI o all'indirizzo PEC indicato.
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Pagamento Section with Radio Buttons */}
