@@ -112,12 +112,11 @@ const PricingRoadmap = ({ compact = false }: PricingRoadmapProps) => {
               Il prezzo aumenta tra
             </span>
           </div>
-          <div className="grid grid-cols-4 gap-2 text-center">
+          <div className="grid grid-cols-3 gap-2 text-center">
             {[
               { value: timeRemaining.days, label: "Giorni" },
               { value: timeRemaining.hours, label: "Ore" },
               { value: timeRemaining.minutes, label: "Min" },
-              { value: timeRemaining.seconds, label: "Sec" },
             ].map(({ value, label }) => (
               <div key={label} className="bg-background rounded-md py-2 border">
                 <div className="text-xl font-bold text-foreground tabular-nums">

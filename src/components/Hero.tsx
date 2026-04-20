@@ -91,7 +91,7 @@ const Hero = () => {
 
             {/* Social proof */}
             <p className="text-sm text-white/60">
-              ⭐ Già scelto da psicologi e psicoterapeuti che vogliono integrare il biofeedback nella pratica clinica
+              ⭐ Già scelto da 30+ psicoterapeuti nella prima edizione · Prossima edizione: 9 maggio 2026
             </p>
 
             {/* CTA */}
@@ -101,22 +101,22 @@ const Hero = () => {
               className="text-base font-semibold w-full sm:w-fit"
               onClick={() => navigate("/checkout")}
             >
-              Iscriviti ora e blocca il prezzo early bird
+              Iscriviti ora e blocca il prezzo attuale
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
 
             {/* Microcopy sotto CTA */}
             <div className="text-sm text-white/70 -mt-3">
               <p className="flex items-center justify-center lg:justify-start gap-2 flex-wrap">
-                Prezzo attuale: <span className="font-semibold text-white/90">€{tierInfo.tier.basePrice} + IVA</span>
+                <span className="font-semibold text-white/90">€{tierInfo.tier.basePrice} + IVA</span>
+                <span className="text-white/70">(€{tierInfo.tier.totalPrice.toFixed(2).replace(".", ",")} IVA inclusa)</span>
                 {getDiscountPercent(tierInfo.tier) > 0 && (
                   <span className="inline-flex items-center rounded-full bg-accent/20 text-accent-foreground text-xs font-medium px-2.5 py-0.5">
                     −{getDiscountPercent(tierInfo.tier)}% rispetto al prezzo finale
                   </span>
                 )}
-                {tierInfo.nextTier && <span className="line-through ml-1.5 text-white/40">€{tierInfo.nextTier.basePrice} + IVA</span>}
               </p>
-              <p className="text-white/50 text-xs mt-0.5">Il prezzo aumenterà nei prossimi giorni</p>
+              <p className="text-white/50 text-xs mt-0.5">IVA 22% inclusa nel totale. Deducibile per professionisti con P.IVA.</p>
             </div>
 
             {/* Microproof */}
@@ -129,6 +129,12 @@ const Hero = () => {
               </span>
               <span className="flex items-center gap-1.5">
                 <Check className="h-4 w-4 text-accent-foreground shrink-0" /> Supporto + community + supervisione
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="h-4 w-4 text-accent-foreground shrink-0" /> Slide complete del corso incluse
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Check className="h-4 w-4 text-accent-foreground shrink-0" /> Gruppo WhatsApp riservato con supervisioni gratuite di gruppo
               </span>
               <span className="flex items-center gap-1.5 font-semibold text-accent-foreground">
                 <Check className="h-4 w-4 shrink-0" /> Certificazione BFE di I livello
@@ -189,7 +195,7 @@ const Hero = () => {
                 className="text-base font-semibold w-full"
                 onClick={() => navigate("/checkout")}
               >
-                Iscriviti ora e blocca il prezzo early bird
+                Iscriviti ora e blocca il prezzo attuale
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </div>
@@ -197,20 +203,28 @@ const Hero = () => {
         </div>
 
         {/* Partner logos */}
-        <div className="relative z-10 flex justify-center gap-4 pb-10">
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/10">
-            <img
-              src={centersLogo}
-              alt="Centers of Excellence 2025-26"
-              className="h-8 md:h-10 w-auto opacity-80 hover:opacity-100 transition-opacity"
-            />
+        <div className="relative z-10 flex justify-center items-start gap-6 pb-10 flex-wrap">
+          <div className="flex flex-col items-center gap-2">
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/10">
+              <img
+                src={centersLogo}
+                alt="Centers of Excellence 2025-26"
+                className="h-12 md:h-15 w-auto opacity-80 hover:opacity-100 transition-opacity"
+                style={{ height: "3.75rem" }}
+              />
+            </div>
+            <span className="text-xs text-white/60 font-medium">Centro di Eccellenza BFE</span>
           </div>
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/10">
-            <img
-              src={righettoLogo}
-              alt="Righetto - Partner dispositivi biofeedback"
-              className="h-8 md:h-10 w-auto opacity-80 hover:opacity-100 transition-opacity"
-            />
+          <div className="flex flex-col items-center gap-2">
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg px-6 py-3 border border-white/10">
+              <img
+                src={righettoLogo}
+                alt="Righetto - Partner dispositivi biofeedback"
+                className="h-12 md:h-15 w-auto opacity-80 hover:opacity-100 transition-opacity"
+                style={{ height: "3.75rem" }}
+              />
+            </div>
+            <span className="text-xs text-white/60 font-medium">Righetto</span>
           </div>
         </div>
 
@@ -228,7 +242,7 @@ const Hero = () => {
           <div className="container mx-auto flex items-center justify-between gap-3">
             <div className="hidden sm:flex items-center gap-3 text-sm">
               <span className="text-foreground font-medium">
-                €{tierInfo.tier.basePrice} + IVA
+                €{tierInfo.tier.basePrice} + IVA · tot. €{tierInfo.tier.totalPrice.toFixed(2).replace(".", ",")}
               </span>
               {tierInfo.nextTier && tierInfo.timeRemaining.totalMs > 0 && (
                 <div className="flex items-center gap-1.5 text-accent">
@@ -236,21 +250,20 @@ const Hero = () => {
                   <span className="font-semibold tabular-nums">
                     {String(tierInfo.timeRemaining.days).padStart(2, "0")}g{" "}
                     {String(tierInfo.timeRemaining.hours).padStart(2, "0")}h{" "}
-                    {String(tierInfo.timeRemaining.minutes).padStart(2, "0")}m{" "}
-                    {String(tierInfo.timeRemaining.seconds).padStart(2, "0")}s
+                    {String(tierInfo.timeRemaining.minutes).padStart(2, "0")}m
                   </span>
                 </div>
               )}
             </div>
             <div className="flex sm:hidden items-center gap-2 text-xs">
               <span className="text-foreground font-semibold">
-                €{tierInfo.tier.basePrice}+IVA
+                €{tierInfo.tier.basePrice}+IVA · €{tierInfo.tier.totalPrice.toFixed(2).replace(".", ",")}
               </span>
               {tierInfo.nextTier && tierInfo.timeRemaining.totalMs > 0 && (
                 <div className="flex items-center gap-1 text-accent">
                   <Clock className="w-3 h-3" />
                   <span className="font-semibold tabular-nums">
-                    {String(tierInfo.timeRemaining.days).padStart(2, "0")}:{String(tierInfo.timeRemaining.hours).padStart(2, "0")}:{String(tierInfo.timeRemaining.minutes).padStart(2, "0")}:{String(tierInfo.timeRemaining.seconds).padStart(2, "0")}
+                    {String(tierInfo.timeRemaining.days).padStart(2, "0")}:{String(tierInfo.timeRemaining.hours).padStart(2, "0")}:{String(tierInfo.timeRemaining.minutes).padStart(2, "0")}
                   </span>
                 </div>
               )}
