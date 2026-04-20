@@ -118,8 +118,15 @@ const Hero = () => {
                 )}
               </p>
               <p className="text-white/50 text-xs mt-0.5">IVA 22% inclusa nel totale. Deducibile per professionisti con P.IVA.</p>
-              <p className="text-sm text-white/80 mt-2 pt-2 border-t border-white/20">
-                💳 oppure <span className="font-semibold text-white">3 rate da €{(tierInfo.tier.totalPrice / 3).toFixed(2).replace(".", ",")}</span> senza interessi · Klarna
+              <p className="flex items-center justify-center lg:justify-start gap-1.5 flex-wrap text-sm text-white/80 mt-2 pt-2 border-t border-white/20">
+                <span>oppure <span className="font-semibold text-white">3 rate da €{(tierInfo.tier.totalPrice / 3).toFixed(2).replace(".", ",")}</span> senza interessi ·</span>
+                <img
+                  src="https://x.klarnacdn.net/payment-method/assets/badges/generic/klarna.svg"
+                  alt="Klarna"
+                  className="h-4 w-auto inline-block bg-white rounded px-1 py-0.5"
+                  loading="lazy"
+                  decoding="async"
+                />
               </p>
             </div>
 
