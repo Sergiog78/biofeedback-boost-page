@@ -6,6 +6,7 @@ import Solution from "@/components/Solution";
 import ClinicalScenarios from "@/components/ClinicalScenarios";
 import Testimonials from "@/components/Testimonials";
 import Program from "@/components/Program";
+import CourseIncludes from "@/components/CourseIncludes";
 import Instructor from "@/components/Instructor";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
@@ -22,8 +23,9 @@ const Index = () => {
       <Solution />
       <ClinicalScenarios />
       <Testimonials />
-      <Program />
-      <Instructor />
+          <Program />
+          <CourseIncludes />
+          <Instructor />
       <Pricing />
       <FAQ />
       <Footer />
