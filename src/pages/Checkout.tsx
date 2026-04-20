@@ -481,10 +481,82 @@ const Checkout = () => {
         setIsProcessing(false);
       }
     } else {
-      // Handle PayPal checkout
-      await handlePayPalCheckout();
+      // Handle PayPal or Klarna checkout (Stripe Checkout session)
+      await handleRedirectCheckout(paymentMethod);
     }
   };
+
+  const handleRedirectCheckout = async (method: 'paypal' | 'klarna') => {
+    const formValues = form.getValues();
+
+    console.log(`=== ${method.toUpperCase()} Checkout Started ===`);
+    console.log("Form values:", formValues);
+
+    if (!formValues.email || !formValues.firstName || !formValues.lastName) {
+      toast({
+        title: "Dati mancanti",
+        description: "Compila tutti i campi richiesti prima di procedere",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (wantsInvoice && !isBillingValid(billing)) {
+      toast({
+        title: "Dati di fatturazione incompleti",
+        description: "Compila tutti i campi obbligatori della sezione fatturazione P.IVA",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      console.log("📞 Calling create-payment edge function...");
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          email: formValues.email,
+          firstName: formValues.firstName,
+          lastName: formValues.lastName,
+          profession: formValues.profession || '',
+          paymentMethod: method,
+          billingDetails: wantsInvoice ? billing : undefined,
+        }
+      });
+
+      console.log("Response from create-payment:", { data, error });
+
+      if (error) {
+        console.error("❌ Error from create-payment:", error);
+        throw error;
+      }
+      if (!data?.url) {
+        console.error("❌ No checkout URL returned");
+        throw new Error('No checkout URL returned');
+      }
+
+      console.log("✅ Checkout URL received:", data.url);
+      // Klarna requires same-tab redirect (popup blockers + Klarna SDK constraints)
+      if (method === 'klarna') {
+        window.location.href = data.url;
+      } else {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error(`❌ ${method} checkout error:`, error);
+      toast({
+        title: "Errore",
+        description: "Si è verificato un errore. Riprova tra poco.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Backwards-compatible alias used by the express PayPal button at the top
+  const handlePayPalCheckout = () => handleRedirectCheckout('paypal');
 
   const handlePayPalCheckout = async () => {
     const formValues = form.getValues();
