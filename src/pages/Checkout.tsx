@@ -1200,6 +1200,7 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+      <WhatsAppButton />
     </div>
   );
 };
