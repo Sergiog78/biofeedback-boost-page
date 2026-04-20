@@ -86,7 +86,7 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal' | 'klarna'>('card');
   const [clientSecret, setClientSecret] = useState("");
   const [stripePromise, setStripePromise] = useState<any>(undefined);
   const [stripeReady, setStripeReady] = useState(false);
@@ -94,6 +94,14 @@ const Checkout = () => {
   const isCreatingIntent = useRef(false);
   const { trackViewContent, trackInitiateCheckout } = useMetaPixel();
   const [tierInfo, setTierInfo] = useState(getCurrentTier());
+
+  // Billing / P.IVA section
+  const [wantsInvoice, setWantsInvoice] = useState(false);
+  const [billing, setBilling] = useState<BillingDetails>(emptyBilling);
+  const billingValid = !wantsInvoice || isBillingValid(billing);
+
+  // Installment amount (Klarna 3x): exact thirds of total IVA inclusa
+  const installment = (tierInfo.tier.totalPrice / 3);
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
