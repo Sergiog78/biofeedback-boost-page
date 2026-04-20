@@ -18,35 +18,12 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: "es2020",
     cssCodeSplit: true,
-    rollupOptions: {
-      output: {
-        // Split heavy vendor libs into long-cacheable chunks.
-        // CRITICAL: react, react-dom, scheduler, and react-router MUST stay
-        // together in the same chunk. Splitting them causes
-        // "Cannot read properties of undefined (reading '__SECRET_INTERNALS...')"
-        // because react-dom evaluates before react is initialized.
-        manualChunks: (id) => {
-          if (!id.includes("node_modules")) return undefined;
-          // React core + everything that depends synchronously on it at import time
-          if (
-            id.includes("/react/") ||
-            id.includes("/react-dom/") ||
-            id.includes("/scheduler/") ||
-            id.includes("/react-router") ||
-            id.includes("/react-router-dom/") ||
-            id.includes("@remix-run/router")
-          ) {
-            return "vendor-react";
-          }
-          if (id.includes("@stripe")) return "vendor-stripe";
-          if (id.includes("@supabase")) return "vendor-supabase";
-          if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
-          if (id.includes("embla-carousel")) return "vendor-carousel";
-          // Everything else stays in the default vendor chunk so Rollup can
-          // resolve cross-package dependencies safely.
-          return "vendor";
-        },
-      },
-    },
+    // No manualChunks: Rollup's automatic code-splitting safely preserves
+    // module evaluation order. Forcing React + libraries that depend on it
+    // (radix, lucide, react-hook-form, tanstack-query, etc.) into separate
+    // chunks can cause "Cannot read properties of undefined (reading
+    // 'forwardRef'/'__SECRET_INTERNALS_...')" because vendor chunks load
+    // before react is initialized. Lazy-loaded routes/components already
+    // create their own chunks.
   },
 }));
