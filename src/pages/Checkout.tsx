@@ -396,12 +396,14 @@ const Checkout = () => {
       const currentValues = form.getValues();
       const storedValues = clientSecretFormValuesRef.current;
       
+      const currentBillingSnapshot = wantsInvoice ? JSON.stringify(billing) : '';
       const hasFormChanged = storedValues && (
         currentValues.email !== storedValues.email ||
         currentValues.firstName !== storedValues.firstName ||
         currentValues.lastName !== storedValues.lastName ||
         currentValues.phone !== storedValues.phone ||
-        currentValues.profession !== storedValues.profession
+        (currentValues.profession || '') !== storedValues.profession ||
+        currentBillingSnapshot !== storedValues.billingSnapshot
       );
 
       if (hasFormChanged) {
@@ -418,7 +420,8 @@ const Checkout = () => {
                 firstName: currentValues.firstName,
                 lastName: currentValues.lastName,
                 phone: currentValues.phone,
-                profession: currentValues.profession,
+                profession: currentValues.profession || '',
+                billingDetails: wantsInvoice ? billing : undefined,
               },
             }
           );
@@ -440,7 +443,8 @@ const Checkout = () => {
             firstName: currentValues.firstName!,
             lastName: currentValues.lastName!,
             phone: currentValues.phone!,
-            profession: currentValues.profession!,
+            profession: currentValues.profession || '',
+            billingSnapshot: currentBillingSnapshot,
           };
           setClientSecret(intentData.clientSecret);
           
