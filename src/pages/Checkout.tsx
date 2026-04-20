@@ -21,7 +21,6 @@ import mastercardLogo from "@/assets/mastercard.svg";
 import centersOfExcellenceLogo from "@/assets/centers-of-excellence.jpeg";
 import { useMetaPixel } from "@/hooks/use-meta-pixel";
 import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
-import PricingRoadmap from "@/components/PricingRoadmap";
 
 // Validation schema for checkout form
 const checkoutSchema = z.object({
