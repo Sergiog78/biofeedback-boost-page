@@ -92,9 +92,9 @@ const Testimonials = () => {
 
           {/* Garanzie */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <div className="rounded-xl border-2 border-green-500/40 bg-green-50/50 dark:bg-green-950/20 p-6">
+            <div className="rounded-xl border-2 border-success/40 bg-success-soft p-6">
               <div className="flex items-start gap-3 mb-3">
-                <ShieldCheck className="w-6 h-6 text-green-600 dark:text-green-500 shrink-0 mt-0.5" />
+                <ShieldCheck className="w-6 h-6 text-success shrink-0 mt-0.5" />
                 <h3 className="font-bold text-lg leading-tight">
                   Garanzia di applicabilità clinica
                 </h3>
