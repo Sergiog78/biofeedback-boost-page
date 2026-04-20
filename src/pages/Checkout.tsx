@@ -1115,7 +1115,7 @@ const Checkout = () => {
 
               {/* Cosa è incluso (bonus) */}
               <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                <p className="text-sm font-semibold text-foreground">🎁 Con l'iscrizione ricevi anche:</p>
+                <p className="text-sm font-semibold text-foreground">Con l'iscrizione ricevi anche:</p>
                 <ul className="space-y-1.5 text-sm text-muted-foreground">
                   {[
                     "Slide complete del corso in PDF",
