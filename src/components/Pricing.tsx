@@ -72,6 +72,9 @@ const Pricing = () => {
                     )}
                   </div>
                   <p className="text-white/70 text-sm">IVA inclusa nel totale</p>
+                  <p className="text-white/80 text-sm">
+                    💳 oppure <span className="font-semibold text-white">3 rate da €{(tier.totalPrice / 3).toFixed(2).replace(".", ",")}</span> · Nessun interesse · Klarna
+                  </p>
                 </div>
                 <p className="text-white/90 text-lg">
                   {tier.label === "Early Bird"
