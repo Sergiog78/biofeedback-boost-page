@@ -338,7 +338,8 @@ const Checkout = () => {
               firstName: formValues.firstName,
               lastName: formValues.lastName,
               phone: formValues.phone,
-              profession: formValues.profession,
+              profession: formValues.profession || '',
+              billingSnapshot: wantsInvoice ? JSON.stringify(billing) : '',
             };
             setClientSecret(intentData.clientSecret);
           } else {
