@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -76,10 +77,34 @@ const validateInput = (data: any) => {
     errors.push('Invalid last name');
   }
   
-  if (!data.profession || typeof data.profession !== 'string') {
-    errors.push('Profession is required');
-  } else if (data.profession.length > 100) {
+  // Profession is OPTIONAL — no min length check, only max if provided
+  if (data.profession && typeof data.profession === 'string' && data.profession.length > 100) {
     errors.push('Profession too long');
+  }
+
+  // paymentMethod must be 'paypal' or 'klarna' (default 'paypal' for backwards compat)
+  if (data.paymentMethod && !['paypal', 'klarna'].includes(data.paymentMethod)) {
+    errors.push('Invalid payment method');
+  }
+
+  // Billing details validation (only when requested)
+  if (data.billingDetails) {
+    const b = data.billingDetails;
+    if (!b.businessName || typeof b.businessName !== 'string' || b.businessName.trim().length < 1 || b.businessName.length > 200) {
+      errors.push('Invalid business name');
+    }
+    if (!b.vatNumber || typeof b.vatNumber !== 'string' || b.vatNumber.trim().length < 5 || b.vatNumber.length > 30) {
+      errors.push('Invalid VAT number');
+    }
+    if (b.fiscalCode && (typeof b.fiscalCode !== 'string' || b.fiscalCode.length > 30)) {
+      errors.push('Invalid fiscal code');
+    }
+    if (!b.sdiOrPec || typeof b.sdiOrPec !== 'string' || b.sdiOrPec.trim().length < 3 || b.sdiOrPec.length > 100) {
+      errors.push('Invalid SDI/PEC');
+    }
+    if (!b.billingAddress || typeof b.billingAddress !== 'string' || b.billingAddress.trim().length < 5 || b.billingAddress.length > 500) {
+      errors.push('Invalid billing address');
+    }
   }
   
   return errors;
@@ -104,11 +129,12 @@ serve(async (req) => {
       );
     }
     
-    const { email, firstName, lastName, profession } = body;
+    const { email, firstName, lastName, profession, paymentMethod, billingDetails } = body;
+    const method: 'paypal' | 'klarna' = paymentMethod || 'paypal';
 
     const priceCents = getCurrentPriceCents();
     const basePrice = getCurrentBasePrice();
-    console.log("Creating PayPal checkout with dynamic price:", priceCents, "cents (base:", basePrice, "EUR)");
+    console.log(`Creating ${method} checkout with dynamic price:`, priceCents, "cents (base:", basePrice, "EUR)");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
@@ -127,10 +153,25 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
-    // Use price_data with dynamic amount instead of fixed price_id
+    const sessionMetadata: Record<string, string> = {
+      customerEmail: email,
+      customerName: `${firstName} ${lastName}`,
+      customerProfession: profession || '',
+      paymentMethod: method,
+      hasBillingDetails: billingDetails ? 'true' : 'false',
+    };
+
+    if (billingDetails) {
+      sessionMetadata.billing_businessName = (billingDetails.businessName || '').slice(0, 200);
+      sessionMetadata.billing_vatNumber = (billingDetails.vatNumber || '').slice(0, 30);
+      sessionMetadata.billing_fiscalCode = (billingDetails.fiscalCode || '').slice(0, 30);
+      sessionMetadata.billing_sdiOrPec = (billingDetails.sdiOrPec || '').slice(0, 100);
+      sessionMetadata.billing_address = (billingDetails.billingAddress || '').slice(0, 500);
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      payment_method_types: ['paypal'],
+      payment_method_types: [method],
       line_items: [
         {
           price_data: {
@@ -148,12 +189,33 @@ serve(async (req) => {
       },
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/checkout`,
-      metadata: {
-        customerEmail: email,
-        customerName: `${firstName} ${lastName}`,
-        customerProfession: profession,
+      metadata: sessionMetadata,
+      payment_intent_data: {
+        metadata: sessionMetadata,
       },
     });
+
+    // Persist billing_details immediately (linked to session) when present
+    if (billingDetails) {
+      try {
+        const supabaseAdmin = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+        await supabaseAdmin.from("billing_details").insert({
+          stripe_session_id: session.id,
+          email,
+          business_name: billingDetails.businessName,
+          vat_number: billingDetails.vatNumber,
+          fiscal_code: billingDetails.fiscalCode || null,
+          sdi_or_pec: billingDetails.sdiOrPec,
+          billing_address: billingDetails.billingAddress,
+        });
+        console.log("✅ Billing details saved for session", session.id);
+      } catch (e) {
+        console.error("⚠️ Failed to persist billing details (non-blocking):", e);
+      }
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

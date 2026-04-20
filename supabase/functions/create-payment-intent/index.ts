@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,10 +64,29 @@ const validateInput = (data: any) => {
     errors.push('Invalid phone number');
   }
 
-  if (!data.profession || typeof data.profession !== 'string') {
-    errors.push('Profession is required');
-  } else if (data.profession.length > 100) {
+  // Profession is OPTIONAL
+  if (data.profession && typeof data.profession === 'string' && data.profession.length > 100) {
     errors.push('Profession too long');
+  }
+
+  // Billing details validation (only when requested)
+  if (data.billingDetails) {
+    const b = data.billingDetails;
+    if (!b.businessName || typeof b.businessName !== 'string' || b.businessName.trim().length < 1 || b.businessName.length > 200) {
+      errors.push('Invalid business name');
+    }
+    if (!b.vatNumber || typeof b.vatNumber !== 'string' || b.vatNumber.trim().length < 5 || b.vatNumber.length > 30) {
+      errors.push('Invalid VAT number');
+    }
+    if (b.fiscalCode && (typeof b.fiscalCode !== 'string' || b.fiscalCode.length > 30)) {
+      errors.push('Invalid fiscal code');
+    }
+    if (!b.sdiOrPec || typeof b.sdiOrPec !== 'string' || b.sdiOrPec.trim().length < 3 || b.sdiOrPec.length > 100) {
+      errors.push('Invalid SDI/PEC');
+    }
+    if (!b.billingAddress || typeof b.billingAddress !== 'string' || b.billingAddress.trim().length < 5 || b.billingAddress.length > 500) {
+      errors.push('Invalid billing address');
+    }
   }
   
   return errors;
@@ -91,7 +111,7 @@ serve(async (req) => {
       );
     }
     
-    const { email, firstName, lastName, phone, profession } = body;
+    const { email, firstName, lastName, phone, profession, billingDetails } = body;
 
     const priceCents = getCurrentPriceCents();
     console.log("Creating PaymentIntent with dynamic price:", priceCents, "cents");
@@ -114,19 +134,52 @@ serve(async (req) => {
       customerId = customer.id;
     }
 
+    const piMetadata: Record<string, string> = {
+      customerEmail: email,
+      customerName: `${firstName} ${lastName}`,
+      customerPhone: phone || '',
+      customerProfession: profession || '',
+      hasBillingDetails: billingDetails ? 'true' : 'false',
+    };
+
+    if (billingDetails) {
+      piMetadata.billing_businessName = (billingDetails.businessName || '').slice(0, 200);
+      piMetadata.billing_vatNumber = (billingDetails.vatNumber || '').slice(0, 30);
+      piMetadata.billing_fiscalCode = (billingDetails.fiscalCode || '').slice(0, 30);
+      piMetadata.billing_sdiOrPec = (billingDetails.sdiOrPec || '').slice(0, 100);
+      piMetadata.billing_address = (billingDetails.billingAddress || '').slice(0, 500);
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: priceCents,
       currency: "eur",
       customer: customerId,
       payment_method_types: ["card"],
       receipt_email: email,
-      metadata: {
-        customerEmail: email,
-        customerName: `${firstName} ${lastName}`,
-        customerPhone: phone || '',
-        customerProfession: profession,
-      },
+      metadata: piMetadata,
     });
+
+    // Persist billing_details immediately (linked to PaymentIntent)
+    if (billingDetails) {
+      try {
+        const supabaseAdmin = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+        await supabaseAdmin.from("billing_details").insert({
+          stripe_payment_intent_id: paymentIntent.id,
+          email,
+          business_name: billingDetails.businessName,
+          vat_number: billingDetails.vatNumber,
+          fiscal_code: billingDetails.fiscalCode || null,
+          sdi_or_pec: billingDetails.sdiOrPec,
+          billing_address: billingDetails.billingAddress,
+        });
+        console.log("✅ Billing details saved for PI", paymentIntent.id);
+      } catch (e) {
+        console.error("⚠️ Failed to persist billing details (non-blocking):", e);
+      }
+    }
 
     console.log("PaymentIntent created:", paymentIntent.id, "amount:", priceCents);
 

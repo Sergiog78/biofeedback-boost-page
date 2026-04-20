@@ -15,10 +15,13 @@ import StripePaymentForm, { StripePaymentFormRef } from "@/components/StripePaym
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
 import mastercardLogo from "@/assets/mastercard.svg";
 import centersOfExcellenceLogo from "@/assets/centers-of-excellence.jpeg";
+import novaMentisLogo from "@/assets/logo-nova-mentis.svg";
+import gabrieleCiccarese from "@/assets/gabriele-ciccarese.png";
 import { useMetaPixel } from "@/hooks/use-meta-pixel";
 import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
 
@@ -44,11 +47,38 @@ const checkoutSchema = z.object({
     .min(8, "Numero di telefono troppo corto")
     .max(20, "Numero di telefono troppo lungo")
     .regex(/^[0-9+\s()-]+$/, "Numero di telefono non valido"),
+  // Profession is OPTIONAL: empty allowed, but if provided must be reasonable length
   profession: z.string()
     .trim()
-    .min(1, "Professione richiesta")
-    .max(100, "Professione troppo lunga"),
+    .max(100, "Professione troppo lunga")
+    .optional()
+    .or(z.literal("")),
 });
+
+type BillingDetails = {
+  businessName: string;
+  vatNumber: string;
+  fiscalCode: string;
+  sdiOrPec: string;
+  billingAddress: string;
+};
+
+const emptyBilling: BillingDetails = {
+  businessName: "",
+  vatNumber: "",
+  fiscalCode: "",
+  sdiOrPec: "",
+  billingAddress: "",
+};
+
+function isBillingValid(b: BillingDetails): boolean {
+  return (
+    b.businessName.trim().length > 0 &&
+    b.vatNumber.trim().length >= 5 &&
+    b.sdiOrPec.trim().length >= 3 &&
+    b.billingAddress.trim().length >= 5
+  );
+}
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -56,7 +86,7 @@ const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal' | 'klarna'>('card');
   const [clientSecret, setClientSecret] = useState("");
   const [stripePromise, setStripePromise] = useState<any>(undefined);
   const [stripeReady, setStripeReady] = useState(false);
@@ -64,6 +94,14 @@ const Checkout = () => {
   const isCreatingIntent = useRef(false);
   const { trackViewContent, trackInitiateCheckout } = useMetaPixel();
   const [tierInfo, setTierInfo] = useState(getCurrentTier());
+
+  // Billing / P.IVA section
+  const [wantsInvoice, setWantsInvoice] = useState(false);
+  const [billing, setBilling] = useState<BillingDetails>(emptyBilling);
+  const billingValid = !wantsInvoice || isBillingValid(billing);
+
+  // Installment amount (Klarna 3x): exact thirds of total IVA inclusa
+  const installment = (tierInfo.tier.totalPrice / 3);
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
@@ -231,7 +269,7 @@ const Checkout = () => {
     navigate(`/payment-success?payment_intent_id=${paymentIntentId}`);
   };
 
-  const isFormValid = form.formState.isValid;
+  const isFormValid = form.formState.isValid && billingValid;
   
   // Store form values used to create clientSecret (to detect staleness)
   const clientSecretFormValuesRef = useRef<{
@@ -240,6 +278,7 @@ const Checkout = () => {
     lastName: string;
     phone: string;
     profession: string;
+    billingSnapshot: string; // serialized billing or "" when not requested
   } | null>(null);
 
   // Create clientSecret when card is selected and form is valid
@@ -272,7 +311,8 @@ const Checkout = () => {
                 firstName: formValues.firstName,
                 lastName: formValues.lastName,
                 phone: formValues.phone,
-                profession: formValues.profession,
+                profession: formValues.profession || '',
+                billingDetails: wantsInvoice ? billing : undefined,
               },
             }
           );
@@ -299,7 +339,8 @@ const Checkout = () => {
               firstName: formValues.firstName,
               lastName: formValues.lastName,
               phone: formValues.phone,
-              profession: formValues.profession,
+              profession: formValues.profession || '',
+              billingSnapshot: wantsInvoice ? JSON.stringify(billing) : '',
             };
             setClientSecret(intentData.clientSecret);
           } else {
@@ -357,12 +398,14 @@ const Checkout = () => {
       const currentValues = form.getValues();
       const storedValues = clientSecretFormValuesRef.current;
       
+      const currentBillingSnapshot = wantsInvoice ? JSON.stringify(billing) : '';
       const hasFormChanged = storedValues && (
         currentValues.email !== storedValues.email ||
         currentValues.firstName !== storedValues.firstName ||
         currentValues.lastName !== storedValues.lastName ||
         currentValues.phone !== storedValues.phone ||
-        currentValues.profession !== storedValues.profession
+        (currentValues.profession || '') !== storedValues.profession ||
+        currentBillingSnapshot !== storedValues.billingSnapshot
       );
 
       if (hasFormChanged) {
@@ -379,7 +422,8 @@ const Checkout = () => {
                 firstName: currentValues.firstName,
                 lastName: currentValues.lastName,
                 phone: currentValues.phone,
-                profession: currentValues.profession,
+                profession: currentValues.profession || '',
+                billingDetails: wantsInvoice ? billing : undefined,
               },
             }
           );
@@ -401,7 +445,8 @@ const Checkout = () => {
             firstName: currentValues.firstName!,
             lastName: currentValues.lastName!,
             phone: currentValues.phone!,
-            profession: currentValues.profession!,
+            profession: currentValues.profession || '',
+            billingSnapshot: currentBillingSnapshot,
           };
           setClientSecret(intentData.clientSecret);
           
@@ -436,18 +481,17 @@ const Checkout = () => {
         setIsProcessing(false);
       }
     } else {
-      // Handle PayPal checkout
-      await handlePayPalCheckout();
+      // Handle PayPal or Klarna checkout (Stripe Checkout session)
+      await handleRedirectCheckout(paymentMethod);
     }
   };
 
-  const handlePayPalCheckout = async () => {
+  const handleRedirectCheckout = async (method: 'paypal' | 'klarna') => {
     const formValues = form.getValues();
-    
-    console.log("=== PayPal Checkout Started ===");
+
+    console.log(`=== ${method.toUpperCase()} Checkout Started ===`);
     console.log("Form values:", formValues);
-    
-    // Validate form before proceeding
+
     if (!formValues.email || !formValues.firstName || !formValues.lastName) {
       toast({
         title: "Dati mancanti",
@@ -456,18 +500,28 @@ const Checkout = () => {
       });
       return;
     }
-    
+
+    if (wantsInvoice && !isBillingValid(billing)) {
+      toast({
+        title: "Dati di fatturazione incompleti",
+        description: "Compila tutti i campi obbligatori della sezione fatturazione P.IVA",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
       console.log("📞 Calling create-payment edge function...");
-      // Create checkout session with PayPal
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
           email: formValues.email,
           firstName: formValues.firstName,
           lastName: formValues.lastName,
-          profession: formValues.profession,
+          profession: formValues.profession || '',
+          paymentMethod: method,
+          billingDetails: wantsInvoice ? billing : undefined,
         }
       });
 
@@ -483,14 +537,14 @@ const Checkout = () => {
       }
 
       console.log("✅ Checkout URL received:", data.url);
-      console.log("🌐 Opening Stripe Checkout in new tab...");
-      
-      // Redirect to Stripe Checkout with PayPal
-      window.open(data.url, '_blank');
-      
-      console.log("✅ PayPal checkout window opened");
+      // Klarna requires same-tab redirect (popup blockers + Klarna SDK constraints)
+      if (method === 'klarna') {
+        window.location.href = data.url;
+      } else {
+        window.open(data.url, '_blank');
+      }
     } catch (error) {
-      console.error("❌ PayPal checkout error:", error);
+      console.error(`❌ ${method} checkout error:`, error);
       toast({
         title: "Errore",
         description: "Si è verificato un errore. Riprova tra poco.",
@@ -501,8 +555,13 @@ const Checkout = () => {
     }
   };
 
+  // Backwards-compatible alias used by the express PayPal button at the top
+  const handlePayPalCheckout = () => handleRedirectCheckout('paypal');
+
+
   const canSubmit = isFormValid && acceptedTerms && (
-    paymentMethod === 'paypal' || 
+    paymentMethod === 'paypal' ||
+    paymentMethod === 'klarna' ||
     (paymentMethod === 'card' && stripeReady && clientSecret)
   );
 
@@ -666,8 +725,8 @@ const Checkout = () => {
                         <FormItem>
                           <FormControl>
                             <Input 
-                              placeholder="Professione (es. Psicologo, Psicoterapeuta)" 
-                              {...field} 
+                              placeholder="Professione (opzionale, es. Psicologo, Psicoterapeuta)"
+                              {...field}
                               className="h-14 text-base border-gray-300"
                             />
                           </FormControl>
@@ -677,11 +736,74 @@ const Checkout = () => {
                     />
                   </div>
 
+                  {/* Fatturazione P.IVA Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id="invoice"
+                        checked={wantsInvoice}
+                        onCheckedChange={(checked) => setWantsInvoice(checked as boolean)}
+                        className="mt-1"
+                      />
+                      <Label
+                        htmlFor="invoice"
+                        className="text-sm font-medium cursor-pointer leading-relaxed"
+                      >
+                        Richiedo fattura con P.IVA / dati di fatturazione
+                      </Label>
+                    </div>
+
+                    {wantsInvoice && (
+                      <div className="space-y-3 animate-in slide-in-from-top-2 pl-7">
+                        <Input
+                          placeholder="Ragione sociale / Nome professionista *"
+                          value={billing.businessName}
+                          onChange={(e) => setBilling({ ...billing, businessName: e.target.value })}
+                          maxLength={200}
+                          className="h-12 text-base border-gray-300"
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <Input
+                            placeholder="Partita IVA *"
+                            value={billing.vatNumber}
+                            onChange={(e) => setBilling({ ...billing, vatNumber: e.target.value })}
+                            maxLength={30}
+                            className="h-12 text-base border-gray-300"
+                          />
+                          <Input
+                            placeholder="Codice fiscale"
+                            value={billing.fiscalCode}
+                            onChange={(e) => setBilling({ ...billing, fiscalCode: e.target.value })}
+                            maxLength={30}
+                            className="h-12 text-base border-gray-300"
+                          />
+                        </div>
+                        <Input
+                          placeholder="Codice SDI oppure PEC *"
+                          value={billing.sdiOrPec}
+                          onChange={(e) => setBilling({ ...billing, sdiOrPec: e.target.value })}
+                          maxLength={100}
+                          className="h-12 text-base border-gray-300"
+                        />
+                        <Input
+                          placeholder="Indirizzo di fatturazione *"
+                          value={billing.billingAddress}
+                          onChange={(e) => setBilling({ ...billing, billingAddress: e.target.value })}
+                          maxLength={500}
+                          className="h-12 text-base border-gray-300"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          La fattura elettronica verrà inviata tramite SDI o all'indirizzo PEC indicato.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Pagamento Section with Radio Buttons */}
                   <div className="space-y-4">
                     <h2 className="text-sm font-medium text-foreground">Pagamento</h2>
                     
-                    <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'card' | 'paypal')}>
+                    <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'card' | 'paypal' | 'klarna')}>
                       {/* Card Payment Option */}
                       <div className={`border rounded-lg transition-all ${paymentMethod === 'card' ? 'border-foreground border-2' : 'border-gray-300'}`}>
                         <div className="p-4 flex items-center justify-between cursor-pointer">
@@ -768,6 +890,36 @@ const Checkout = () => {
                           </div>
                         )}
                       </div>
+
+                      {/* Klarna — Pay in 3 installments */}
+                      <div className={`border rounded-lg transition-all ${paymentMethod === 'klarna' ? 'border-foreground border-2' : 'border-gray-300'}`}>
+                        <div className="p-4 flex items-center justify-between cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <RadioGroupItem value="klarna" id="klarna" />
+                            <div className="flex flex-col">
+                              <Label htmlFor="klarna" className="cursor-pointer font-medium text-sm">
+                                💳 Paga in 3 rate senza interessi
+                              </Label>
+                              <span className="text-xs text-muted-foreground">
+                                3 rate da €{formatPrice(installment)} · Nessun interesse · Powered by Klarna
+                              </span>
+                            </div>
+                          </div>
+                          <img
+                            src="https://x.klarnacdn.net/payment-method/assets/badges/generic/klarna.svg"
+                            alt="Klarna"
+                            className="h-5"
+                          />
+                        </div>
+
+                        {paymentMethod === 'klarna' && (
+                          <div className="px-4 pb-4 pt-2 border-t animate-in slide-in-from-top-2">
+                            <p className="text-sm text-muted-foreground">
+                              Dopo aver cliccato su "Paga con Klarna", sarai reindirizzato a Klarna per completare il pagamento in 3 rate senza interessi.
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </RadioGroup>
                   </div>
 
@@ -810,6 +962,26 @@ const Checkout = () => {
                     </Label>
                   </div>
 
+                  {/* Garanzie — sopra il bottone Paga ora */}
+                  <div className="space-y-3 pt-2">
+                    <div className="rounded-lg border-2 border-green-600 bg-green-50 p-4">
+                      <p className="text-sm font-semibold text-green-900 mb-1">
+                        🛡️ Garanzia di applicabilità clinica
+                      </p>
+                      <p className="text-sm text-green-900/80 leading-relaxed">
+                        Se dopo la prima sessione live (9 maggio) non riesci a vedere come iniziare ad applicare il biofeedback nella tua pratica, scrivici entro 48 ore: rimborso integrale, senza condizioni.
+                      </p>
+                    </div>
+                    <div className="rounded-lg border-2 border-blue-300 bg-white p-4">
+                      <p className="text-sm font-semibold text-foreground mb-1">
+                        👥 Supervisione gratuita di gruppo inclusa
+                      </p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Tutti gli iscritti hanno accesso al gruppo WhatsApp riservato dove vengono organizzate sessioni di supervisione gratuita di gruppo con Gabriele Ciccarese. Per continuare a crescere anche dopo il corso, con il supporto diretto del docente e dei colleghi.
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Submit Button */}
                   <Button
                     type="submit"
@@ -817,6 +989,8 @@ const Checkout = () => {
                     className={`w-full h-14 text-base font-semibold disabled:opacity-100 ${
                       paymentMethod === 'paypal' && canSubmit
                         ? 'bg-[#0070BA] hover:bg-[#003087] text-white'
+                        : paymentMethod === 'klarna' && canSubmit
+                        ? 'bg-[#FFB3C7] hover:bg-[#FFB3C7]/90 text-black'
                         : 'bg-primary text-primary-foreground hover:bg-primary/90'
                     }`}
                     disabled={!canSubmit || isProcessing || (stripeFormRef.current?.isProcessing ?? false)}
@@ -836,6 +1010,8 @@ const Checkout = () => {
                         />
                         Paga con PayPal
                       </>
+                    ) : paymentMethod === 'klarna' ? (
+                      <>Paga in 3 rate con Klarna</>
                     ) : (
                       'Paga ora'
                     )}
@@ -911,6 +1087,52 @@ const Checkout = () => {
                 )}
               </div>
 
+              {/* Trust signal — Docente */}
+              <div className="border-t pt-4 flex items-center gap-3">
+                <img
+                  src={gabrieleCiccarese}
+                  alt="Dott. Gabriele Ciccarese"
+                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                />
+                <div className="text-sm leading-tight">
+                  <p className="font-semibold text-foreground">Dott. Gabriele Ciccarese</p>
+                  <p className="text-xs text-muted-foreground">Fondatore Centro Nova Mentis · Esperto BFE</p>
+                </div>
+              </div>
+
+              {/* Testimonial mini */}
+              <div className="bg-secondary/20 rounded-md px-3 py-2 text-sm">
+                <p className="text-foreground">
+                  ⭐ "Mi ha aperto un mondo" — <span className="text-muted-foreground">Dott.ssa I. Mazzotta, Psicologa</span>
+                </p>
+              </div>
+
+              {/* Logos BFE + Nova Mentis */}
+              <div className="flex items-center gap-4">
+                <img src={bfeLogo} alt="BFE" className="h-7 object-contain" />
+                <img src={novaMentisLogo} alt="Centro Nova Mentis" className="h-7 object-contain" />
+              </div>
+
+              {/* Cosa è incluso (bonus) */}
+              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+                <p className="text-sm font-semibold text-foreground">🎁 Con l'iscrizione ricevi anche:</p>
+                <ul className="space-y-1.5 text-sm text-muted-foreground">
+                  {[
+                    "Slide complete del corso in PDF",
+                    "Accesso al gruppo WhatsApp riservato agli iscritti",
+                    "Supervisioni gratuite di gruppo nel gruppo WhatsApp",
+                    "Certificazione BFE di I° livello",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2">
+                      <svg className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               {/* Partner Logos */}
               <div className="border-t pt-6">
                 <p className="text-xs text-muted-foreground mb-3">In collaborazione con:</p>
@@ -918,6 +1140,14 @@ const Checkout = () => {
                   <img src={righettoLogo} alt="Righetto" className="h-8 object-contain" />
                   <img src={centersOfExcellenceLogo} alt="Centers of Excellence 2025-26" className="h-8 object-contain" />
                 </div>
+              </div>
+
+              {/* Contatto WhatsApp */}
+              <div className="border-t pt-6">
+                <p className="text-sm font-semibold text-foreground mb-1">💬 Hai dubbi prima di iscriverti?</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Scrivici su WhatsApp: clicca l'icona verde della chat in basso a destra. Risposta entro poche ore.
+                </p>
               </div>
 
               {/* Course Benefits */}
@@ -970,6 +1200,7 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+      <WhatsAppButton />
     </div>
   );
 };
