@@ -151,18 +151,49 @@ const Hero = () => {
             </p>
 
             {/* Video container */}
-            <div className="w-full aspect-[9/16] rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 bg-black/40">
-              <video
-                className="w-full h-full object-cover"
-                controls
-                preload="none"
-                playsInline
-                width="380"
-                height="676"
-              >
-                <source src={VIDEO_URL} type="video/mp4" />
-                Il tuo browser non supporta il tag video.
-              </video>
+            <div className="w-full aspect-video rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 bg-black relative">
+              {!videoLoaded ? (
+                <button
+                  type="button"
+                  onClick={() => setVideoLoaded(true)}
+                  className="absolute inset-0 w-full h-full group cursor-pointer"
+                  aria-label="Guarda il video prima di iscriverti"
+                >
+                  <img
+                    src={`https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/hqdefault.jpg`}
+                    srcSet={`https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/hqdefault.jpg 480w, https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/maxresdefault.jpg 1280w`}
+                    alt="Video introduttivo al corso di biofeedback con Gabriele Ciccarese"
+                    width="380"
+                    height="214"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                    className="w-full h-full object-cover"
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <span className="flex items-center justify-center w-[72px] h-[72px] rounded-full bg-black/70 group-hover:bg-black/85 transition-colors">
+                      <span
+                        className="block ml-1"
+                        style={{
+                          width: 0,
+                          height: 0,
+                          borderTop: "16px solid transparent",
+                          borderBottom: "16px solid transparent",
+                          borderLeft: "24px solid white",
+                        }}
+                      />
+                    </span>
+                  </span>
+                </button>
+              ) : (
+                <iframe
+                  src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0`}
+                  title="Video introduttivo al corso di biofeedback con Gabriele Ciccarese"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full border-0"
+                />
+              )}
             </div>
 
             {/* Bullet points sotto video — keep left aligned */}
