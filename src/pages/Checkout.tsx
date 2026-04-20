@@ -962,6 +962,26 @@ const Checkout = () => {
                     </Label>
                   </div>
 
+                  {/* Garanzie — sopra il bottone Paga ora */}
+                  <div className="space-y-3 pt-2">
+                    <div className="rounded-lg border-2 border-green-600 bg-green-50 p-4">
+                      <p className="text-sm font-semibold text-green-900 mb-1">
+                        🛡️ Garanzia di applicabilità clinica
+                      </p>
+                      <p className="text-sm text-green-900/80 leading-relaxed">
+                        Se dopo la prima sessione live (9 maggio) non riesci a vedere come iniziare ad applicare il biofeedback nella tua pratica, scrivici entro 48 ore: rimborso integrale, senza condizioni.
+                      </p>
+                    </div>
+                    <div className="rounded-lg border-2 border-blue-300 bg-white p-4">
+                      <p className="text-sm font-semibold text-foreground mb-1">
+                        👥 Supervisione gratuita di gruppo inclusa
+                      </p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Tutti gli iscritti hanno accesso al gruppo WhatsApp riservato dove vengono organizzate sessioni di supervisione gratuita di gruppo con Gabriele Ciccarese. Per continuare a crescere anche dopo il corso, con il supporto diretto del docente e dei colleghi.
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Submit Button */}
                   <Button
                     type="submit"
@@ -969,6 +989,8 @@ const Checkout = () => {
                     className={`w-full h-14 text-base font-semibold disabled:opacity-100 ${
                       paymentMethod === 'paypal' && canSubmit
                         ? 'bg-[#0070BA] hover:bg-[#003087] text-white'
+                        : paymentMethod === 'klarna' && canSubmit
+                        ? 'bg-[#FFB3C7] hover:bg-[#FFB3C7]/90 text-black'
                         : 'bg-primary text-primary-foreground hover:bg-primary/90'
                     }`}
                     disabled={!canSubmit || isProcessing || (stripeFormRef.current?.isProcessing ?? false)}
@@ -988,6 +1010,8 @@ const Checkout = () => {
                         />
                         Paga con PayPal
                       </>
+                    ) : paymentMethod === 'klarna' ? (
+                      <>Paga in 3 rate con Klarna</>
                     ) : (
                       'Paga ora'
                     )}
