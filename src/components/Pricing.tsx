@@ -1,10 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getCurrentTier, formatPrice, getDiscountPercent } from "@/lib/pricing-tiers";
-import PricingRoadmap from "@/components/PricingRoadmap";
 
 const benefits: (string | React.ReactNode)[] = [
   "16 ore di formazione live con applicazione clinica",
