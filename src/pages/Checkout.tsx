@@ -1096,7 +1096,7 @@ const Checkout = () => {
                 />
                 <div className="text-sm leading-tight">
                   <p className="font-semibold text-foreground">Dott. Gabriele Ciccarese</p>
-                  <p className="text-xs text-muted-foreground">Fondatore Centro Nova Mentis · Certificato biofeedback Liv. 3</p>
+                  <p className="text-xs text-muted-foreground">Fondatore Centro Nova Mentis · Certificato BFE Liv. 3</p>
                 </div>
               </div>
 
