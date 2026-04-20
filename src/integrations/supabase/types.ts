@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      billing_details: {
+        Row: {
+          billing_address: string
+          business_name: string
+          created_at: string
+          email: string
+          enrollment_id: string | null
+          fiscal_code: string | null
+          id: string
+          sdi_or_pec: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          vat_number: string
+        }
+        Insert: {
+          billing_address: string
+          business_name: string
+          created_at?: string
+          email: string
+          enrollment_id?: string | null
+          fiscal_code?: string | null
+          id?: string
+          sdi_or_pec: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          vat_number: string
+        }
+        Update: {
+          billing_address?: string
+          business_name?: string
+          created_at?: string
+          email?: string
+          enrollment_id?: string | null
+          fiscal_code?: string | null
+          id?: string
+          sdi_or_pec?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          vat_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_details_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "course_enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_enrollments: {
         Row: {
           amount_paid: number
