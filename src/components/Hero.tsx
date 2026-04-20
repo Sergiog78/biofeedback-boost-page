@@ -166,7 +166,7 @@ const Hero = () => {
                     width="380"
                     height="214"
                     loading="eager"
-                    fetchPriority="high"
+                    {...({ fetchpriority: "high" } as any)}
                     decoding="async"
                     className="w-full h-full object-cover"
                   />
