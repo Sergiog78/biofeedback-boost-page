@@ -803,7 +803,7 @@ const Checkout = () => {
                   <div className="space-y-4">
                     <h2 className="text-sm font-medium text-foreground">Pagamento</h2>
                     
-                    <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'card' | 'paypal')}>
+                    <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as 'card' | 'paypal' | 'klarna')}>
                       {/* Card Payment Option */}
                       <div className={`border rounded-lg transition-all ${paymentMethod === 'card' ? 'border-foreground border-2' : 'border-gray-300'}`}>
                         <div className="p-4 flex items-center justify-between cursor-pointer">
@@ -886,6 +886,36 @@ const Checkout = () => {
                           <div className="px-4 pb-4 pt-2 border-t animate-in slide-in-from-top-2">
                             <p className="text-sm text-muted-foreground">
                               Dopo aver cliccato su "Paga con PayPal", sarai reindirizzato a PayPal per completare il pagamento in modo sicuro.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Klarna — Pay in 3 installments */}
+                      <div className={`border rounded-lg transition-all ${paymentMethod === 'klarna' ? 'border-foreground border-2' : 'border-gray-300'}`}>
+                        <div className="p-4 flex items-center justify-between cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <RadioGroupItem value="klarna" id="klarna" />
+                            <div className="flex flex-col">
+                              <Label htmlFor="klarna" className="cursor-pointer font-medium text-sm">
+                                💳 Paga in 3 rate senza interessi
+                              </Label>
+                              <span className="text-xs text-muted-foreground">
+                                3 rate da €{formatPrice(installment)} · Nessun interesse · Powered by Klarna
+                              </span>
+                            </div>
+                          </div>
+                          <img
+                            src="https://x.klarnacdn.net/payment-method/assets/badges/generic/klarna.svg"
+                            alt="Klarna"
+                            className="h-5"
+                          />
+                        </div>
+
+                        {paymentMethod === 'klarna' && (
+                          <div className="px-4 pb-4 pt-2 border-t animate-in slide-in-from-top-2">
+                            <p className="text-sm text-muted-foreground">
+                              Dopo aver cliccato su "Paga con Klarna", sarai reindirizzato a Klarna per completare il pagamento in 3 rate senza interessi.
                             </p>
                           </div>
                         )}
