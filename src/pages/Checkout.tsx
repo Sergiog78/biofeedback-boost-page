@@ -311,7 +311,8 @@ const Checkout = () => {
                 firstName: formValues.firstName,
                 lastName: formValues.lastName,
                 phone: formValues.phone,
-                profession: formValues.profession,
+                profession: formValues.profession || '',
+                billingDetails: wantsInvoice ? billing : undefined,
               },
             }
           );
