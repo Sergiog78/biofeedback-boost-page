@@ -558,68 +558,10 @@ const Checkout = () => {
   // Backwards-compatible alias used by the express PayPal button at the top
   const handlePayPalCheckout = () => handleRedirectCheckout('paypal');
 
-  const handlePayPalCheckout = async () => {
-    const formValues = form.getValues();
-    
-    console.log("=== PayPal Checkout Started ===");
-    console.log("Form values:", formValues);
-    
-    // Validate form before proceeding
-    if (!formValues.email || !formValues.firstName || !formValues.lastName) {
-      toast({
-        title: "Dati mancanti",
-        description: "Compila tutti i campi richiesti prima di procedere",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsProcessing(true);
-
-    try {
-      console.log("📞 Calling create-payment edge function...");
-      // Create checkout session with PayPal
-      const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: {
-          email: formValues.email,
-          firstName: formValues.firstName,
-          lastName: formValues.lastName,
-          profession: formValues.profession,
-        }
-      });
-
-      console.log("Response from create-payment:", { data, error });
-
-      if (error) {
-        console.error("❌ Error from create-payment:", error);
-        throw error;
-      }
-      if (!data?.url) {
-        console.error("❌ No checkout URL returned");
-        throw new Error('No checkout URL returned');
-      }
-
-      console.log("✅ Checkout URL received:", data.url);
-      console.log("🌐 Opening Stripe Checkout in new tab...");
-      
-      // Redirect to Stripe Checkout with PayPal
-      window.open(data.url, '_blank');
-      
-      console.log("✅ PayPal checkout window opened");
-    } catch (error) {
-      console.error("❌ PayPal checkout error:", error);
-      toast({
-        title: "Errore",
-        description: "Si è verificato un errore. Riprova tra poco.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
 
   const canSubmit = isFormValid && acceptedTerms && (
-    paymentMethod === 'paypal' || 
+    paymentMethod === 'paypal' ||
+    paymentMethod === 'klarna' ||
     (paymentMethod === 'card' && stripeReady && clientSecret)
   );
 
