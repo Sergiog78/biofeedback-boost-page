@@ -1092,11 +1092,11 @@ const Checkout = () => {
                 <img
                   src={gabrieleCiccarese}
                   alt="Dott. Gabriele Ciccarese"
-                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                  className="w-12 h-12 rounded-full object-cover object-top flex-shrink-0"
                 />
                 <div className="text-sm leading-tight">
                   <p className="font-semibold text-foreground">Dott. Gabriele Ciccarese</p>
-                  <p className="text-xs text-muted-foreground">Fondatore Centro Nova Mentis · Esperto BFE</p>
+                  <p className="text-xs text-muted-foreground">Fondatore Centro Nova Mentis · Certificato biofeedback Liv. 3</p>
                 </div>
               </div>
 
@@ -1115,7 +1115,7 @@ const Checkout = () => {
 
               {/* Cosa è incluso (bonus) */}
               <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                <p className="text-sm font-semibold text-foreground">🎁 Con l'iscrizione ricevi anche:</p>
+                <p className="text-sm font-semibold text-foreground">Con l'iscrizione ricevi anche:</p>
                 <ul className="space-y-1.5 text-sm text-muted-foreground">
                   {[
                     "Slide complete del corso in PDF",
