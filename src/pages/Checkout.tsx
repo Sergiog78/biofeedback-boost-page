@@ -814,7 +814,7 @@ const Checkout = () => {
                   <Button
                     type="submit"
                     size="lg"
-                    className={`w-full h-14 text-base font-semibold ${
+                    className={`w-full h-14 text-base font-semibold disabled:opacity-100 ${
                       paymentMethod === 'paypal' && canSubmit
                         ? 'bg-[#0070BA] hover:bg-[#003087] text-white'
                         : 'bg-primary text-primary-foreground hover:bg-primary/90'
