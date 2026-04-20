@@ -15,10 +15,13 @@ import StripePaymentForm, { StripePaymentFormRef } from "@/components/StripePaym
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import bfeLogo from "@/assets/bfe-logo-text.png";
 import righettoLogo from "@/assets/righetto-logo.png";
 import mastercardLogo from "@/assets/mastercard.svg";
 import centersOfExcellenceLogo from "@/assets/centers-of-excellence.jpeg";
+import novaMentisLogo from "@/assets/logo-nova-mentis.svg";
+import gabrieleCiccarese from "@/assets/gabriele-ciccarese.png";
 import { useMetaPixel } from "@/hooks/use-meta-pixel";
 import { getCurrentTier, formatPrice } from "@/lib/pricing-tiers";
 
@@ -44,11 +47,38 @@ const checkoutSchema = z.object({
     .min(8, "Numero di telefono troppo corto")
     .max(20, "Numero di telefono troppo lungo")
     .regex(/^[0-9+\s()-]+$/, "Numero di telefono non valido"),
+  // Profession is OPTIONAL: empty allowed, but if provided must be reasonable length
   profession: z.string()
     .trim()
-    .min(1, "Professione richiesta")
-    .max(100, "Professione troppo lunga"),
+    .max(100, "Professione troppo lunga")
+    .optional()
+    .or(z.literal("")),
 });
+
+type BillingDetails = {
+  businessName: string;
+  vatNumber: string;
+  fiscalCode: string;
+  sdiOrPec: string;
+  billingAddress: string;
+};
+
+const emptyBilling: BillingDetails = {
+  businessName: "",
+  vatNumber: "",
+  fiscalCode: "",
+  sdiOrPec: "",
+  billingAddress: "",
+};
+
+function isBillingValid(b: BillingDetails): boolean {
+  return (
+    b.businessName.trim().length > 0 &&
+    b.vatNumber.trim().length >= 5 &&
+    b.sdiOrPec.trim().length >= 3 &&
+    b.billingAddress.trim().length >= 5
+  );
+}
 
 const Checkout = () => {
   const navigate = useNavigate();
