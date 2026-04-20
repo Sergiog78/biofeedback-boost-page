@@ -227,18 +227,6 @@ const Hero = () => {
               </ul>
             </div>
 
-            {/* CTA secondaria — solo mobile */}
-            <div className="mt-6 lg:hidden">
-              <Button
-                variant="hero"
-                size="xl"
-                className="text-base font-semibold w-full"
-                onClick={() => navigate("/checkout")}
-              >
-                Iscriviti ora e blocca il prezzo attuale
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
           </div>
         </div>
 
