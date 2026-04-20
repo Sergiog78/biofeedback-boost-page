@@ -1092,11 +1092,11 @@ const Checkout = () => {
                 <img
                   src={gabrieleCiccarese}
                   alt="Dott. Gabriele Ciccarese"
-                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                  className="w-12 h-12 rounded-full object-cover object-top flex-shrink-0"
                 />
                 <div className="text-sm leading-tight">
                   <p className="font-semibold text-foreground">Dott. Gabriele Ciccarese</p>
-                  <p className="text-xs text-muted-foreground">Fondatore Centro Nova Mentis · Esperto BFE</p>
+                  <p className="text-xs text-muted-foreground">Fondatore Centro Nova Mentis · Certificato biofeedback Liv. 3</p>
                 </div>
               </div>
 
