@@ -143,32 +143,38 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* RIGHT COLUMN — Video */}
-          <div className="mt-8 lg:mt-0 w-full lg:w-[380px] lg:shrink-0 text-center lg:text-left">
+          {/* RIGHT COLUMN — Video (9:16 vertical) */}
+          <div className="mt-8 lg:mt-0 w-full max-w-[280px] sm:max-w-[300px] mx-auto lg:mx-0 lg:w-[300px] lg:shrink-0 text-center lg:text-left">
             {/* Caption sopra video */}
             <p className="text-sm font-medium text-white/80 mb-3">
               👉 Guarda questo video prima di iscriverti
             </p>
 
-            {/* Video container */}
-            <div className="w-full aspect-video rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 bg-black relative">
+            {/* Video container — 9:16 to match the vertical YouTube video */}
+            <div className="w-full aspect-[9/16] rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 relative">
               {!videoLoaded ? (
                 <button
                   type="button"
                   onClick={() => setVideoLoaded(true)}
-                  className="absolute inset-0 w-full h-full group cursor-pointer"
+                  className="absolute inset-0 w-full h-full group cursor-pointer bg-black"
                   aria-label="Guarda il video prima di iscriverti"
                 >
                   <img
-                    src={`https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/hqdefault.jpg`}
-                    srcSet={`https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/hqdefault.jpg 480w, https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/maxresdefault.jpg 1280w`}
+                    src={`https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/sddefault.jpg`}
                     alt="Video introduttivo al corso di biofeedback con Gabriele Ciccarese"
-                    width="380"
-                    height="214"
+                    width="300"
+                    height="533"
                     loading="eager"
                     {...({ fetchpriority: "high" } as any)}
                     decoding="async"
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      if (!img.dataset.fallback) {
+                        img.dataset.fallback = "1";
+                        img.src = `https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/hqdefault.jpg`;
+                      }
+                    }}
                   />
                   <span className="absolute inset-0 flex items-center justify-center">
                     <span className="flex items-center justify-center w-[72px] h-[72px] rounded-full bg-black/70 group-hover:bg-black/85 transition-colors">
@@ -187,11 +193,11 @@ const Hero = () => {
                 </button>
               ) : (
                 <iframe
-                  src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0`}
+                  src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0&playsinline=1`}
                   title="Video introduttivo al corso di biofeedback con Gabriele Ciccarese"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  className="absolute inset-0 w-full h-full border-0"
+                  className="absolute inset-0 w-full h-full border-0 bg-black"
                 />
               )}
             </div>
