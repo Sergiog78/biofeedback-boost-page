@@ -269,7 +269,7 @@ const Checkout = () => {
     navigate(`/payment-success?payment_intent_id=${paymentIntentId}`);
   };
 
-  const isFormValid = form.formState.isValid;
+  const isFormValid = form.formState.isValid && billingValid;
   
   // Store form values used to create clientSecret (to detect staleness)
   const clientSecretFormValuesRef = useRef<{
@@ -278,6 +278,7 @@ const Checkout = () => {
     lastName: string;
     phone: string;
     profession: string;
+    billingSnapshot: string; // serialized billing or "" when not requested
   } | null>(null);
 
   // Create clientSecret when card is selected and form is valid
