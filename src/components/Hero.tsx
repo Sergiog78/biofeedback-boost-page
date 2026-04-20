@@ -118,6 +118,9 @@ const Hero = () => {
                 )}
               </p>
               <p className="text-white/50 text-xs mt-0.5">IVA 22% inclusa nel totale. Deducibile per professionisti con P.IVA.</p>
+              <p className="text-white/60 text-xs mt-1">
+                oppure <span className="font-semibold text-white/80">3 rate da €{(tierInfo.tier.totalPrice / 3).toFixed(2).replace(".", ",")}</span> senza interessi · Klarna
+              </p>
             </div>
 
             {/* Microproof */}
