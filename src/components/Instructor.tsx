@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import gabrieleCiccarese from "@/assets/gabriele-ciccarese.png";
+import gabrieleCiccarese from "@/assets/gabriele-ciccarese.webp";
 
 const credentials = [
   "Fondatore del Centro Nova Mentis (Centro di Psicologia e Neuroscienze Cliniche)",
@@ -70,6 +70,10 @@ const Instructor = () => {
                 src={gabrieleCiccarese}
                 alt="Dott. Gabriele Ciccarese"
                 className="w-full h-auto"
+                width="600"
+                height="600"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
