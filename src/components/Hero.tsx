@@ -15,6 +15,7 @@ declare global {
     YT?: any;
     onYouTubeIframeAPIReady?: () => void;
     clarity?: (...args: any[]) => void;
+    fbq?: (...args: any[]) => void;
   }
 }
 
