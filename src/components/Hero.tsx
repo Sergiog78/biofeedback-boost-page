@@ -70,6 +70,25 @@ const Hero = () => {
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasScrolledRef = useRef(false);
 
+  // ===== VSL tracking refs =====
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const playerRef = useRef<any>(null);
+  const watchedSecondsRef = useRef(0);
+  const lastTickRef = useRef<number | null>(null);
+  const milestonesSentRef = useRef<Set<number>>(new Set());
+  const playSentRef = useRef(false);
+  const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const finalSentRef = useRef(false);
+
+  const sendFinalWatchTime = () => {
+    if (finalSentRef.current) return;
+    const total = Math.round(watchedSecondsRef.current);
+    if (total > 0) {
+      finalSentRef.current = true;
+      trackVslEvent("VSL_Watched_Seconds", { seconds: total });
+    }
+  };
+
   useEffect(() => {
     const interval = setInterval(() => setTierInfo(getCurrentTier()), 1000);
     return () => clearInterval(interval);
