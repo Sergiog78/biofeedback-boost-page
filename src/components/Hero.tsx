@@ -9,6 +9,58 @@ import { getCurrentTier, formatPrice, getDiscountPercent } from "@/lib/pricing-t
 
 const YOUTUBE_VIDEO_ID = "dV9ER9Hx3J8";
 
+// ===== VSL analytics helpers =====
+declare global {
+  interface Window {
+    YT?: any;
+    onYouTubeIframeAPIReady?: () => void;
+    clarity?: (...args: any[]) => void;
+  }
+}
+
+const trackVslEvent = (eventName: string, params?: Record<string, any>) => {
+  // Meta Pixel (custom event)
+  if (typeof window !== "undefined" && window.fbq) {
+    window.fbq("trackCustom", eventName, params);
+  }
+  // Microsoft Clarity (custom tag + event)
+  if (typeof window !== "undefined" && typeof window.clarity === "function") {
+    try {
+      window.clarity("event", eventName);
+      if (params) {
+        Object.entries(params).forEach(([k, v]) => {
+          window.clarity!("set", `vsl_${k}`, String(v));
+        });
+      }
+    } catch (e) {
+      // silent
+    }
+  }
+  // Console for verification
+  console.log(`📹 VSL: ${eventName}`, params || "");
+};
+
+let ytApiPromise: Promise<void> | null = null;
+const loadYouTubeAPI = (): Promise<void> => {
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise((resolve) => {
+    if (window.YT && window.YT.Player) {
+      resolve();
+      return;
+    }
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      if (prev) prev();
+      resolve();
+    };
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    tag.async = true;
+    document.head.appendChild(tag);
+  });
+  return ytApiPromise;
+};
+
 const Hero = () => {
   const navigate = useNavigate();
   const [tierInfo, setTierInfo] = useState(getCurrentTier());
@@ -17,6 +69,25 @@ const Hero = () => {
   const heroRef = useRef<HTMLElement>(null);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasScrolledRef = useRef(false);
+
+  // ===== VSL tracking refs =====
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const playerRef = useRef<any>(null);
+  const watchedSecondsRef = useRef(0);
+  const lastTickRef = useRef<number | null>(null);
+  const milestonesSentRef = useRef<Set<number>>(new Set());
+  const playSentRef = useRef(false);
+  const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const finalSentRef = useRef(false);
+
+  const sendFinalWatchTime = () => {
+    if (finalSentRef.current) return;
+    const total = Math.round(watchedSecondsRef.current);
+    if (total > 0) {
+      finalSentRef.current = true;
+      trackVslEvent("VSL_Watched_Seconds", { seconds: total });
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => setTierInfo(getCurrentTier()), 1000);
@@ -53,6 +124,101 @@ const Hero = () => {
       if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
     };
   }, []);
+
+  // ===== VSL: initialize YouTube Player API after user clicks play =====
+  useEffect(() => {
+    if (!videoLoaded) return;
+    let cancelled = false;
+
+    loadYouTubeAPI().then(() => {
+      if (cancelled || !iframeRef.current || !window.YT?.Player) return;
+
+      playerRef.current = new window.YT.Player(iframeRef.current, {
+        events: {
+          onStateChange: (e: any) => {
+            const YT = window.YT;
+            // 1 = playing, 2 = paused, 0 = ended
+            if (e.data === YT.PlayerState.PLAYING) {
+              if (!playSentRef.current) {
+                playSentRef.current = true;
+                trackVslEvent("VSL_Play");
+              }
+              lastTickRef.current = Date.now();
+              if (tickIntervalRef.current) clearInterval(tickIntervalRef.current);
+              tickIntervalRef.current = setInterval(() => {
+                const now = Date.now();
+                if (lastTickRef.current) {
+                  watchedSecondsRef.current += (now - lastTickRef.current) / 1000;
+                }
+                lastTickRef.current = now;
+
+                // Milestones
+                try {
+                  const player = playerRef.current;
+                  if (player?.getDuration && player?.getCurrentTime) {
+                    const duration = player.getDuration();
+                    const current = player.getCurrentTime();
+                    if (duration > 0) {
+                      const pct = (current / duration) * 100;
+                      [25, 50, 75, 95].forEach((m) => {
+                        if (pct >= m && !milestonesSentRef.current.has(m)) {
+                          milestonesSentRef.current.add(m);
+                          trackVslEvent(`VSL_Progress_${m}`, { percent: m });
+                        }
+                      });
+                    }
+                  }
+                } catch {}
+              }, 1000);
+            } else if (e.data === YT.PlayerState.PAUSED) {
+              if (lastTickRef.current) {
+                watchedSecondsRef.current += (Date.now() - lastTickRef.current) / 1000;
+                lastTickRef.current = null;
+              }
+              if (tickIntervalRef.current) {
+                clearInterval(tickIntervalRef.current);
+                tickIntervalRef.current = null;
+              }
+            } else if (e.data === YT.PlayerState.ENDED) {
+              if (lastTickRef.current) {
+                watchedSecondsRef.current += (Date.now() - lastTickRef.current) / 1000;
+                lastTickRef.current = null;
+              }
+              if (tickIntervalRef.current) {
+                clearInterval(tickIntervalRef.current);
+                tickIntervalRef.current = null;
+              }
+              if (!milestonesSentRef.current.has(100)) {
+                milestonesSentRef.current.add(100);
+                trackVslEvent("VSL_Complete");
+              }
+              sendFinalWatchTime();
+            }
+          },
+        },
+      });
+    });
+
+    const handleUnload = () => sendFinalWatchTime();
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") sendFinalWatchTime();
+    };
+    window.addEventListener("pagehide", handleUnload);
+    window.addEventListener("beforeunload", handleUnload);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      cancelled = true;
+      if (tickIntervalRef.current) clearInterval(tickIntervalRef.current);
+      window.removeEventListener("pagehide", handleUnload);
+      window.removeEventListener("beforeunload", handleUnload);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      sendFinalWatchTime();
+      try {
+        playerRef.current?.destroy?.();
+      } catch {}
+    };
+  }, [videoLoaded]);
 
   return (
     <>
@@ -194,7 +360,8 @@ const Hero = () => {
                 </button>
               ) : (
                 <iframe
-                  src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0&playsinline=1`}
+                  ref={iframeRef}
+                  src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&rel=0&playsinline=1&enablejsapi=1&origin=${typeof window !== "undefined" ? window.location.origin : ""}`}
                   title="Video introduttivo al corso di biofeedback con Gabriele Ciccarese"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
