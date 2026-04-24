@@ -9,6 +9,58 @@ import { getCurrentTier, formatPrice, getDiscountPercent } from "@/lib/pricing-t
 
 const YOUTUBE_VIDEO_ID = "dV9ER9Hx3J8";
 
+// ===== VSL analytics helpers =====
+declare global {
+  interface Window {
+    YT?: any;
+    onYouTubeIframeAPIReady?: () => void;
+    clarity?: (...args: any[]) => void;
+  }
+}
+
+const trackVslEvent = (eventName: string, params?: Record<string, any>) => {
+  // Meta Pixel (custom event)
+  if (typeof window !== "undefined" && window.fbq) {
+    window.fbq("trackCustom", eventName, params);
+  }
+  // Microsoft Clarity (custom tag + event)
+  if (typeof window !== "undefined" && typeof window.clarity === "function") {
+    try {
+      window.clarity("event", eventName);
+      if (params) {
+        Object.entries(params).forEach(([k, v]) => {
+          window.clarity!("set", `vsl_${k}`, String(v));
+        });
+      }
+    } catch (e) {
+      // silent
+    }
+  }
+  // Console for verification
+  console.log(`📹 VSL: ${eventName}`, params || "");
+};
+
+let ytApiPromise: Promise<void> | null = null;
+const loadYouTubeAPI = (): Promise<void> => {
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise((resolve) => {
+    if (window.YT && window.YT.Player) {
+      resolve();
+      return;
+    }
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      if (prev) prev();
+      resolve();
+    };
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    tag.async = true;
+    document.head.appendChild(tag);
+  });
+  return ytApiPromise;
+};
+
 const Hero = () => {
   const navigate = useNavigate();
   const [tierInfo, setTierInfo] = useState(getCurrentTier());
