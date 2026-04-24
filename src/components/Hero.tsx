@@ -125,6 +125,101 @@ const Hero = () => {
     };
   }, []);
 
+  // ===== VSL: initialize YouTube Player API after user clicks play =====
+  useEffect(() => {
+    if (!videoLoaded) return;
+    let cancelled = false;
+
+    loadYouTubeAPI().then(() => {
+      if (cancelled || !iframeRef.current || !window.YT?.Player) return;
+
+      playerRef.current = new window.YT.Player(iframeRef.current, {
+        events: {
+          onStateChange: (e: any) => {
+            const YT = window.YT;
+            // 1 = playing, 2 = paused, 0 = ended
+            if (e.data === YT.PlayerState.PLAYING) {
+              if (!playSentRef.current) {
+                playSentRef.current = true;
+                trackVslEvent("VSL_Play");
+              }
+              lastTickRef.current = Date.now();
+              if (tickIntervalRef.current) clearInterval(tickIntervalRef.current);
+              tickIntervalRef.current = setInterval(() => {
+                const now = Date.now();
+                if (lastTickRef.current) {
+                  watchedSecondsRef.current += (now - lastTickRef.current) / 1000;
+                }
+                lastTickRef.current = now;
+
+                // Milestones
+                try {
+                  const player = playerRef.current;
+                  if (player?.getDuration && player?.getCurrentTime) {
+                    const duration = player.getDuration();
+                    const current = player.getCurrentTime();
+                    if (duration > 0) {
+                      const pct = (current / duration) * 100;
+                      [25, 50, 75, 95].forEach((m) => {
+                        if (pct >= m && !milestonesSentRef.current.has(m)) {
+                          milestonesSentRef.current.add(m);
+                          trackVslEvent(`VSL_Progress_${m}`, { percent: m });
+                        }
+                      });
+                    }
+                  }
+                } catch {}
+              }, 1000);
+            } else if (e.data === YT.PlayerState.PAUSED) {
+              if (lastTickRef.current) {
+                watchedSecondsRef.current += (Date.now() - lastTickRef.current) / 1000;
+                lastTickRef.current = null;
+              }
+              if (tickIntervalRef.current) {
+                clearInterval(tickIntervalRef.current);
+                tickIntervalRef.current = null;
+              }
+            } else if (e.data === YT.PlayerState.ENDED) {
+              if (lastTickRef.current) {
+                watchedSecondsRef.current += (Date.now() - lastTickRef.current) / 1000;
+                lastTickRef.current = null;
+              }
+              if (tickIntervalRef.current) {
+                clearInterval(tickIntervalRef.current);
+                tickIntervalRef.current = null;
+              }
+              if (!milestonesSentRef.current.has(100)) {
+                milestonesSentRef.current.add(100);
+                trackVslEvent("VSL_Complete");
+              }
+              sendFinalWatchTime();
+            }
+          },
+        },
+      });
+    });
+
+    const handleUnload = () => sendFinalWatchTime();
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") sendFinalWatchTime();
+    };
+    window.addEventListener("pagehide", handleUnload);
+    window.addEventListener("beforeunload", handleUnload);
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      cancelled = true;
+      if (tickIntervalRef.current) clearInterval(tickIntervalRef.current);
+      window.removeEventListener("pagehide", handleUnload);
+      window.removeEventListener("beforeunload", handleUnload);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      sendFinalWatchTime();
+      try {
+        playerRef.current?.destroy?.();
+      } catch {}
+    };
+  }, [videoLoaded]);
+
   return (
     <>
       <section
