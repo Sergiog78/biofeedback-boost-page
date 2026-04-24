@@ -242,9 +242,20 @@ const Hero = () => {
           {/* LEFT COLUMN — Copy */}
           <div className="flex flex-col gap-5 text-center lg:text-left items-center lg:items-start">
             {/* Eyebrow */}
-            <span className="inline-block bg-white text-primary text-sm md:text-base font-semibold tracking-wide uppercase px-5 py-2 rounded-full">
+            <button
+              className="inline-block bg-white text-primary text-sm md:text-base font-semibold tracking-wide uppercase px-5 py-2 rounded-full cursor-pointer transition-opacity hover:opacity-90 border-none focus:outline-none focus:ring-0"
+              onClick={() => {
+                document.getElementById("programma")?.scrollIntoView({ behavior: "smooth" });
+                if (typeof window !== "undefined" && window.fbq) {
+                  window.fbq("trackCustom", "HeroEyebrow_Click");
+                }
+                if (typeof window !== "undefined" && typeof window.clarity === "function") {
+                  window.clarity("event", "HeroEyebrow_Click");
+                }
+              }}
+            >
               Corso online <span className="text-destructive">live</span> di 16 ore · Introduzione al Biofeedback in Psicoterapia
-            </span>
+            </button>
 
             {/* Headline */}
             <h1 className="text-[28px] leading-[1.3] md:text-[36px] lg:text-[42px] lg:leading-[1.2] font-bold text-white">
