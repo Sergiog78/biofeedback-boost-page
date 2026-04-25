@@ -551,6 +551,7 @@ const Checkout = () => {
           profession: formValues.profession || '',
           paymentMethod: method,
           billingDetails: wantsInvoice ? billing : undefined,
+          couponCode: appliedCoupon?.code || '',
         }
       });
 
