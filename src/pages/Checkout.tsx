@@ -336,6 +336,7 @@ const Checkout = () => {
                 phone: formValues.phone,
                 profession: formValues.profession || '',
                 billingDetails: wantsInvoice ? billing : undefined,
+                couponCode: appliedCoupon?.code || '',
               },
             }
           );
@@ -364,6 +365,7 @@ const Checkout = () => {
               phone: formValues.phone,
               profession: formValues.profession || '',
               billingSnapshot: wantsInvoice ? JSON.stringify(billing) : '',
+              couponCode: appliedCoupon?.code || '',
             };
             setClientSecret(intentData.clientSecret);
           } else {
