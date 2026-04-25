@@ -143,6 +143,69 @@ const Checkout = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Coupon: validate against Stripe
+  const handleApplyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) {
+      setCouponError("Inserisci un codice");
+      return;
+    }
+    setCouponLoading(true);
+    setCouponError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-coupon', {
+        body: { code },
+      });
+      if (error) {
+        console.error("Coupon validation error:", error);
+        setCouponError("Errore nella validazione del coupon");
+        setAppliedCoupon(null);
+        return;
+      }
+      if (!data?.valid) {
+        setCouponError(data?.error || "Codice non valido");
+        setAppliedCoupon(null);
+        return;
+      }
+      setAppliedCoupon({
+        code,
+        couponId: data.couponId,
+        promotionCodeId: data.promotionCodeId ?? null,
+        percentOff: data.percentOff ?? null,
+        amountOffCents: data.amountOffCents ?? null,
+        discountCents: data.discountCents ?? 0,
+        finalAmountCents: data.finalAmountCents ?? 0,
+        baseAmountCents: data.baseAmountCents ?? 0,
+      });
+      // Force PaymentIntent re-creation with new amount
+      setClientSecret('');
+      setStripeReady(false);
+      isCreatingIntent.current = false;
+      toast({
+        title: "Coupon applicato",
+        description: data.percentOff
+          ? `Sconto del ${data.percentOff}% applicato`
+          : `Sconto di €${((data.amountOffCents ?? 0) / 100).toFixed(2)} applicato`,
+      });
+    } catch (e) {
+      console.error("Coupon apply exception:", e);
+      setCouponError("Errore. Riprova.");
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError(null);
+    // Force PaymentIntent re-creation with full amount
+    setClientSecret('');
+    setStripeReady(false);
+    isCreatingIntent.current = false;
+  };
+
   // Scroll to top on mount + track Meta Pixel events
   useEffect(() => {
     window.scrollTo(0, 0);
