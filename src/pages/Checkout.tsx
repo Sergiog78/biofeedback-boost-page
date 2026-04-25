@@ -424,13 +424,15 @@ const Checkout = () => {
       const storedValues = clientSecretFormValuesRef.current;
       
       const currentBillingSnapshot = wantsInvoice ? JSON.stringify(billing) : '';
+      const currentCouponCode = appliedCoupon?.code || '';
       const hasFormChanged = storedValues && (
         currentValues.email !== storedValues.email ||
         currentValues.firstName !== storedValues.firstName ||
         currentValues.lastName !== storedValues.lastName ||
         currentValues.phone !== storedValues.phone ||
         (currentValues.profession || '') !== storedValues.profession ||
-        currentBillingSnapshot !== storedValues.billingSnapshot
+        currentBillingSnapshot !== storedValues.billingSnapshot ||
+        currentCouponCode !== storedValues.couponCode
       );
 
       if (hasFormChanged) {
@@ -449,6 +451,7 @@ const Checkout = () => {
                 phone: currentValues.phone,
                 profession: currentValues.profession || '',
                 billingDetails: wantsInvoice ? billing : undefined,
+                couponCode: currentCouponCode,
               },
             }
           );
@@ -472,6 +475,7 @@ const Checkout = () => {
             phone: currentValues.phone!,
             profession: currentValues.profession || '',
             billingSnapshot: currentBillingSnapshot,
+            couponCode: currentCouponCode,
           };
           setClientSecret(intentData.clientSecret);
           
