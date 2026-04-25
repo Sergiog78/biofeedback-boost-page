@@ -301,6 +301,7 @@ const Checkout = () => {
     phone: string;
     profession: string;
     billingSnapshot: string; // serialized billing or "" when not requested
+    couponCode: string; // applied coupon code or ""
   } | null>(null);
 
   // Create clientSecret when card is selected and form is valid
