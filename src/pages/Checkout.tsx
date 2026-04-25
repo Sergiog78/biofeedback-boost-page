@@ -1164,13 +1164,87 @@ const Checkout = () => {
                   <span className="text-muted-foreground">IVA 22%</span>
                   <span>€{formatPrice(tierInfo.tier.totalPrice - tierInfo.tier.basePrice)}</span>
                 </div>
+                {appliedCoupon && discountCents > 0 && (
+                  <div className="flex justify-between text-sm text-green-700">
+                    <span>
+                      Sconto coupon ({appliedCoupon.code.toUpperCase()}
+                      {appliedCoupon.percentOff ? ` · -${appliedCoupon.percentOff}%` : ''})
+                    </span>
+                    <span>−€{formatPrice(discountCents / 100)}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Coupon input */}
+              <div className="border-t pt-4">
+                {!appliedCoupon ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="coupon" className="text-sm">Hai un codice sconto?</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="coupon"
+                        type="text"
+                        placeholder="Inserisci codice"
+                        value={couponInput}
+                        onChange={(e) => {
+                          setCouponInput(e.target.value);
+                          if (couponError) setCouponError(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleApplyCoupon();
+                          }
+                        }}
+                        disabled={couponLoading}
+                        autoComplete="off"
+                        maxLength={80}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading || !couponInput.trim()}
+                      >
+                        {couponLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          "Applica"
+                        )}
+                      </Button>
+                    </div>
+                    {couponError && (
+                      <p className="text-xs text-destructive">{couponError}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-md px-3 py-2">
+                    <div className="text-sm">
+                      <span className="font-semibold text-green-800">{appliedCoupon.code.toUpperCase()}</span>
+                      <span className="text-green-700 ml-2">applicato</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="text-xs text-green-700 hover:text-green-900 underline"
+                    >
+                      Rimuovi
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="border-t pt-4">
                 <div className="flex justify-between items-baseline mb-2">
                   <span className="text-base font-semibold">Totale IVA inclusa</span>
                   <div className="text-right">
-                    <div className="text-2xl font-bold">€{formatPrice(tierInfo.tier.totalPrice)}</div>
+                    {appliedCoupon && discountCents > 0 && (
+                      <div className="text-sm text-muted-foreground line-through">
+                        €{formatPrice(tierInfo.tier.totalPrice)}
+                      </div>
+                    )}
+                    <div className="text-2xl font-bold">€{formatPrice(effectiveTotal)}</div>
                   </div>
                 </div>
                 {tierInfo.nextTier && (
