@@ -95,13 +95,35 @@ const Checkout = () => {
   const { trackViewContent, trackInitiateCheckout } = useMetaPixel();
   const [tierInfo, setTierInfo] = useState(getCurrentTier());
 
+  // Coupon state
+  type CouponInfo = {
+    code: string;
+    couponId: string;
+    promotionCodeId: string | null;
+    percentOff: number | null;
+    amountOffCents: number | null;
+    discountCents: number;
+    finalAmountCents: number;
+    baseAmountCents: number;
+  };
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponInfo | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
   // Billing / P.IVA section
   const [wantsInvoice, setWantsInvoice] = useState(false);
   const [billing, setBilling] = useState<BillingDetails>(emptyBilling);
   const billingValid = !wantsInvoice || isBillingValid(billing);
 
-  // Installment amount (Klarna 3x): exact thirds of total IVA inclusa
-  const installment = (tierInfo.tier.totalPrice / 3);
+  // Effective totals (apply coupon to gross total — server is source of truth)
+  const grossTotalCents = Math.round(tierInfo.tier.totalPrice * 100);
+  const discountCents = appliedCoupon ? Math.min(appliedCoupon.discountCents, grossTotalCents) : 0;
+  const effectiveTotalCents = Math.max(0, grossTotalCents - discountCents);
+  const effectiveTotal = effectiveTotalCents / 100;
+
+  // Installment amount (Klarna 3x): exact thirds of effective total IVA inclusa
+  const installment = effectiveTotal / 3;
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
