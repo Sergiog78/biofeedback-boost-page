@@ -95,13 +95,35 @@ const Checkout = () => {
   const { trackViewContent, trackInitiateCheckout } = useMetaPixel();
   const [tierInfo, setTierInfo] = useState(getCurrentTier());
 
+  // Coupon state
+  type CouponInfo = {
+    code: string;
+    couponId: string;
+    promotionCodeId: string | null;
+    percentOff: number | null;
+    amountOffCents: number | null;
+    discountCents: number;
+    finalAmountCents: number;
+    baseAmountCents: number;
+  };
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponInfo | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
   // Billing / P.IVA section
   const [wantsInvoice, setWantsInvoice] = useState(false);
   const [billing, setBilling] = useState<BillingDetails>(emptyBilling);
   const billingValid = !wantsInvoice || isBillingValid(billing);
 
-  // Installment amount (Klarna 3x): exact thirds of total IVA inclusa
-  const installment = (tierInfo.tier.totalPrice / 3);
+  // Effective totals (apply coupon to gross total — server is source of truth)
+  const grossTotalCents = Math.round(tierInfo.tier.totalPrice * 100);
+  const discountCents = appliedCoupon ? Math.min(appliedCoupon.discountCents, grossTotalCents) : 0;
+  const effectiveTotalCents = Math.max(0, grossTotalCents - discountCents);
+  const effectiveTotal = effectiveTotalCents / 100;
+
+  // Installment amount (Klarna 3x): exact thirds of effective total IVA inclusa
+  const installment = effectiveTotal / 3;
 
   const form = useForm<z.infer<typeof checkoutSchema>>({
     resolver: zodResolver(checkoutSchema),
@@ -120,6 +142,69 @@ const Checkout = () => {
     const interval = setInterval(() => setTierInfo(getCurrentTier()), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Coupon: validate against Stripe
+  const handleApplyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) {
+      setCouponError("Inserisci un codice");
+      return;
+    }
+    setCouponLoading(true);
+    setCouponError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-coupon', {
+        body: { code },
+      });
+      if (error) {
+        console.error("Coupon validation error:", error);
+        setCouponError("Errore nella validazione del coupon");
+        setAppliedCoupon(null);
+        return;
+      }
+      if (!data?.valid) {
+        setCouponError(data?.error || "Codice non valido");
+        setAppliedCoupon(null);
+        return;
+      }
+      setAppliedCoupon({
+        code,
+        couponId: data.couponId,
+        promotionCodeId: data.promotionCodeId ?? null,
+        percentOff: data.percentOff ?? null,
+        amountOffCents: data.amountOffCents ?? null,
+        discountCents: data.discountCents ?? 0,
+        finalAmountCents: data.finalAmountCents ?? 0,
+        baseAmountCents: data.baseAmountCents ?? 0,
+      });
+      // Force PaymentIntent re-creation with new amount
+      setClientSecret('');
+      setStripeReady(false);
+      isCreatingIntent.current = false;
+      toast({
+        title: "Coupon applicato",
+        description: data.percentOff
+          ? `Sconto del ${data.percentOff}% applicato`
+          : `Sconto di €${((data.amountOffCents ?? 0) / 100).toFixed(2)} applicato`,
+      });
+    } catch (e) {
+      console.error("Coupon apply exception:", e);
+      setCouponError("Errore. Riprova.");
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError(null);
+    // Force PaymentIntent re-creation with full amount
+    setClientSecret('');
+    setStripeReady(false);
+    isCreatingIntent.current = false;
+  };
 
   // Scroll to top on mount + track Meta Pixel events
   useEffect(() => {
@@ -279,6 +364,7 @@ const Checkout = () => {
     phone: string;
     profession: string;
     billingSnapshot: string; // serialized billing or "" when not requested
+    couponCode: string; // applied coupon code or ""
   } | null>(null);
 
   // Create clientSecret when card is selected and form is valid
@@ -313,6 +399,7 @@ const Checkout = () => {
                 phone: formValues.phone,
                 profession: formValues.profession || '',
                 billingDetails: wantsInvoice ? billing : undefined,
+                couponCode: appliedCoupon?.code || '',
               },
             }
           );
@@ -341,6 +428,7 @@ const Checkout = () => {
               phone: formValues.phone,
               profession: formValues.profession || '',
               billingSnapshot: wantsInvoice ? JSON.stringify(billing) : '',
+              couponCode: appliedCoupon?.code || '',
             };
             setClientSecret(intentData.clientSecret);
           } else {
@@ -399,13 +487,15 @@ const Checkout = () => {
       const storedValues = clientSecretFormValuesRef.current;
       
       const currentBillingSnapshot = wantsInvoice ? JSON.stringify(billing) : '';
+      const currentCouponCode = appliedCoupon?.code || '';
       const hasFormChanged = storedValues && (
         currentValues.email !== storedValues.email ||
         currentValues.firstName !== storedValues.firstName ||
         currentValues.lastName !== storedValues.lastName ||
         currentValues.phone !== storedValues.phone ||
         (currentValues.profession || '') !== storedValues.profession ||
-        currentBillingSnapshot !== storedValues.billingSnapshot
+        currentBillingSnapshot !== storedValues.billingSnapshot ||
+        currentCouponCode !== storedValues.couponCode
       );
 
       if (hasFormChanged) {
@@ -424,6 +514,7 @@ const Checkout = () => {
                 phone: currentValues.phone,
                 profession: currentValues.profession || '',
                 billingDetails: wantsInvoice ? billing : undefined,
+                couponCode: currentCouponCode,
               },
             }
           );
@@ -447,6 +538,7 @@ const Checkout = () => {
             phone: currentValues.phone!,
             profession: currentValues.profession || '',
             billingSnapshot: currentBillingSnapshot,
+            couponCode: currentCouponCode,
           };
           setClientSecret(intentData.clientSecret);
           
@@ -522,6 +614,7 @@ const Checkout = () => {
           profession: formValues.profession || '',
           paymentMethod: method,
           billingDetails: wantsInvoice ? billing : undefined,
+          couponCode: appliedCoupon?.code || '',
         }
       });
 
@@ -1071,13 +1164,87 @@ const Checkout = () => {
                   <span className="text-muted-foreground">IVA 22%</span>
                   <span>€{formatPrice(tierInfo.tier.totalPrice - tierInfo.tier.basePrice)}</span>
                 </div>
+                {appliedCoupon && discountCents > 0 && (
+                  <div className="flex justify-between text-sm text-green-700">
+                    <span>
+                      Sconto coupon ({appliedCoupon.code.toUpperCase()}
+                      {appliedCoupon.percentOff ? ` · -${appliedCoupon.percentOff}%` : ''})
+                    </span>
+                    <span>−€{formatPrice(discountCents / 100)}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Coupon input */}
+              <div className="border-t pt-4">
+                {!appliedCoupon ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="coupon" className="text-sm">Hai un codice sconto?</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="coupon"
+                        type="text"
+                        placeholder="Inserisci codice"
+                        value={couponInput}
+                        onChange={(e) => {
+                          setCouponInput(e.target.value);
+                          if (couponError) setCouponError(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleApplyCoupon();
+                          }
+                        }}
+                        disabled={couponLoading}
+                        autoComplete="off"
+                        maxLength={80}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading || !couponInput.trim()}
+                      >
+                        {couponLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          "Applica"
+                        )}
+                      </Button>
+                    </div>
+                    {couponError && (
+                      <p className="text-xs text-destructive">{couponError}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-md px-3 py-2">
+                    <div className="text-sm">
+                      <span className="font-semibold text-green-800">{appliedCoupon.code.toUpperCase()}</span>
+                      <span className="text-green-700 ml-2">applicato</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="text-xs text-green-700 hover:text-green-900 underline"
+                    >
+                      Rimuovi
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="border-t pt-4">
                 <div className="flex justify-between items-baseline mb-2">
                   <span className="text-base font-semibold">Totale IVA inclusa</span>
                   <div className="text-right">
-                    <div className="text-2xl font-bold">€{formatPrice(tierInfo.tier.totalPrice)}</div>
+                    {appliedCoupon && discountCents > 0 && (
+                      <div className="text-sm text-muted-foreground line-through">
+                        €{formatPrice(tierInfo.tier.totalPrice)}
+                      </div>
+                    )}
+                    <div className="text-2xl font-bold">€{formatPrice(effectiveTotal)}</div>
                   </div>
                 </div>
                 {tierInfo.nextTier && (

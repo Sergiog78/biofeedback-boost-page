@@ -456,8 +456,19 @@ const Hero = () => {
       >
         <div className="bg-white/95 backdrop-blur-md border-t border-border shadow-[0_-2px_10px_rgba(0,0,0,0.1)] px-3 py-2.5">
           <div className="container mx-auto flex items-center justify-between gap-3">
-            <div className="hidden sm:flex items-center gap-3 text-sm">
-              <span className="text-foreground font-medium">
+            <button
+              type="button"
+              onClick={() => {
+                document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
+                if (typeof window !== "undefined") {
+                  window.fbq?.("trackCustom", "StickyBarPrice_Click");
+                  window.clarity?.("event", "sticky_bar_price_click");
+                }
+              }}
+              className="hidden sm:flex items-center gap-3 text-sm cursor-pointer hover:opacity-80 transition-opacity"
+              aria-label="Vai alla sezione prezzi"
+            >
+              <span className="text-foreground font-medium underline-offset-2 hover:underline">
                 €{tierInfo.tier.basePrice} + IVA · tot. €{tierInfo.tier.totalPrice.toFixed(2).replace(".", ",")}
               </span>
               {tierInfo.nextTier && tierInfo.timeRemaining.totalMs > 0 && (
@@ -470,9 +481,20 @@ const Hero = () => {
                   </span>
                 </div>
               )}
-            </div>
-            <div className="flex sm:hidden items-center gap-2 text-xs">
-              <span className="text-foreground font-semibold">
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
+                if (typeof window !== "undefined") {
+                  window.fbq?.("trackCustom", "StickyBarPrice_Click");
+                  window.clarity?.("event", "sticky_bar_price_click");
+                }
+              }}
+              className="flex sm:hidden items-center gap-2 text-xs cursor-pointer hover:opacity-80 transition-opacity"
+              aria-label="Vai alla sezione prezzi"
+            >
+              <span className="text-foreground font-semibold underline-offset-2 hover:underline">
                 €{tierInfo.tier.basePrice}+IVA · €{tierInfo.tier.totalPrice.toFixed(2).replace(".", ",")}
               </span>
               {tierInfo.nextTier && tierInfo.timeRemaining.totalMs > 0 && (
@@ -483,7 +505,7 @@ const Hero = () => {
                   </span>
                 </div>
               )}
-            </div>
+            </button>
             <Button
               variant="hero"
               size="sm"

@@ -111,14 +111,53 @@ serve(async (req) => {
       );
     }
     
-    const { email, firstName, lastName, phone, profession, billingDetails } = body;
+    const { email, firstName, lastName, phone, profession, billingDetails, couponCode } = body;
 
-    const priceCents = getCurrentPriceCents();
-    console.log("Creating PaymentIntent with dynamic price:", priceCents, "cents");
+    const basePriceCents = getCurrentPriceCents();
+    console.log("Creating PaymentIntent with dynamic price:", basePriceCents, "cents");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
+
+    // Server-side coupon revalidation
+    let priceCents = basePriceCents;
+    let appliedCouponId: string | null = null;
+    let appliedPromoId: string | null = null;
+    let discountCents = 0;
+    if (couponCode && typeof couponCode === "string" && couponCode.trim().length > 0) {
+      const code = couponCode.trim();
+      try {
+        let coupon: Stripe.Coupon | null = null;
+        const promo = await stripe.promotionCodes.list({ code, active: true, limit: 1 });
+        if (promo.data.length > 0) {
+          appliedPromoId = promo.data[0].id;
+          coupon = promo.data[0].coupon;
+        } else {
+          try {
+            coupon = await stripe.coupons.retrieve(code);
+          } catch { /* not found */ }
+        }
+        if (coupon && coupon.valid) {
+          appliedCouponId = coupon.id;
+          if (coupon.percent_off != null) {
+            discountCents = Math.round((basePriceCents * coupon.percent_off) / 100);
+          } else if (coupon.amount_off != null && (coupon.currency ?? "eur").toLowerCase() === "eur") {
+            discountCents = coupon.amount_off;
+          }
+          if (discountCents > basePriceCents) discountCents = basePriceCents;
+          priceCents = Math.max(0, basePriceCents - discountCents);
+          console.log(`Coupon ${appliedCouponId} applied. Discount ${discountCents} cents. Final ${priceCents} cents.`);
+        } else {
+          console.warn(`Coupon code "${code}" rejected (invalid or expired).`);
+        }
+      } catch (e) {
+        console.error("Coupon revalidation error:", e);
+      }
+    }
+
+    // Stripe minimum charge for EUR is 50 cents
+    if (priceCents > 0 && priceCents < 50) priceCents = 50;
 
     const customers = await stripe.customers.list({ email, limit: 1 });
     let customerId;
@@ -140,7 +179,12 @@ serve(async (req) => {
       customerPhone: phone || '',
       customerProfession: profession || '',
       hasBillingDetails: billingDetails ? 'true' : 'false',
+      basePriceCents: String(basePriceCents),
+      discountCents: String(discountCents),
+      finalPriceCents: String(priceCents),
     };
+    if (appliedCouponId) piMetadata.couponId = appliedCouponId;
+    if (appliedPromoId) piMetadata.promotionCodeId = appliedPromoId;
 
     if (billingDetails) {
       piMetadata.billing_businessName = (billingDetails.businessName || '').slice(0, 200);
