@@ -129,7 +129,7 @@ serve(async (req) => {
       );
     }
     
-    const { email, firstName, lastName, profession, paymentMethod, billingDetails } = body;
+    const { email, firstName, lastName, profession, paymentMethod, billingDetails, couponCode } = body;
     const method: 'paypal' | 'klarna' = paymentMethod || 'paypal';
 
     const priceCents = getCurrentPriceCents();
@@ -139,6 +139,31 @@ serve(async (req) => {
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
+
+    // Server-side coupon revalidation
+    let appliedCouponId: string | null = null;
+    let appliedPromoId: string | null = null;
+    if (couponCode && typeof couponCode === "string" && couponCode.trim().length > 0) {
+      const code = couponCode.trim();
+      try {
+        let coupon: Stripe.Coupon | null = null;
+        const promo = await stripe.promotionCodes.list({ code, active: true, limit: 1 });
+        if (promo.data.length > 0) {
+          appliedPromoId = promo.data[0].id;
+          coupon = promo.data[0].coupon;
+        } else {
+          try { coupon = await stripe.coupons.retrieve(code); } catch { /* not found */ }
+        }
+        if (coupon && coupon.valid) {
+          appliedCouponId = coupon.id;
+          console.log(`Coupon ${appliedCouponId} will be applied to checkout session.`);
+        } else {
+          console.warn(`Coupon code "${code}" rejected (invalid or expired).`);
+        }
+      } catch (e) {
+        console.error("Coupon revalidation error:", e);
+      }
+    }
 
     const customers = await stripe.customers.list({ email, limit: 1 });
     let customerId;
@@ -160,6 +185,8 @@ serve(async (req) => {
       paymentMethod: method,
       hasBillingDetails: billingDetails ? 'true' : 'false',
     };
+    if (appliedCouponId) sessionMetadata.couponId = appliedCouponId;
+    if (appliedPromoId) sessionMetadata.promotionCodeId = appliedPromoId;
 
     if (billingDetails) {
       sessionMetadata.billing_businessName = (billingDetails.businessName || '').slice(0, 200);
@@ -169,7 +196,7 @@ serve(async (req) => {
       sessionMetadata.billing_address = (billingDetails.billingAddress || '').slice(0, 500);
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       payment_method_types: [method],
       line_items: [
@@ -193,7 +220,16 @@ serve(async (req) => {
       payment_intent_data: {
         metadata: sessionMetadata,
       },
-    });
+    };
+
+    if (appliedCouponId) {
+      sessionParams.discounts = [{ coupon: appliedCouponId }];
+    } else {
+      // discounts and allow_promotion_codes are mutually exclusive
+      sessionParams.allow_promotion_codes = true;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     // Persist billing_details immediately (linked to session) when present
     if (billingDetails) {
