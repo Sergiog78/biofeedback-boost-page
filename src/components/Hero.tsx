@@ -283,7 +283,7 @@ const Hero = () => {
                 <span className="text-yellow-400 text-lg leading-none">⭐</span>
                 <div>
                   <span className="text-white font-bold text-base">30+</span>
-                  <span className="text-white/80 text-sm"> psicoterapeuti iscritti</span>
+                  <span className="text-white/80 text-sm"> psicoterapeuti iscritti alla prima edizione</span>
                 </div>
               </div>
               <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-4 py-2">
