@@ -26,9 +26,9 @@ const Index = () => {
       <Hero />
       <Suspense fallback={<SectionFallback />}>
         <Features />
+        <Testimonials />
         <InstrumentationObjection />
         <Solution />
-        <Testimonials />
         <ClinicalScenarios />
         <Program />
         <CourseIncludes />

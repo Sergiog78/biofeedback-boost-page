@@ -68,6 +68,11 @@ const Hero = () => {
   const [showStickyCta, setShowStickyCta] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const heroRef = useRef<HTMLElement>(null);
+
+  // Retargeting variant: detect ?audience=retargeting in URL
+  const isRetargeting = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("audience") === "retargeting"
+    : false;
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasScrolledRef = useRef(false);
 
@@ -260,18 +265,31 @@ const Hero = () => {
 
             {/* Headline */}
             <h1 className="text-[28px] leading-[1.3] md:text-[36px] lg:text-[42px] lg:leading-[1.2] font-bold text-white">
-              Impara a integrare il biofeedback nella tua pratica clinica in modo semplice, concreto e scientificamente rigoroso
+              {isRetargeting
+                ? "Hai già visto di cosa si tratta. Ecco cosa hanno detto i tuoi colleghi dopo essersi iscritti."
+                : "Impara a integrare il biofeedback nella tua pratica clinica in modo semplice, concreto e scientificamente rigoroso"}
             </h1>
 
             {/* Sottotitolo */}
             <p className="text-base md:text-lg leading-relaxed text-white/80 lg:max-w-[480px]">
-              Per psicologi e psicoterapeuti che vogliono iniziare a usare il biofeedback in seduta senza perdersi nella complessità tecnica e senza snaturare la relazione terapeutica.
+              {isRetargeting
+                ? "«Mi ha aperto un mondo» — Dott.ssa Ilaria Mazzotta, Psicoterapeuta. «Finalmente ho capito come usarlo in seduta» — Dott.ssa Simona Carnevale, Psicoterapeuta."
+                : "Per psicologi e psicoterapeuti che vogliono iniziare a usare il biofeedback in seduta senza perdersi nella complessità tecnica e senza snaturare la relazione terapeutica."}
             </p>
 
-            {/* Social proof */}
-            <p className="text-sm text-white/60">
-              ⭐ Già scelto da 30+ psicoterapeuti nella prima edizione · Prossima edizione: 9 maggio 2026
-            </p>
+            {/* Social proof badge */}
+            <div className="flex flex-wrap justify-center lg:justify-start gap-2">
+              <div className="inline-flex items-center gap-2.5 bg-white/10 border border-white/20 rounded-lg px-4 py-2">
+                <span className="text-yellow-400 text-lg leading-none">⭐</span>
+                <div>
+                  <span className="text-white font-bold text-base">30+</span>
+                  <span className="text-white/80 text-sm"> psicoterapeuti iscritti</span>
+                </div>
+              </div>
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-4 py-2">
+                <span className="text-white/80 text-sm">📅 Prossima: <span className="text-white font-semibold">9 maggio 2026</span></span>
+              </div>
+            </div>
 
             {/* CTA */}
             <Button
@@ -286,18 +304,9 @@ const Hero = () => {
 
             {/* Microcopy sotto CTA */}
             <div className="text-sm text-white/70 -mt-3">
+              {/* Installment as PRIMARY price anchor */}
               <p className="flex items-center justify-center lg:justify-start gap-2 flex-wrap">
-                <span className="font-semibold text-white/90">€{tierInfo.tier.basePrice} + IVA</span>
-                <span className="text-white/70">(€{tierInfo.tier.totalPrice.toFixed(2).replace(".", ",")} IVA inclusa)</span>
-                {getDiscountPercent(tierInfo.tier) > 0 && (
-                  <span className="inline-flex items-center rounded-full bg-accent/20 text-accent-foreground text-xs font-medium px-2.5 py-0.5">
-                    −{getDiscountPercent(tierInfo.tier)}% rispetto al prezzo finale
-                  </span>
-                )}
-              </p>
-              <p className="text-white/50 text-xs mt-0.5">IVA 22% inclusa nel totale. Deducibile per professionisti con P.IVA.</p>
-              <p className="flex items-center justify-center lg:justify-start gap-1.5 flex-wrap text-sm text-white/80 mt-2 pt-2 border-t border-white/20">
-                <span>oppure <span className="font-semibold text-white">3 rate da €{(tierInfo.tier.totalPrice / 3).toFixed(2).replace(".", ",")}</span> senza interessi ·</span>
+                <span className="font-bold text-white text-base">3 rate da €{(tierInfo.tier.totalPrice / 3).toFixed(2).replace(".", ",")} senza interessi</span>
                 <img
                   src="https://x.klarnacdn.net/payment-method/assets/badges/generic/klarna.svg"
                   alt="Klarna"
@@ -306,6 +315,16 @@ const Hero = () => {
                   decoding="async"
                 />
               </p>
+              {/* Full price as secondary */}
+              <p className="flex items-center justify-center lg:justify-start gap-1.5 flex-wrap text-white/60 text-xs mt-1">
+                <span>o pagamento unico €{tierInfo.tier.basePrice} + IVA (€{tierInfo.tier.totalPrice.toFixed(2).replace(".", ",")} IVA inclusa)</span>
+                {getDiscountPercent(tierInfo.tier) > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-accent/20 text-accent-foreground text-xs font-medium px-2 py-0.5">
+                    −{getDiscountPercent(tierInfo.tier)}%
+                  </span>
+                )}
+              </p>
+              <p className="text-white/50 text-xs mt-0.5">IVA 22% inclusa nel totale. Deducibile per professionisti con P.IVA.</p>
             </div>
 
             {/* Microproof — 3 bullet essenziali in riga */}
