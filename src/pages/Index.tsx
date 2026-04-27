@@ -28,8 +28,8 @@ const Index = () => {
         <Features />
         <InstrumentationObjection />
         <Solution />
-        <ClinicalScenarios />
         <Testimonials />
+        <ClinicalScenarios />
         <Program />
         <CourseIncludes />
         <Instructor />
