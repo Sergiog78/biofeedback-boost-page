@@ -115,6 +115,63 @@ export type Database = {
         }
         Relationships: []
       }
+      course_enrollments_archive: {
+        Row: {
+          amount_paid: number
+          archived_at: string
+          created_at: string
+          edition_label: string
+          email: string
+          email_sent_at: string | null
+          enrolled_at: string
+          first_name: string
+          id: string
+          last_name: string
+          payment_status: string
+          phone: string | null
+          profession: string | null
+          stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+        }
+        Insert: {
+          amount_paid: number
+          archived_at?: string
+          created_at?: string
+          edition_label?: string
+          email: string
+          email_sent_at?: string | null
+          enrolled_at?: string
+          first_name: string
+          id?: string
+          last_name: string
+          payment_status?: string
+          phone?: string | null
+          profession?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+        }
+        Update: {
+          amount_paid?: number
+          archived_at?: string
+          created_at?: string
+          edition_label?: string
+          email?: string
+          email_sent_at?: string | null
+          enrolled_at?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          payment_status?: string
+          phone?: string | null
+          profession?: string | null
+          stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
